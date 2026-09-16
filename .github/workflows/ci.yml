@@ -1,0 +1,27 @@
+name: Placeholder contract
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate placeholder contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s AGENTS.md
+          test -s README.md
+          test -s .warren/config.yaml
+          grep -q '^agentImage: ghcr.io/nacosolutions/senshac-warren-agent@sha256:' .warren/config.yaml
+          if find . -type f \( -name '.env' -o -name '*.pem' -o -name '*.key' \) -not -path './.git/*' | grep -q .; then
+            echo 'secret-like files are not allowed in the placeholder repository' >&2
+            exit 1
+          fi
+          git diff --check
