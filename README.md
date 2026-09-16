@@ -1,6 +1,6 @@
 # Senshac Web
 
-Placeholder repository for the Senshac Astro/TinaCMS web application.
+Minimal preview skeleton for the Senshac Astro/TinaCMS web application.
 
 The legacy `NacoSolutions/senshac` repository is frozen. During the planned
 cutover, the web application, TinaCMS generator configuration, Cloudflare Pages
@@ -8,8 +8,9 @@ integration, and web quality gates will be copied here in a focused change.
 
 ## Status
 
-This repository is intentionally non-production and contains no deployable
-application yet.
+This repository contains only the bounded, non-production preview slice: one
+Astro route, deterministic quality gates, and a non-secret Tina content
+contract. It is not a production deployment.
 
 ## Web cutover contract
 
@@ -30,6 +31,6 @@ When cutover is approved:
   while the new Pages release is investigated; preserve the archive until the
   production smoke checks and rollback path are verified.
 
-Until that work begins, preserve this placeholder: do not copy application code,
-TinaCMS credentials, Cloudflare credentials, R2 secrets, or generated
-configuration into this repository.
+The preview slice intentionally excludes production Pages configuration, DNS,
+R2 bindings, credentials, generated Tina configuration, and the archived
+application. Do not add those items here without the relevant cutover gate.
