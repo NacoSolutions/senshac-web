@@ -10,3 +10,9 @@ Until the cutover seed is started:
 - Treat `senshac-content` as the future editorial source repository.
 - Use Warren for bounded implementation work only after the repository has a
   real application and quality gates.
+
+## Repository-local Seeds queue
+
+Warren reads and executes the repository-local `.seeds/` queue. Keep active
+follow-up work in Seeds, inspect the queue before implementation, and preserve
+its tracked JSONL records with the repository changes.
