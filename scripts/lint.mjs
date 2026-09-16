@@ -3,7 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 async function walk(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const nested = await Promise.all(entries
-    .filter((entry) => !['node_modules', '.git', 'dist', '.astro'].includes(entry.name))
+    .filter((entry) => !['node_modules', '.git', 'dist', '.astro', '.pi', '.warren'].includes(entry.name))
     .map((entry) => entry.isDirectory()
       ? walk(`${directory}/${entry.name}`)
       : [`${directory}/${entry.name}`]));
