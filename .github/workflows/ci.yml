@@ -12,7 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate placeholder contract
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run deterministic quality gates
+        run: npm run quality
+      - name: Validate repository contract
         shell: bash
         run: |
           set -euo pipefail
@@ -20,6 +29,8 @@ jobs:
           test -s README.md
           test -s .warren/config.yaml
           grep -q '^agentImage: ghcr.io/nacosolutions/senshac-warren-agent@sha256:' .warren/config.yaml
+          test -s content/tina-fixture.json
+          test -s content/tina-schema.json
           if find . -type f \( -name '.env' -o -name '*.pem' -o -name '*.key' \) -not -path './.git/*' | grep -q .; then
             echo 'secret-like files are not allowed in the placeholder repository' >&2
             exit 1

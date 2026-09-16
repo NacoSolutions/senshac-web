@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import fixture from '../../content/tina-fixture.json';
+
+const { title, intro } = fixture.home;
+---
+<BaseLayout title={title} description={intro}>
+  <h1>{title}</h1>
+  <p>{intro}</p>
+  <p><small>Preview slice — editorial content is owned by senshac-content.</small></p>
+</BaseLayout>

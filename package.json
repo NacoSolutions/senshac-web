@@ -1,0 +1,19 @@
+{
+  "name": "senshac-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "test": "node --test",
+    "lint": "node scripts/lint.mjs",
+    "typecheck": "astro check",
+    "quality": "npm run lint && npm test && npm run typecheck && npm run build"
+  },
+  "dependencies": {
+    "astro": "5.14.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.4",
+    "typescript": "5.9.2"
+  }
+}
