@@ -1,0 +1,13 @@
+---
+interface Props {
+  title: string;
+  intro: string;
+}
+
+const { title, intro } = Astro.props;
+---
+<section aria-labelledby="preview-title">
+  <h1 id="preview-title">{title}</h1>
+  <p>{intro}</p>
+  <p><small>Preview slice — editorial content is owned by senshac-content.</small></p>
+</section>
