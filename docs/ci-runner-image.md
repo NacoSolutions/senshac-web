@@ -8,7 +8,7 @@ as the `senshac-runner-image-digest/runner-image-digest.txt` artifact.
 The web CI workflow consumes that handoff through an immutable digest:
 
 ```text
-ghcr.io/nacosolutions/senshac-runner@sha256:681eb70b649ad6af34cc70b5abc1944276db015f17c73625423b3cbbc07421ab
+ghcr.io/nacosolutions/senshac-runner@sha256:a6579fc8e776f5a8c94f9f3287ad8864d17706445466992d8704fa9baf46bbfe
 ```
 
 Keep the `container.image` value in `.github/workflows/ci.yml` as the exact
