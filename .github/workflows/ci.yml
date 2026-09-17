@@ -10,6 +10,9 @@ permissions:
 jobs:
   contract:
     runs-on: ubuntu-latest
+    # Consumer pin: digest exported by NacoSolutions/senshac-runner PR #21.
+    container:
+      image: ghcr.io/nacosolutions/senshac-runner@sha256:5f44b7bf1747f12ff3db2397c276f1015b41878b2283b536ee15830f453a3fec
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node
