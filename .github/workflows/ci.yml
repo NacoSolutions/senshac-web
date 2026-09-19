@@ -44,6 +44,6 @@ jobs:
             echo 'secret-like files are not allowed in the placeholder repository' >&2
             exit 1
           fi
-          repo_dir="/__w/${GITHUB_REPOSITORY#*/}/${GITHUB_REPOSITORY#*/}"
+          repo_dir="/__w/senshac-web/senshac-web"
           env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE \
-            git -C "$repo_dir" diff --check
+            git --git-dir="$repo_dir/.git" --work-tree="$repo_dir" diff --check
