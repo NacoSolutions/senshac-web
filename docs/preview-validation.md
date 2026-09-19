@@ -67,16 +67,34 @@ be configured through platform or CI secret stores only:
 - [ ] No migrated code from the archived `NacoSolutions/senshac` repository beyond the approved preview slice
 - [ ] No cutover activation — the archive remains the rollback source
 
+## Deterministic final gate
+
+Run the following from a clean checkout. `npm run quality` includes the build,
+fixture-backed preview check, and `npm run repository:check`; the latter rejects
+secret-like files/assignments, private-key markers, generated deployment/Tina
+configuration, and a non-placeholder Astro site URL. `git diff --check` is run
+separately because it checks the review diff rather than the checkout.
+
+```sh
+npm ci
+npm run quality
+git diff --check
+```
+
+A green run is preview evidence only. It does not approve Pages, R2, Tina
+credentials, DNS, or cutover activation. The manual route, browser, SEO,
+accessibility, and platform checks above remain required before promotion.
+
 ## Evidence log
 
 | Section | Date | Result | Notes / Link to build |
 | --- | --- | --- | --- |
-| Route behaviour | | | |
-| Build output | | | |
-| Fixture content | | | |
-| Accessibility / SEO | | | |
-| Secret boundaries | | | |
-| Production exclusions | | | |
+| Route behaviour | | | `npm run preview:check` |
+| Build output | | | `npm run build` |
+| Fixture content | | | `npm run preview:check` |
+| Accessibility / SEO | | | Manual checklist above |
+| Secret boundaries | | | `npm run repository:check` |
+| Production exclusions | | | `npm run repository:check`; no cutover activation |
 
-> Attach this completed table and any build logs to the corresponding acceptance
+> Attach the completed table and any build logs to the corresponding acceptance
 > gate in `docs/cutover-plan.md` before promoting the preview to production.
