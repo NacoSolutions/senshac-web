@@ -1,39 +1,50 @@
 # Editorial content boundary
 
-The preview consumes a deliberately small, repository-local representation of
-an export from the sibling `senshac-content` repository. It is the fixture at
-`content/tina-fixture.json` and currently has this shape:
+The preview consumes a deliberately small, repository-local, read-only export
+from the sibling `senshac-content` repository. The pinned export is
+`content/senshac-content-export.json` and uses this envelope:
 
 ```json
 {
-  "home": {
-    "title": "string, non-empty",
-    "intro": "string, non-empty"
+  "contractVersion": 1,
+  "sourceRevision": "d90fe0dd3b1fa968d81a40bc22d3ebd7ad650e99",
+  "content": {
+    "home": {
+      "title": "string, non-empty",
+      "intro": "string, non-empty"
+    }
   }
 }
 ```
 
-`src/content/contract.mjs` validates the shape at the Astro application
-boundary. Unknown fields are rejected so additions to the sibling export are
-reviewed rather than silently ignored. The home preview component then receives
-only the validated `title` and `intro` values. This keeps the route static-first
-and makes malformed content fail the build.
+`src/content/adapter.mjs` validates the envelope and delegates the content
+shape to `src/content/contract.mjs`. It returns explicit `ready`, `stale`,
+`missing`, or `error` results; the route fails its build for every result other
+than `ready`. No network or credential is involved. The existing
+`content/tina-fixture.json` remains only as a test input for the shape contract
+and adapter tests.
 
-## Next integration boundary
+## Refresh and review procedure
 
-The next integration should replace the fixture import with a reviewed,
-read-only adapter for a pinned `senshac-content` export. That adapter must
-return this same validated shape and define its revision/error behavior. TinaCMS
-credentials, write access, Cloudflare Pages configuration, R2 bindings, and a
-full content migration remain out of scope until the editorial workflow and
-platform gates in `docs/cutover-plan.md` are approved.
+To refresh the preview export, a maintainer must obtain a new immutable
+`senshac-content` commit, export the approved contract from that revision, and
+update both `sourceRevision` and the JSON payload in one reviewed change. The
+revision must be the full commit ID (not a branch or tag), and the adapter pin
+in `src/content/adapter.mjs` must match it. Run `npm run quality`, inspect the
+diff for editorial scope and secrets, and have an owner review the source
+revision, contract version, and rendered preview before merging. Do not refresh
+it from a network during an application build.
+
+TinaCMS credentials, write access, Cloudflare Pages configuration, R2 bindings,
+and a full content migration remain out of scope until the editorial workflow
+and platform gates in `docs/cutover-plan.md` are approved.
 
 ## Preview verification
 
-The representative `/` route imports only `content/tina-fixture.json`, passes it
-through `assertHomeContent`, and supplies the validated values to the preview
-component. `npm run quality` rebuilds the route and `npm run preview:check`
-re-validates those fixture values against `dist/index.html`, including the
-visible `senshac-content` ownership note. The route wiring test also rejects
-runtime environment or network adapter access. No credentials, Tina client,
-Pages/R2 configuration, or production adapter is part of this boundary.
+The representative `/` route imports only the pinned export, passes it through
+`adaptContentExport`, and supplies validated values to the preview component.
+`npm run quality` rebuilds the route and `npm run preview:check` re-validates
+those pinned values against `dist/index.html`, including the visible
+`senshac-content` ownership note. The route wiring test also rejects runtime
+environment or network adapter access. No credentials, Tina client, Pages/R2
+configuration, or write adapter is part of this boundary.
