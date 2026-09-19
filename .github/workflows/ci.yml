@@ -23,10 +23,13 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+        working-directory: ${{ github.workspace }}
       - name: Run deterministic quality gates
         run: npm run quality
+        working-directory: ${{ github.workspace }}
       - name: Validate repository contract
         shell: bash
+        working-directory: ${{ github.workspace }}
         run: |
           set -euo pipefail
           test -s AGENTS.md
