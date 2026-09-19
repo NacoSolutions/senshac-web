@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { access, readFile, readdir } from 'node:fs/promises';
 
-const ignoredDirectories = new Set(['.git', 'node_modules', '.astro', '.pi', '.warren']);
+const ignoredDirectories = new Set(['.git', 'node_modules', '.astro', '.pi', '.warren', '__generated__', 'admin']);
 const files = await walk('.');
 const forbiddenFiles = files.filter((file) => {
   const name = file.slice(file.lastIndexOf('/') + 1);

@@ -1,9 +1,19 @@
 # Preview contract
 
 This seed is intentionally local and non-production. A future Cloudflare Pages
-preview must build the reviewed commit with `npm ci` followed by `npm run
-quality`. Pages project settings, environment variables, R2 bindings, domains,
-and credentials are platform-owned and must not be added to this repository.
+preview must build the reviewed commit with `bun install --frozen-lockfile`
+followed by `bun run quality`. The build runs `tinacms build` before
+`astro build`, so the generated Tina admin is included at `/admin/`.
+
+The Pages preview environment must provide `NEXT_PUBLIC_TINA_CLIENT_ID` (the
+non-secret Tina Cloud project ID) and `TINA_TOKEN` (the Tina Cloud read-only
+token). Configure these in Tina Cloud/Pages secret settings; never commit
+values, `.env` files, or tokens here. `GITHUB_BRANCH` optionally selects the
+Tina branch and defaults to `main`. Pages project settings, R2 bindings,
+domains, and credentials remain platform-owned and must not be added to this
+repository. Without those variables, local `bun run build` uses Tina's
+local/offline generator so the route and admin assets can still be verified;
+that fallback is not a Cloud preview and must not be used for Pages.
 
 The representative `/` route reads the pinned
 `content/senshac-content-export.json` export from the separate
