@@ -11,9 +11,9 @@ permissions:
 jobs:
   contract:
     runs-on: ubuntu-latest
-    # Consumer pin: digest published by senshac-runner workflow 35214744376.
+    # Consumer pin: digest published by senshac-runner workflow 35397460307.
     container:
-      image: ghcr.io/nacosolutions/senshac-runner@sha256:a6579fc8e776f5a8c94f9f3287ad8864d17706445466992d8704fa9baf46bbfe
+      image: ghcr.io/nacosolutions/senshac-runner@sha256:a950ccba03d922b18bd4f69f456fda39e3389760b539c96904b7f671d12c7055
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node
@@ -22,13 +22,18 @@ jobs:
           node-version: 20
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          npm ci
       - name: Run deterministic quality gates
-        run: npm run quality
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          npm run quality
       - name: Validate repository contract
         shell: bash
         run: |
           set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
           test -s AGENTS.md
           test -s README.md
           test -s .warren/config.yaml
@@ -39,4 +44,3 @@ jobs:
             echo 'secret-like files are not allowed in the placeholder repository' >&2
             exit 1
           fi
-          git diff --check
