@@ -1,0 +1,10 @@
+{
+  "contractVersion": 1,
+  "sourceRevision": "d90fe0dd3b1fa968d81a40bc22d3ebd7ad650e99",
+  "content": {
+    "home": {
+      "title": "Senshac",
+      "intro": "A representative editorial fixture for the Astro preview slice."
+    }
+  }
+}

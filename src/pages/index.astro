@@ -1,10 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HomePreview from '../components/HomePreview.astro';
-import { assertHomeContent } from '../content/contract.mjs';
-import fixture from '../../content/tina-fixture.json';
+import { adaptContentExport } from '../content/adapter.mjs';
+import pinnedExport from '../../content/senshac-content-export.json';
 
-const { title, intro } = assertHomeContent(fixture);
+const result = adaptContentExport(pinnedExport);
+if (result.status !== 'ready') {
+  const detail = result.status === 'error' ? result.error.message : result.reason;
+  throw new Error(`Pinned content is ${result.status}: ${detail}`);
+}
+const { title, intro } = result.content;
 ---
 <BaseLayout title={title} description={intro}>
   <HomePreview title={title} intro={intro} />

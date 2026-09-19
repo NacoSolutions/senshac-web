@@ -93,8 +93,8 @@ commit:
 
 | Evidence | Deterministic proof | Result |
 | --- | --- | --- |
-| Representative route | `npm run build` followed by `npm run preview:check` | Green: `dist/index.html` contains the semantic route landmarks, `Senshac` title, fixture intro, and editorial ownership note. |
-| Fixture ownership | `npm test` and the route source assertions | Green: `/` imports `content/tina-fixture.json`, validates it with `assertHomeContent`, and has no environment or network adapter access. `senshac-content` remains the editorial owner. |
+| Representative route | `npm run build` followed by `npm run preview:check` | Green: `dist/index.html` contains the semantic route landmarks, `Senshac` title, pinned-export intro, and editorial ownership note. |
+| Pinned export ownership | `npm test` and the route source assertions | Green: `/` imports `content/senshac-content-export.json`, validates it with `adaptContentExport`, and has no environment or network adapter access. `senshac-content` remains the editorial owner. |
 | Quality and exclusions | `npm run quality` and `git diff --check` | Green: lint, tests, typecheck, build, preview validation, repository secret scan, and diff whitespace checks. |
 | Production boundary | `npm run repository:check` and the exclusion checklist below | Green: no credentials, Pages/R2/Tina deployment configuration, DNS, generated Tina client, or cutover activation is present. |
 
