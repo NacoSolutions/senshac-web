@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "astro build",
+    "dev": "tinacms dev -c \"astro dev\"",
     "test": "node --test",
     "lint": "node scripts/lint.mjs",
     "typecheck": "astro check",
@@ -12,10 +13,13 @@
     "quality": "npm run lint && npm test && npm run typecheck && npm run build && npm run preview:check && npm run repository:check"
   },
   "dependencies": {
-    "astro": "5.14.1"
+    "@tinacms/astro": "0.7.0",
+    "astro": "5.14.1",
+    "tinacms": "3.14.0"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.4",
+    "@tinacms/cli": "3.0.0",
     "typescript": "5.9.2"
   }
 }
