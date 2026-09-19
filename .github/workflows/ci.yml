@@ -16,19 +16,18 @@ jobs:
       image: ghcr.io/nacosolutions/senshac-runner@sha256:a950ccba03d922b18bd4f69f456fda39e3389760b539c96904b7f671d12c7055
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
-          cache: npm
+          bun-version: '1.3.13'
       - name: Install dependencies
         run: |
           cd "$GITHUB_WORKSPACE"
-          npm ci
+          bun install --frozen-lockfile
       - name: Run deterministic quality gates
         run: |
           cd "$GITHUB_WORKSPACE"
-          npm run quality
+          bun run quality
       - name: Validate repository contract
         shell: bash
         run: |
