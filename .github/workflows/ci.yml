@@ -44,4 +44,5 @@ jobs:
             echo 'secret-like files are not allowed in the placeholder repository' >&2
             exit 1
           fi
-          git -C "$GITHUB_WORKSPACE" diff --check
+          env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE \
+            git -C "$GITHUB_WORKSPACE" diff --check
