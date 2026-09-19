@@ -7,7 +7,8 @@
     "test": "node --test",
     "lint": "node scripts/lint.mjs",
     "typecheck": "astro check",
-    "quality": "npm run lint && npm test && npm run typecheck && npm run build"
+    "preview:check": "node scripts/preview-check.mjs",
+    "quality": "npm run lint && npm test && npm run typecheck && npm run build && npm run preview:check"
   },
   "dependencies": {
     "astro": "5.14.1"
