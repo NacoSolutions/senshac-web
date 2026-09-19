@@ -85,16 +85,44 @@ A green run is preview evidence only. It does not approve Pages, R2, Tina
 credentials, DNS, or cutover activation. The manual route, browser, SEO,
 accessibility, and platform checks above remain required before promotion.
 
+## Consolidated preview evidence
+
+The completed child Seeds `senshac-web-91a4`, `senshac-web-c2d8`, and
+`senshac-web-f3b1` establish the following preview-only evidence on the reviewed
+commit:
+
+| Evidence | Deterministic proof | Result |
+| --- | --- | --- |
+| Representative route | `npm run build` followed by `npm run preview:check` | Green: `dist/index.html` contains the semantic route landmarks, `Senshac` title, fixture intro, and editorial ownership note. |
+| Fixture ownership | `npm test` and the route source assertions | Green: `/` imports `content/tina-fixture.json`, validates it with `assertHomeContent`, and has no environment or network adapter access. `senshac-content` remains the editorial owner. |
+| Quality and exclusions | `npm run quality` and `git diff --check` | Green: lint, tests, typecheck, build, preview validation, repository secret scan, and diff whitespace checks. |
+| Production boundary | `npm run repository:check` and the exclusion checklist below | Green: no credentials, Pages/R2/Tina deployment configuration, DNS, generated Tina client, or cutover activation is present. |
+
+This is repository/build evidence, not a live HTTP or browser sign-off. The
+manual route, browser-console, accessibility, SEO, media, platform, and
+rollback checks remain open in the checklist above and in the acceptance gates
+in `docs/cutover-plan.md`.
+
+## Next human approval boundary
+
+Before replacing the fixture, a human owner must approve a read-only adapter to a
+pinned `senshac-content` export: its source and revision, the same validated
+`{ home: { title, intro } }` shape, and explicit stale/missing/error behavior.
+That review must happen before any Tina write path, Pages/R2 settings, secrets,
+DNS change, production `site` URL, or cutover activation is considered. A
+separate human cutover approval is still required after the full preview and
+platform acceptance gates pass.
+
 ## Evidence log
 
-| Section | Date | Result | Notes / Link to build |
-| --- | --- | --- | --- |
-| Route behaviour | | | `npm run preview:check` |
-| Build output | | | `npm run build` |
-| Fixture content | | | `npm run preview:check` |
-| Accessibility / SEO | | | Manual checklist above |
-| Secret boundaries | | | `npm run repository:check` |
-| Production exclusions | | | `npm run repository:check`; no cutover activation |
+| Section | Result | Notes |
+| --- | --- | --- |
+| Route behaviour | Green for built-route assertions | `npm run preview:check`; live HTTP/404 and browser checks remain manual. |
+| Build output | Green | `npm run build`; `dist/index.html` contains the expected title and metadata. |
+| Fixture content | Green | `npm test` and `npm run preview:check`; fixture-backed and ownership note rendered. |
+| Accessibility / SEO | Automated placeholders present | Manual checklist remains open. |
+| Secret boundaries | Green | `npm run repository:check` and `npm run lint`. |
+| Production exclusions | Green | `npm run repository:check`; no cutover activation. |
 
-> Attach the completed table and any build logs to the corresponding acceptance
+> Attach the command output and reviewed commit to the corresponding acceptance
 > gate in `docs/cutover-plan.md` before promoting the preview to production.

@@ -81,6 +81,24 @@ A failed gate blocks promotion. Fixes require a new reviewed revision and a
 repeat of the affected checks; do not bypass a gate by editing production
 configuration manually.
 
+## Current preview checkpoint
+
+The route, fixture-boundary, and quality/exclusion child Seeds
+`senshac-web-91a4`, `senshac-web-c2d8`, and `senshac-web-f3b1` are complete. Their
+consolidated evidence is recorded in `docs/preview-validation.md`: the built
+`/` route renders the validated fixture, the route has no environment or network
+adapter, and the full `npm run quality` plus `git diff --check` contract is
+green in the reviewed checkout. The repository exclusion scan confirms that credentials,
+Pages/R2/Tina deployment configuration, DNS, and cutover activation remain
+absent.
+
+This checkpoint does not satisfy the manual or platform acceptance gates. The
+next human decision is approval of a read-only adapter to a pinned
+`senshac-content` export, including revision pinning and stale/missing/error
+behavior. Human owners must separately approve any Tina write integration,
+Pages/R2 configuration, production routing, and final cutover after preview,
+media, SEO/accessibility, and rollback evidence is complete.
+
 ## Rollback path
 
 If smoke checks fail, error rates rise, content is incorrect, or media is
