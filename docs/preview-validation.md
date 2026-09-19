@@ -15,8 +15,8 @@ to the corresponding acceptance gate in `docs/cutover-plan.md`.
 
 ## 2. Build output
 
-- [ ] `npm ci && npm run build` completes without errors
-  - Command: `npm ci && npm run quality`
+- [ ] `bun install --frozen-lockfile && bun run build` completes without errors
+  - Command: `bun install --frozen-lockfile && bun run quality`
 - [ ] Output directory `dist/` contains `index.html`
 - [ ] `dist/index.html` includes `<title>Senshac</title>`
 - [ ] `dist/index.html` includes `<meta name="description" content="...">`
@@ -69,15 +69,15 @@ be configured through platform or CI secret stores only:
 
 ## Deterministic final gate
 
-Run the following from a clean checkout. `npm run quality` includes the build,
-fixture-backed preview check, and `npm run repository:check`; the latter rejects
+Run the following from a clean checkout. `bun run quality` includes the Tina and
+Astro builds, fixture-backed preview check, and `bun run repository:check`; the latter rejects
 secret-like files/assignments, private-key markers, generated deployment/Tina
 configuration, and a non-placeholder Astro site URL. `git diff --check` is run
 separately because it checks the review diff rather than the checkout.
 
 ```sh
-npm ci
-npm run quality
+bun install --frozen-lockfile
+bun run quality
 git diff --check
 ```
 

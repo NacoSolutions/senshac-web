@@ -6,6 +6,8 @@ import { defineConfig } from 'tinacms';
  * web app does not silently grow ownership of editorial content.
  */
 export default defineConfig({
+  clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID,
+  token: process.env.TINA_TOKEN,
   branch: process.env.GITHUB_BRANCH || 'main',
   build: {
     outputFolder: 'admin',
