@@ -16,7 +16,7 @@ to the corresponding acceptance gate in `docs/cutover-plan.md`.
 ## 2. Build output
 
 - [ ] `bun install --frozen-lockfile && bun run build` completes without errors
-  - Command: `bun install --frozen-lockfile && bun run quality`
+  - The Pages target uses this build command; run `bun run quality` separately for the full repository gate.
 - [ ] Output directory `dist/` contains `index.html`
 - [ ] `dist/index.html` includes `<title>Senshac</title>`
 - [ ] `dist/index.html` includes `<meta name="description" content="...">`
