@@ -1,7 +1,12 @@
 # Editorial content boundary
 
 The preview consumes a deliberately small, repository-local, read-only export
-from the sibling `senshac-content` repository. The pinned export is
+from the sibling `senshac-content` repository. Tina's `articles` collection
+likewise points at that sibling through `localContentPath: '../senshac-content'`;
+article Markdown/MDX files are never owned by or copied into `senshac-web`.
+For local Tina editing, check out `NacoSolutions/senshac-content` beside this
+repository. CI and preview builds use the committed export and do not require
+that checkout or any credentials. The pinned export is
 `content/senshac-content-export.json` and uses this envelope:
 
 ```json
