@@ -10,6 +10,26 @@ the Astro site. It is a specification, not a deployment guide: no application
 code, credentials, generated Tina configuration, or Cloudflare configuration
 should be added until the relevant gate below is approved.
 
+## Modular Pages production target
+
+The approved modular hosting target is recorded here for implementation after
+its platform gate is approved. It is a target contract, not active deployment
+configuration in this repository:
+
+| Setting | Target |
+| --- | --- |
+| Cloudflare Pages project | `senshac-web` |
+| Production branch | `main` |
+| Preview branch | `cutover` |
+| Build command | `bun install --frozen-lockfile && bun run build` |
+| Output directory | `dist` |
+| Preview URL | `https://cutover.senshac-web.pages.dev` |
+| Production URL | `https://cutover.senshac.com` |
+
+Pages project settings, custom domains, DNS, bindings, and credentials remain
+platform-owned. Recording this target does not activate a deployment, change
+routing, or replace the archived rollback source.
+
 ## Target ownership
 
 | Concern | System of record | Boundary |

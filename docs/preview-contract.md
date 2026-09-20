@@ -1,9 +1,24 @@
 # Preview contract
 
-This seed is intentionally local and non-production. A future Cloudflare Pages
-preview must build the reviewed commit with `bun install --frozen-lockfile`
-followed by `bun run quality`. The build runs `tinacms build` before
-`astro build`, so the generated Tina admin is included at `/admin/`.
+This seed is intentionally local and non-production. The modular Cloudflare
+Pages target is documented below for the eventual platform setup:
+
+| Setting | Target |
+| --- | --- |
+| Pages project | `senshac-web` |
+| Production branch | `main` |
+| Preview branch | `cutover` |
+| Build command | `bun install --frozen-lockfile && bun run build` |
+| Output directory | `dist` |
+| Preview URL | `https://cutover.senshac-web.pages.dev` |
+| Production URL | `https://cutover.senshac.com` |
+
+Pages must build the reviewed commit with that command. The build runs
+`tinacms build` before `astro build`, so the generated Tina admin is included
+at `/admin/`. Run `bun run quality` as the repository quality gate before
+promoting a reviewed commit. This target is documentation only: Pages settings,
+custom domains, DNS, bindings, and credentials remain platform-owned and are
+not configured here.
 
 The Pages preview environment must provide `NEXT_PUBLIC_TINA_CLIENT_ID` (the
 non-secret Tina Cloud project ID) and `TINA_TOKEN` (the Tina Cloud read-only
