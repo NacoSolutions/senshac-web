@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectIndex from '../../components/ProjectIndex.astro';
+import { adaptContentExport } from '../../content/adapter.mjs';
+import pinnedExport from '../../../content/senshac-content-export.json';
+
+const result = adaptContentExport(pinnedExport);
+if (result.status !== 'ready') {
+  const detail = result.status === 'error' ? result.error.message : result.reason;
+  throw new Error(`Pinned content is ${result.status}: ${detail}`);
+}
+---
+<BaseLayout title="Projects · Senshac" description="Selected interior design and architecture projects by Senshac.">
+  <ProjectIndex projects={result.projects} />
+</BaseLayout>

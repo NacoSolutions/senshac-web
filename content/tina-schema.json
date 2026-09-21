@@ -4,6 +4,21 @@
   "type": "object",
   "required": ["home"],
   "properties": {
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "slug", "description", "featured", "tags"],
+        "properties": {
+          "title": { "type": "string", "minLength": 1 },
+          "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "description": { "type": "string", "minLength": 1 },
+          "featured": { "type": "boolean" },
+          "tags": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        },
+        "additionalProperties": true
+      }
+    },
     "home": {
       "type": "object",
       "required": ["title", "intro"],

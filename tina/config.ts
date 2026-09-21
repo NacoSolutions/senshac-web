@@ -157,12 +157,14 @@ export default defineConfig({
             name: 'description',
             label: 'Description',
             type: 'string',
-            ui: { component: 'textarea' },
+            required: true,
+            ui: { component: 'textarea', validate: nonEmpty },
           },
           {
             name: 'slug',
             label: 'URL Slug',
             type: 'string',
+            required: true,
             ui: { validate: slug },
           },
           {
@@ -186,6 +188,7 @@ export default defineConfig({
             name: 'featured',
             label: 'Featured',
             type: 'boolean',
+            description: 'Show this project first in editorial highlights.',
           },
           {
             name: 'draft',

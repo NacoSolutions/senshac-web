@@ -1,4 +1,4 @@
-import { assertHomeContent } from './contract.mjs';
+import { assertHomeContent, assertProjects } from './contract.mjs';
 
 export const PINNED_CONTRACT_VERSION = 1;
 export const PINNED_SOURCE_REVISION = 'd90fe0dd3b1fa968d81a40bc22d3ebd7ad650e99';
@@ -9,7 +9,7 @@ export const PINNED_SOURCE_REVISION = 'd90fe0dd3b1fa968d81a40bc22d3ebd7ad650e99'
  * cannot mistake stale or unavailable editorial data for ready content.
  *
  * @param {unknown} value
- * @returns {{ status: 'ready', content: import('./contract.mjs').HomeContent } | { status: 'stale', reason: string } | { status: 'missing', reason: string } | { status: 'error', error: Error }}
+ * @returns {{ status: 'ready', content: import('./contract.mjs').HomeContent, projects: import('./contract.mjs').ProjectContent[] } | { status: 'stale', reason: string } | { status: 'missing', reason: string } | { status: 'error', error: Error }}
  */
 export function adaptContentExport(value) {
   if (value === null || value === undefined) {
@@ -29,7 +29,9 @@ export function adaptContentExport(value) {
   }
 
   try {
-    return { status: 'ready', content: assertHomeContent(value.content) };
+    const content = assertHomeContent(value.content);
+    const projects = assertProjects(value.projects ?? []);
+    return { status: 'ready', content, projects };
   } catch (error) {
     return { status: 'error', error: error instanceof Error ? error : new Error(String(error)) };
   }
