@@ -139,6 +139,143 @@ export default defineConfig({
           },
         ],
       },
+      {
+        name: 'projects',
+        label: 'Portfolio / Projects',
+        path: 'projects',
+        format: 'json',
+        fields: [
+          {
+            name: 'title',
+            label: 'Title',
+            type: 'string',
+            required: true,
+            isTitle: true,
+            ui: { validate: nonEmpty },
+          },
+          {
+            name: 'description',
+            label: 'Description',
+            type: 'string',
+            ui: { component: 'textarea' },
+          },
+          {
+            name: 'slug',
+            label: 'URL Slug',
+            type: 'string',
+            ui: { validate: slug },
+          },
+          {
+            name: 'publishDate',
+            label: 'Publish Date',
+            type: 'datetime',
+            required: false,
+          },
+          {
+            name: 'tags',
+            label: 'Tags',
+            type: 'string',
+            list: true,
+          },
+          {
+            name: 'showTags',
+            label: 'Show Tags on Projects List',
+            type: 'boolean',
+          },
+          {
+            name: 'featured',
+            label: 'Featured',
+            type: 'boolean',
+          },
+          {
+            name: 'draft',
+            label: 'Draft',
+            type: 'boolean',
+          },
+          {
+            name: 'blocks',
+            label: 'Project Blocks',
+            type: 'object',
+            list: true,
+            templates: [
+              {
+                name: 'projectBanner',
+                label: 'Project Banner',
+                fields: [
+                  { name: 'mediaId', label: 'R2 Media Identifier', type: 'image' },
+                  { name: 'alt', label: 'Alt Text', type: 'string' },
+                ],
+              },
+              {
+                name: 'projectDetails',
+                label: 'Project Details',
+                fields: [
+                  { name: 'title', label: 'Title', type: 'string' },
+                  { name: 'subtitle', label: 'Subtitle', type: 'string' },
+                  { name: 'mediaId', label: 'R2 Media Identifier', type: 'image' },
+                  { name: 'services', label: 'Services', type: 'string' },
+                  { name: 'servicesLabel', label: 'Services Label', type: 'string' },
+                  { name: 'category', label: 'Category', type: 'string' },
+                  { name: 'categoryLabel', label: 'Category Label', type: 'string' },
+                  { name: 'area', label: 'Area', type: 'string' },
+                  { name: 'areaLabel', label: 'Area Label', type: 'string' },
+                  { name: 'location', label: 'Location', type: 'string' },
+                  { name: 'locationLabel', label: 'Location Label', type: 'string' },
+                ],
+              },
+              {
+                name: 'projectBrief',
+                label: 'Project Brief',
+                fields: [
+                  { name: 'title', label: 'Section Title', type: 'string' },
+                  { name: 'text', label: 'Text', type: 'rich-text' },
+                ],
+              },
+              {
+                name: 'projectConcept',
+                label: 'Project Concept',
+                fields: [
+                  { name: 'title', label: 'Section Title', type: 'string' },
+                  { name: 'text', label: 'Text', type: 'rich-text' },
+                ],
+              },
+              {
+                name: 'projectStrategy',
+                label: 'Project Strategy',
+                fields: [
+                  { name: 'title', label: 'Section Title', type: 'string' },
+                  { name: 'text', label: 'Text', type: 'rich-text' },
+                ],
+              },
+              {
+                name: 'projectCollaborators',
+                label: 'Project Collaborators',
+                fields: [
+                  { name: 'title', label: 'Section Title', type: 'string' },
+                  {
+                    name: 'list',
+                    label: 'Collaborators',
+                    type: 'object',
+                    list: true,
+                    fields: [
+                      { name: 'name', label: 'Name', type: 'string' },
+                      { name: 'role', label: 'Role', type: 'string' },
+                    ],
+                  },
+                ],
+              },
+              {
+                name: 'projectFinalImage',
+                label: 'Project Final Image',
+                fields: [
+                  { name: 'mediaId', label: 'R2 Media Identifier', type: 'image' },
+                  { name: 'alt', label: 'Alt Text', type: 'string' },
+                ],
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
 });
