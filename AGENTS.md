@@ -30,6 +30,23 @@ For focused autonomous changes, follow the portable
 - **Direct execution** — inspect the smallest relevant surface, then act.
 - **Token economy** — read narrowly, keep edits bounded, summarize results.
 
+## Repository-local skills
+
+Use the focused skill below when its scope applies; start with
+[`senshac-agent-principles`](.agents/skills/senshac-agent-principles/SKILL.md)
+for every task.
+
+| Skill | Use when |
+| --- | --- |
+| [senshac-agent-principles](.agents/skills/senshac-agent-principles/SKILL.md) | Any bounded task; apply the six portable working rules. |
+| [git-workflow](.agents/skills/git-workflow/SKILL.md) | Preparing, committing, and verifying repository changes. |
+| [verification-before-completion](.agents/skills/verification-before-completion/SKILL.md) | Running gates and proving a task is complete. |
+| [dependency-hygiene](.agents/skills/dependency-hygiene/SKILL.md) | Changing dependencies, lockfiles, scripts, or build tooling. |
+| [security-review](.agents/skills/security-review/SKILL.md) | Reviewing secrets, CI, configuration, Tina, or deployment boundaries. |
+| [web-performance](.agents/skills/web-performance/SKILL.md) | Changing Astro routes, layouts, content loading, or client assets. |
+| [tina-astro-cloudflare](.agents/skills/tina-astro-cloudflare/SKILL.md) | Working near Tina schemas, Astro builds, or future Cloudflare boundaries. |
+| [bounded-warren-task](.agents/skills/bounded-warren-task/SKILL.md) | Executing a focused autonomous Warren task and reporting evidence. |
+
 ## Repository-local Seeds queue
 
 Warren reads and executes the repository-local `.seeds/` queue. Keep active
