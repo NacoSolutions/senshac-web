@@ -35,7 +35,7 @@ to the corresponding acceptance gate in `docs/cutover-plan.md`.
 - [ ] `<meta name="viewport" content="width=device-width">` is set
 - [ ] A visible page title (`<title>`) is set
 - [ ] A `<meta name="description">` tag is present
-- [ ] A header contains a link to the home page (`<a href="/">Senshac</a>`)
+- [ ] A header contains a keyboard-accessible link to the home page (the current wordmark has `href="/"` and accessible name `Senshac home`)
 - [ ] Page content is reachable via semantic `<main>` and `<h1>` elements
 - [ ] Placeholder comments exist for future additions:
   - `[ ]` Canonical URL meta tag (TBD — add when production domain is assigned)
@@ -103,15 +103,13 @@ manual route, browser-console, accessibility, SEO, media, platform, and
 rollback checks remain open in the checklist above and in the acceptance gates
 in `docs/cutover-plan.md`.
 
-## Next human approval boundary
+## Final acceptance boundary
 
-Before replacing the fixture, a human owner must approve a read-only adapter to a
-pinned `senshac-content` export: its source and revision, the same validated
-`{ home: { title, intro } }` shape, and explicit stale/missing/error behavior.
-That review must happen before any Tina write path, Pages/R2 settings, secrets,
-DNS change, production `site` URL, or cutover activation is considered. A
-separate human cutover approval is still required after the full preview and
-platform acceptance gates pass.
+The pinned read-only export and migrated project routes are now implemented and
+covered by the deterministic checks. The remaining approval is platform and
+manual acceptance, not another web-repository adapter slice: Tina write/editing,
+Pages/R2 configuration, credentials, DNS, production `site` URL, live media,
+manual accessibility/SEO, and the tested route switch remain owner actions.
 
 ## Evidence log
 
