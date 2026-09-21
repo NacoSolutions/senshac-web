@@ -272,6 +272,39 @@ export default defineConfig({
                   { name: 'alt', label: 'Alt Text', type: 'string' },
                 ],
               },
+              {
+                name: 'editorialGallery',
+                label: 'Editorial Gallery',
+                fields: [
+                  { name: 'cols', label: 'Columns', type: 'number' },
+                  {
+                    name: 'images',
+                    label: 'Images',
+                    type: 'object',
+                    list: true,
+                    fields: [
+                      { name: 'mediaId', label: 'R2 Media Identifier', type: 'image' },
+                      { name: 'alt', label: 'Alt Text', type: 'string' },
+                    ],
+                  },
+                ],
+              },
+              {
+                name: 'editorialCarousel',
+                label: 'Editorial Carousel',
+                fields: [
+                  {
+                    name: 'items',
+                    label: 'Items',
+                    type: 'object',
+                    list: true,
+                    fields: [
+                      { name: 'mediaId', label: 'R2 Media Identifier', type: 'image' },
+                      { name: 'alt', label: 'Alt Text', type: 'string' },
+                    ],
+                  },
+                ],
+              },
             ],
           },
         ],
