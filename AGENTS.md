@@ -4,12 +4,12 @@ This is the future home of the Senshac Astro web application.
 
 Until the cutover seed is started:
 
-- Do not add production application code here.
-- Do not configure Cloudflare Pages deployments.
-- Do not add TinaCMS credentials or plaintext secrets.
+- Keep production application code out of this repository.
+- Keep Cloudflare Pages deployment configuration outside this repository.
+- Keep TinaCMS credentials and plaintext secrets outside this repository.
 - Treat `senshac-content` as the future editorial source repository.
-- Use Warren for bounded implementation work only after the repository has a
-  real application and quality gates.
+- Use Warren for bounded implementation work after the repository has a real
+  application and quality gates.
 
 ## Repository role
 
@@ -20,7 +20,10 @@ those concerns and on web performance.
 ## Bounded task guidance
 
 For focused autonomous changes, follow the portable
-[`bounded-warren-task`](.agents/skills/bounded-warren-task/SKILL.md) skill:
+[`bounded-warren-task`](.agents/skills/bounded-warren-task/SKILL.md) skill and
+apply the shared
+[`senshac-agent-principles`](.agents/skills/senshac-agent-principles/SKILL.md)
+guide:
 
 - **Positive phrasing** — state the desired outcome and the next action.
 - **Instruction specificity** — name the objective, the files, and the gate.
