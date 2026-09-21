@@ -18,7 +18,16 @@ that checkout or any credentials. The pinned export is
       "title": "string, non-empty",
       "intro": "string, non-empty"
     }
-  }
+  },
+  "projects": [
+    {
+      "title": "string, non-empty",
+      "slug": "lowercase-slug",
+      "description": "string, non-empty",
+      "featured": "boolean",
+      "tags": ["string"]
+    }
+  ]
 }
 ```
 
@@ -46,8 +55,9 @@ and platform gates in `docs/cutover-plan.md` are approved.
 
 ## Preview verification
 
-The representative `/` route imports only the pinned export, passes it through
-`adaptContentExport`, and supplies validated values to the preview component.
+The representative `/` route and the `/projects/` routes import only the pinned
+export, pass it through `adaptContentExport`, and supply validated values to the
+preview components. Project detail paths are generated from the exported slugs.
 `npm run quality` rebuilds the route and `npm run preview:check` re-validates
 those pinned values against `dist/index.html`, including the visible
 `senshac-content` ownership note. The route wiring test also rejects runtime

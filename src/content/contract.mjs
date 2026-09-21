@@ -1,6 +1,7 @@
 /**
- * The serializable home payload exchanged with senshac-content.
+ * The serializable editorial payload exchanged with senshac-content.
  * @typedef {{ title: string, intro: string }} HomeContent
+ * @typedef {{ title: string, slug: string, description: string, featured: boolean, tags: string[] }} ProjectContent
  */
 
 /**
@@ -30,6 +31,34 @@ export function assertHomeContent(value) {
   }
 
   return { title: home.title, intro: home.intro };
+}
+
+/**
+ * Validate the project index exported alongside the home page. Project bodies
+ * remain owned by senshac-content; the web boundary only normalizes fields
+ * needed by the listing and detail routes.
+ *
+ * @param {unknown} value
+ * @returns {ProjectContent[]}
+ */
+export function assertProjects(value) {
+  if (!Array.isArray(value)) throw new Error('Editorial projects must be an array');
+
+  return value.map((project, index) => {
+    if (!isRecord(project)) throw new Error(`Editorial project ${index + 1} must be an object`);
+    const { title, slug, description, featured = false, tags = [] } = project;
+    if (![title, slug, description].every(isNonEmptyString)) {
+      throw new Error(`Editorial project ${index + 1} requires title, slug, and description`);
+    }
+    if (!isSlug(slug) || !Array.isArray(tags) || !tags.every(isNonEmptyString) || typeof featured !== 'boolean') {
+      throw new Error(`Editorial project ${index + 1} has invalid metadata`);
+    }
+    return { title, slug, description, featured, tags };
+  });
+}
+
+function isSlug(value) {
+  return typeof value === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
 }
 
 function isRecord(value) {

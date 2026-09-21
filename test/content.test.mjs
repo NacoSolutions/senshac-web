@@ -7,6 +7,8 @@ import { adaptContentExport, PINNED_SOURCE_REVISION } from '../src/content/adapt
 const fixture = JSON.parse(await readFile(new URL('../content/tina-fixture.json', import.meta.url)));
 const schema = JSON.parse(await readFile(new URL('../content/tina-schema.json', import.meta.url)));
 const routeSource = await readFile(new URL('../src/pages/index.astro', import.meta.url), 'utf8');
+const projectRouteSource = await readFile(new URL('../src/pages/projects/index.astro', import.meta.url), 'utf8');
+const detailRouteSource = await readFile(new URL('../src/pages/projects/[slug].astro', import.meta.url), 'utf8');
 
 test('fixture satisfies the minimal Tina content contract', () => {
   assert.deepEqual(Object.keys(fixture), ['home']);
@@ -20,6 +22,15 @@ test('representative route consumes the pinned export through the adapter', () =
   assert.match(routeSource, /import pinnedExport from ['"]\.\.\/\.\.\/content\/senshac-content-export\.json['"]/);
   assert.match(routeSource, /adaptContentExport\(pinnedExport\)/);
   assert.doesNotMatch(routeSource, /process\.env|fetch\(/);
+});
+
+test('migrated project index is exposed through the content adapter and routes', async () => {
+  const result = adaptContentExport(JSON.parse(await readFile(new URL('../content/senshac-content-export.json', import.meta.url))));
+  assert.equal(result.status, 'ready');
+  assert.deepEqual(result.projects.map(({ slug }) => slug), ['la-trobada', 'casa-m']);
+  assert.match(projectRouteSource, /result\.projects/);
+  assert.match(detailRouteSource, /getStaticPaths/);
+  assert.match(detailRouteSource, /project\.slug/);
 });
 
 test('pinned adapter exposes ready, stale, missing, and error outcomes', () => {

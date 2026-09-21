@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { adaptContentExport } from '../../content/adapter.mjs';
+import pinnedExport from '../../../content/senshac-content-export.json';
+
+export function getStaticPaths() {
+  const result = adaptContentExport(pinnedExport);
+  if (result.status !== 'ready') throw new Error('Pinned project content is unavailable');
+  return result.projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props;
+---
+<BaseLayout title={`${project.title} · Senshac`} description={project.description}>
+  <article class="project-detail" id="main">
+    <p class="eyebrow">Selected project</p>
+    <h1>{project.title}</h1>
+    <p class="lede">{project.description}</p>
+    <ul aria-label="Project categories">
+      {project.tags.map((tag) => <li>{tag}</li>)}
+    </ul>
+    <a class="back-link" href="/projects/">← All projects</a>
+    <p class="ownership"><small>Editorial content is owned by senshac-content.</small></p>
+  </article>
+</BaseLayout>
+<style>
+  .project-detail { max-width: 55rem; padding: clamp(4rem, 14vw, 12rem) clamp(1.25rem, 10vw, 10rem) 8rem; }
+  .eyebrow { color: #e85d3f; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  h1 { margin: 1rem 0 2rem; font-size: clamp(3.5rem, 11vw, 9rem); line-height: .9; letter-spacing: -.08em; }
+  .lede { max-width: 38rem; font-size: clamp(1.3rem, 3vw, 2rem); line-height: 1.3; }
+  ul { display: flex; gap: .5rem; padding: 0; list-style: none; }
+  li { border: 1px solid #ccc; border-radius: 999px; padding: .35rem .7rem; font-size: .8rem; }
+  .back-link { display: inline-block; margin-top: 4rem; }
+  .ownership { margin-top: 6rem; color: #666; }
+</style>

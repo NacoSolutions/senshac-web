@@ -6,5 +6,21 @@
       "title": "Senshac",
       "intro": "A representative editorial fixture for the Astro preview slice."
     }
-  }
+  },
+  "projects": [
+    {
+      "title": "La Trobada",
+      "slug": "la-trobada",
+      "description": "A welcoming interior shaped around shared meals, local materials, and everyday rituals.",
+      "featured": true,
+      "tags": ["Interior design", "Hospitality"]
+    },
+    {
+      "title": "Casa M",
+      "slug": "casa-m",
+      "description": "A calm residential renovation balancing warm textures with clear, functional spaces.",
+      "featured": false,
+      "tags": ["Residential", "Architecture"]
+    }
+  ]
 }
