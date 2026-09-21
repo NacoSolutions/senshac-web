@@ -6,8 +6,33 @@ interface Props {
 
 const { title, intro } = Astro.props;
 ---
-<section aria-labelledby="preview-title">
+<section class="home-surface" id="main" aria-labelledby="preview-title">
+  <p class="eyebrow">Interior design · Barcelona</p>
   <h1 id="preview-title">{title}</h1>
   <p>{intro}</p>
-  <p><small>Preview slice — editorial content is owned by senshac-content.</small></p>
+  <div class="home-links" id="studio">
+    <a href="#contact">Discover the studio <span aria-hidden="true">↗</span></a>
+    <a href="#work">Selected work <span aria-hidden="true">↗</span></a>
+  </div>
+  <div class="statement" id="work">
+    <p>Spaces with a strong sense of place, made for the people who bring them to life.</p>
+  </div>
+  <div class="contact" id="contact">
+    <p class="eyebrow">Start a conversation</p>
+    <a href="mailto:hello@senshac.com">hello@senshac.com</a>
+  </div>
+  <p class="ownership"><small>Preview slice — editorial content is owned by senshac-content.</small></p>
 </section>
+<style is:global>
+  .home-surface { padding: clamp(4rem, 12vw, 11rem) clamp(1.25rem, 10vw, 10rem) 6rem; }
+  .eyebrow { margin: 0 0 1.5rem; color: #e85d3f; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  h1 { max-width: 12ch; margin: 0; font-size: clamp(3.5rem, 11vw, 9rem); line-height: .9; letter-spacing: -.08em; }
+  .home-surface > p:nth-of-type(2) { max-width: 36rem; margin: 2.5rem 0 0; font-size: clamp(1.2rem, 2.5vw, 1.8rem); line-height: 1.3; }
+  .home-links { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin-top: 4rem; }
+  .home-links a { padding-bottom: .4rem; border-bottom: 1px solid; text-decoration: none; }
+  .home-links a:hover, .home-links a:focus-visible { color: #e85d3f; }
+  .statement { max-width: 42rem; margin: clamp(7rem, 18vw, 16rem) 0; font-size: clamp(2rem, 5vw, 4rem); line-height: 1; letter-spacing: -.06em; }
+  .contact { padding: 2rem 0; border-top: 1px solid #ccc; }
+  .contact a { font-size: clamp(1.5rem, 4vw, 3rem); text-decoration: none; letter-spacing: -.05em; }
+  .ownership { margin-top: 5rem; color: #666; }
+</style>

@@ -15,7 +15,35 @@ const { title, description } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <header><a href="/">Senshac</a></header>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Senshac home">Sens<span>*</span>Hac</a>
+      <nav aria-label="Primary navigation">
+        <a href="#studio">Studio</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
     <main><slot /></main>
+    <footer class="site-footer">
+      <p>Sens*Hac — branded spaces that inspire &amp; connect.</p>
+      <a href="mailto:hello@senshac.com">hello@senshac.com</a>
+    </footer>
   </body>
+  <style is:global>
+    :root { color-scheme: light; font-family: Arial, sans-serif; background: #f7f7f5; color: #111; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    a { color: inherit; }
+    .skip-link { position: absolute; left: 1rem; top: -4rem; padding: .75rem 1rem; background: #111; color: #fff; z-index: 10; }
+    .skip-link:focus { top: 1rem; }
+    .site-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem clamp(1.25rem, 4vw, 4rem); border-bottom: 1px solid #ddd; }
+    .wordmark { font-size: 1.5rem; font-weight: 700; text-decoration: none; letter-spacing: -.05em; }
+    .wordmark span { color: #e85d3f; }
+    nav { display: flex; gap: 1.5rem; font-size: .9rem; }
+    nav a { text-decoration: none; }
+    nav a:hover, nav a:focus-visible { text-decoration: underline; text-underline-offset: .3em; }
+    .site-footer { display: flex; justify-content: space-between; gap: 1rem; padding: 2rem clamp(1.25rem, 4vw, 4rem); border-top: 1px solid #ddd; font-size: .85rem; }
+    .site-footer p { margin: 0; }
+    @media (max-width: 600px) { .site-header, .site-footer { align-items: flex-start; flex-direction: column; gap: 1rem; } }
+  </style>
 </html>
