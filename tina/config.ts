@@ -163,7 +163,6 @@ export default defineConfig({
             name: 'slug',
             label: 'URL Slug',
             type: 'string',
-            required: true,
             ui: { validate: slug },
           },
           {
