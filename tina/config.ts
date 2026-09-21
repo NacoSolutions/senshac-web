@@ -157,7 +157,6 @@ export default defineConfig({
             name: 'description',
             label: 'Description',
             type: 'string',
-            required: true,
             ui: { component: 'textarea', validate: nonEmpty },
           },
           {
