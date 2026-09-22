@@ -5,8 +5,8 @@
   "packageManager": "bun@1.3.13",
   "scripts": {
     "dev:cms": "tinacms dev -c \"astro dev\"",
-    "tina:generate": "if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build; else tinacms build --local --skip-cloud-checks; fi && rm -rf public/admin",
-    "build": "node scripts/sync-editorial-content.mjs && if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build; else tinacms build --local --skip-cloud-checks; fi && astro build && node scripts/normalize-pages-wrangler.mjs",
+		"tina:generate": "if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build --skip-cloud-checks; else tinacms build --local --skip-cloud-checks; fi && rm -rf public/admin",
+		"build": "node scripts/sync-editorial-content.mjs && if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build --skip-cloud-checks; else tinacms build --local --skip-cloud-checks; fi && astro build && node scripts/normalize-pages-wrangler.mjs",
     "verify:ci": "CF_PAGES=1 bun run build && bash scripts/normalize-tina-build && bun run acceptance --skip-build && bun run check:all && git diff --exit-code",
     "deploy": "bash scripts/deploy",
     "wt:merge": "bash scripts/wt-merge",
