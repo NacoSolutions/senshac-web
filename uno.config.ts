@@ -30,8 +30,16 @@ export default defineConfig({
 		"i-simple-icons-behance",
 		"i-simple-icons-dribbble",
 		"i-simple-icons-houzz",
-		// UI icons used in components
+		// Static UI icon allowlist. Keep CMS-provided icon names out of class output.
+		"i-lucide-menu",
+		"i-lucide-x",
+		"i-lucide-chevron-down",
+		"i-lucide-chevron-left",
+		"i-lucide-chevron-right",
 		"i-lucide-arrow-up-right",
+		"i-lucide-instagram",
+		"i-lucide-play",
+		"i-lucide-pause",
 	],
 	theme: {
 		colors: {

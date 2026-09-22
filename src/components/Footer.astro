@@ -27,12 +27,27 @@ const mode = footer?.mode ?? "scrolling";
 const scrollingAppearance = footer?.scrolling ?? "opaque-dark";
 const finalAppearance = footer?.atFinal ?? "opaque-dark";
 const appearanceClasses: Record<Appearance, string> = {
-	"transparent-adaptive": "bg-transparent text-white mix-blend-difference",
+	"transparent-adaptive": "bg-transparent text-white",
 	"transparent-light": "bg-transparent text-white",
 	"transparent-dark": "bg-transparent text-gray-900",
 	"opaque-light": "bg-white text-gray-900",
 	"opaque-dark": "bg-black text-white",
 };
+
+// Map CMS values to a fixed UnoCSS icon set so every icon is emitted at build time.
+const socialIconMap: Record<string, string> = {
+	"i-simple-icons-instagram": "i-simple-icons-instagram",
+	"i-simple-icons-linkedin": "i-simple-icons-linkedin",
+	"i-simple-icons-pinterest": "i-simple-icons-pinterest",
+	"i-simple-icons-twitter": "i-simple-icons-twitter",
+	"i-simple-icons-facebook": "i-simple-icons-facebook",
+	"i-simple-icons-youtube": "i-simple-icons-youtube",
+	"i-simple-icons-tiktok": "i-simple-icons-tiktok",
+	"i-simple-icons-behance": "i-simple-icons-behance",
+	"i-simple-icons-dribbble": "i-simple-icons-dribbble",
+	"i-simple-icons-houzz": "i-simple-icons-houzz",
+};
+const getSocialIcon = (icon: unknown) => socialIconMap[String(icon)] ?? "i-simple-icons-instagram";
 
 const t = propTranslations ?? (await getTranslations(lang));
 const site = (propSiteData ?? (await getSiteConfig())) as any;
@@ -60,6 +75,7 @@ const socialLinks = site.socialLinks;
           <R2Picture
             id={site.branding.symbolWhite}
             alt={site.company.name.toLowerCase()}
+            x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(scrolled ? finalAppearance : scrollingAppearance)"
             class="h-12 w-auto"
             mediaSlot="logo"
             width="900"
@@ -77,27 +93,27 @@ const socialLinks = site.socialLinks;
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-white hover:text-gray-300 transition-colors"
+                class="text-current hover:opacity-70 transition-colors"
                 aria-label={link.name}
               >
                 <span data-tina-field={tinaField(site.socialLinks, index)} class="inline-block">
-                  <span class:list={[link.icon, "w-5 h-5 block"]} />
+                  <span class:list={[getSocialIcon(link.icon), "w-5 h-5 block"]} aria-hidden="true" />
                 </span>
               </a>
             ))}
           </div>
 
         <!-- Contact Info -->
-          <div class="text-lg text-white">
+          <div class="text-lg text-current">
             <a
               href={`mailto:${site.contact.email}`}
-              class="block hover:text-gray-300 transition-colors"
+              class="block hover:opacity-70 transition-colors"
             >
               <span data-tina-field={tinaField(site.contact, 'email')}>{site.contact.email}</span>
             </a>
             <a
               href={`tel:${site.contact.phoneLink || site.contact.phone.replace(/\s/g, '')}`}
-              class="block hover:text-gray-300 transition-colors"
+              class="block hover:opacity-70 transition-colors"
             >
               <span data-tina-field={tinaField(site.contact, 'phone')}>{site.contact.phone}</span>
             </a>
@@ -107,16 +123,16 @@ const socialLinks = site.socialLinks;
   </div>
 
   <!-- Section 2: Navigation Links -->
-  <div class="border-t border-b border-white/20">
+  <div class="border-t border-b border-current/20">
     <div class="max-w-7xl mx-auto px-4 md:px-8">
         <div class="flex flex-wrap justify-between gap-4 py-8">
           {navLinks.map((link: { href: string; label: string }, index: number) => (
             <a
               href={link.href}
-              class="page-link text-white/50 hover:text-white transition-colors"
+              class="page-link text-current opacity-50 hover:opacity-100 transition-colors"
             >
               <span data-tina-field={tinaField((t.footer as any).links, index)}>{link.label}</span>
-              <span class="page-link-icon i-lucide-arrow-up-right" />
+              <span class="page-link-icon i-lucide-arrow-up-right" aria-hidden="true" />
             </a>
           ))}
         </div>
@@ -127,23 +143,23 @@ const socialLinks = site.socialLinks;
   <div class="max-w-7xl mx-auto px-4 md:px-8">
     <div class="flex flex-wrap justify-between gap-4 py-4">
       <!-- Attribution -->
-      <div class="text-sm text-white/70">
+      <div class="text-sm text-current opacity-70">
         {site.attribution?.design && <p data-tina-field={tinaField(site.attribution, 'design')}>Design by {site.attribution.design}</p>}
         {site.attribution?.development && <p data-tina-field={tinaField(site.attribution, 'development')}>Development by {site.attribution.development}</p>}
       </div>
 
       <!-- Legal Links -->
-      <div class="text-sm text-white/70 ">
+      <div class="text-sm text-current opacity-70">
         <p><a
           href={`/${lang}/privacy-policy`}
-          class="hover:text-white transition-colors py-1"
+          class="hover:opacity-100 transition-opacity py-1"
           data-tina-field={tinaField(t.footer, 'privacy')}
         >
           {t.footer.privacy}
         </a></p>
         <p><a
           href={`/${lang}/legal-notice`}
-          class="hover:text-white transition-colors py-1"
+          class="hover:opacity-100 transition-opacity py-1"
           data-tina-field={tinaField(t.footer, 'legal')}
         >
           {t.footer.legal}

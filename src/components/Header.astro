@@ -32,7 +32,7 @@ const mode = header?.mode ?? "fixed";
 const scrollingAppearance = header?.scrolling ?? (isTransparent ? "transparent-adaptive" : "opaque-light");
 const finalAppearance = header?.atFinal ?? "opaque-light";
 const appearanceClasses: Record<Appearance, string> = {
-	"transparent-adaptive": "bg-transparent text-white mix-blend-difference",
+	"transparent-adaptive": "bg-transparent text-white",
 	"transparent-light": "bg-transparent text-white",
 	"transparent-dark": "bg-transparent text-gray-900",
 	"opaque-light": "bg-white/95 text-gray-900 backdrop-blur-sm border-b border-gray-100",
@@ -40,6 +40,11 @@ const appearanceClasses: Record<Appearance, string> = {
 };
 const initialAppearance = appearanceClasses[scrollingAppearance];
 const finalAppearanceClasses = appearanceClasses[finalAppearance];
+const lightForegroundAppearances = ["transparent-adaptive", "transparent-light", "opaque-dark"];
+const controlAppearance = (appearance: string) =>
+	lightForegroundAppearances.includes(appearance)
+		? "text-white hover:opacity-80"
+		: "text-gray-800 hover:text-black";
 
 const t = propTranslations ?? (await getTranslations(lang));
 const site = (propSiteData ?? (await getSiteConfig())) as any;
@@ -88,17 +93,17 @@ const getLocalizedPath = (targetLang: string) => {
       <!-- Logo -->
       <a href={`/${lang}/`} class="flex-shrink-0">
         <R2Picture
-          x-show="isTransparent && !scrolled && !menuOpen"
+          x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(appearance) && !menuOpen"
           id={site.branding?.logoWhite || ''}
           alt={site.company?.name?.toLowerCase() || ''}
-          class="h-8 w-auto mix-blend-difference"
+          class="h-8 w-auto"
           mediaSlot="logo"
           width="768"
           height="142"
           data-tina-field={tinaField(site.branding, 'logoWhite')}
         />
         <R2Picture
-          x-show="!isTransparent || scrolled || menuOpen"
+          x-show="!['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(appearance) || menuOpen"
           id={site.branding?.logo || ''}
           alt={site.company?.name?.toLowerCase() || ''}
           class="h-8 w-auto"
@@ -117,7 +122,7 @@ const getLocalizedPath = (targetLang: string) => {
           <button
             type="button"
             class="flex items-center gap-1 text-sm uppercase tracking-wider transition-colors"
-            x-bind:class="(isTransparent && !scrolled && !menuOpen) ? 'text-white mix-blend-difference hover:opacity-80' : 'text-gray-600 hover:text-black'"
+            x-bind:class={`appearance === '${scrollingAppearance}' ? '${controlAppearance(scrollingAppearance)}' : '${controlAppearance(finalAppearance)}'`}
             x-on:click="langOpen = !langOpen"
             aria-label={`Select language, current: ${lang.toUpperCase()}`}
           >
@@ -151,7 +156,7 @@ const getLocalizedPath = (targetLang: string) => {
         <button
           type="button"
           class="p-2 transition-colors"
-          x-bind:class="(isTransparent && !scrolled && !menuOpen) ? 'text-white mix-blend-difference hover:opacity-80' : 'text-gray-800 hover:text-black'"
+          x-bind:class={`appearance === '${scrollingAppearance}' ? '${controlAppearance(scrollingAppearance)}' : '${controlAppearance(finalAppearance)}'`}
           x-on:click="menuOpen = !menuOpen"
           aria-label="Toggle menu"
           aria-expanded="false"
