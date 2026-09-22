@@ -1,23 +1,15 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { cp, rm, rename } from "node:fs/promises";
+import { access } from "node:fs/promises";
 
-const generatedConfigs = [
-  "dist/server/wrangler.json",
-  "dist/server/.prerender/wrangler.json",
-];
+await access("dist/client");
+await access("dist/server");
 
-for (const file of generatedConfigs) {
-  try {
-    const config = JSON.parse(await readFile(file, "utf8"));
-    if (config.pages_build_output_dir) {
-      // Pages owns the runtime entrypoint and asset binding. These Worker-only
-      // fields make the generated config invalid for a Pages deployment.
-      delete config.main;
-      delete config.rules;
-      delete config.assets;
-      await writeFile(file, `${JSON.stringify(config)}\n`);
-      console.log(`Pages config normalized: ${file}`);
-    }
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error;
-  }
-}
+// Pages serves static files from dist/ and runs the Astro SSR worker from
+// dist/_worker.js. Keep the generated Worker config out of Pages validation.
+await cp("dist/client", "dist", { recursive: true, force: true });
+await rm("dist/client", { recursive: true, force: true });
+await rm("dist/server/wrangler.json", { force: true });
+await rm("dist/server/.prerender", { recursive: true, force: true });
+await rename("dist/server", "dist/_worker.js");
+
+console.log("Pages output packaged: dist static assets + dist/_worker.js");
