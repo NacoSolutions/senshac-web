@@ -5,7 +5,7 @@ import { promisify } from "node:util";
 
 const exec = promisify(execFile);
 const revision = process.env.SENSHAC_CONTENT_REVISION ??
-	"cda94a2756a3168509a31a978e5b3e09d1061124";
+	"15f21c5c90e7da599132d3bd4a5bfeec14aab24b";
 const targetRoot = resolve("src/content");
 const siblingRoot = resolve("../../senshac-content/main");
 const temporaryRoot = await mkdtemp("/tmp/senshac-content-");
@@ -26,7 +26,7 @@ try {
 		await exec("tar", ["-xzf", archive, "--strip-components=1", "-C", sourceRoot]);
 	}
 
-	for (const directory of ["pages", "legal", "projects"]) {
+	for (const directory of ["config", "pages", "legal", "projects", "translations"]) {
 		const source = join(sourceRoot, directory);
 		const target = join(targetRoot, directory);
 		await rm(target, { recursive: true, force: true });

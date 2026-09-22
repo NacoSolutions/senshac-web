@@ -9,3 +9,7 @@ dist/
 /src/content/pages/**/*.json
 /src/content/legal/**/*.mdx
 /src/content/projects/**/*.json
+/src/content/config/**/*.json
+/src/content/translations/**/*.json
+/src/content/config/.gitkeep
+/src/content/translations/.gitkeep
