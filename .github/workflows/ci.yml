@@ -2,7 +2,12 @@ name: Placeholder contract
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+concurrency:
+  group: contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -12,8 +17,8 @@ jobs:
   contract:
     runs-on: ubuntu-latest
     env:
-      TINA_CLIENT_ID: ${{ secrets.TINA_CLOUD_CLIENT_ID }}
-      TINA_TOKEN: ${{ secrets.TINA_CLOUD_READ_ONLY_TOKEN }}
+      TINA_CLIENT_ID: ${{ secrets.TINA_CLIENT_ID }}
+      TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
     # Consumer pin: digest published by senshac-runner workflow 35397460307.
     container:
       image: ghcr.io/nacosolutions/senshac-runner@sha256:a950ccba03d922b18bd4f69f456fda39e3389760b539c96904b7f671d12c7055
