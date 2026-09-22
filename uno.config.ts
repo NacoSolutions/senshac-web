@@ -1,13 +1,20 @@
 // uno.config.ts
 
+import { icons as lucideIcons } from "@iconify-json/lucide";
+import { icons as simpleIcons } from "@iconify-json/simple-icons";
+import presetIcons from "@unocss/preset-icons";
 import presetWind4 from "@unocss/preset-wind4";
 import transformerDirectives from "@unocss/transformer-directives";
-import { defineConfig, presetIcons, presetTypography } from "unocss";
+import { defineConfig, presetTypography } from "unocss";
 
 export default defineConfig({
 	presets: [
 		presetWind4(),
 		presetIcons({
+			collections: {
+				lucide: () => lucideIcons,
+				"simple-icons": () => simpleIcons,
+			},
 			scale: 1.2,
 			extraProperties: {
 				display: "inline-block",
