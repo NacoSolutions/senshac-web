@@ -1,2 +1,4 @@
-/admin /admin/index.html 302
-/admin/ /admin/index.html 302
+# Tina has one canonical, non-localized entry point. The generated admin
+# bundle lives at public/admin/index.html and is served by Pages at /admin/.
+/admin /admin/ 301
+/es/admin /admin/ 301
