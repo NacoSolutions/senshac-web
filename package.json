@@ -6,7 +6,7 @@
   "scripts": {
     "dev:cms": "tinacms dev -c \"astro dev\"",
     "tina:generate": "if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build; else tinacms build --local --skip-cloud-checks; fi && rm -rf public/admin",
-    "build": "if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build; else tinacms build --local --skip-cloud-checks; fi && astro build && mkdir -p dist && cp public/index.html dist/index.html && cp public/404.html dist/404.html",
+    "build": "if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build; else tinacms build --local --skip-cloud-checks; fi && astro build && mkdir -p dist && cp public/404.html dist/404.html",
     "verify:ci": "CF_PAGES=1 bun run build && bash scripts/normalize-tina-build && bun run acceptance --skip-build && bun run check:all && git diff --exit-code",
     "deploy": "bash scripts/deploy",
     "wt:merge": "bash scripts/wt-merge",
