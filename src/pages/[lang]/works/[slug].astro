@@ -1,0 +1,40 @@
+---
+export { getProjectPaths as getStaticPaths } from "../../../lib/static-paths";
+export const prerender = true;
+
+import { getEntry } from "astro:content";
+import BlocksRenderer from "../../../components/BlocksRenderer.astro";
+// src/pages/[lang]/works/[slug].astro
+import Base from "../../../layouts/Base.astro";
+
+const { lang, slug } = Astro.params;
+
+const project = await getEntry("projects", `${lang}/${slug}`);
+
+if (!project) {
+	return Astro.redirect("/404");
+}
+
+const { data } = project;
+const breadcrumbs = [
+	{ name: "Works", url: `/${lang}/works` },
+	{ name: data.title, url: `/${lang}/works/${slug}` },
+];
+---
+
+<Base
+  title={data.title}
+  description={data.description}
+  lang={lang}
+  headerStyle="transparent"
+  schema={['Article', 'BreadcrumbList']}
+  breadcrumbs={breadcrumbs}
+  publishDate={data.publishDate}
+  aot
+>
+  <main id="main" class="min-h-screen pt-24 pb-16">
+    {data.blocks && data.blocks.map((block: any, index: number) => (
+      <BlocksRenderer block={block} index={index} parentData={data} />
+    ))}
+  </main>
+</Base>

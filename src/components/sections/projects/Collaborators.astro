@@ -1,0 +1,36 @@
+---
+// src/components/sections/Collaborators.astro
+interface Collaborator {
+	name: string;
+	role: string;
+	url?: string;
+}
+
+interface Props {
+	title?: string;
+	list?: Collaborator[];
+}
+
+const { title = "COLLABORATORS", list = [] } = Astro.props;
+---
+
+<section class="py-16 md:py-24 bg-gray-50">
+  <div class="max-w-6xl mx-auto px-4">
+    <h2 class="text-2xl md:text-3xl font-jozsika mb-12">{title}</h2>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {list.map((collab) => (
+        <div class="border-t border-gray-200 pt-4">
+          {collab.url ? (
+            <a href={collab.url} target="_blank" rel="noopener" class="hover:text-primary transition-colors">
+              <p class="font-medium">{collab.name}</p>
+            </a>
+          ) : (
+            <p class="font-medium">{collab.name}</p>
+          )}
+          <p class="text-sm text-gray-600">{collab.role}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

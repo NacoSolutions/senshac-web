@@ -1,0 +1,122 @@
+/* src/styles/global.css — global resets only; all component styles live in their component files */
+
+html:root {
+	--font-sans: "Sinteca", system-ui, sans-serif;
+	--font-jozsika: "Jozsika", serif;
+}
+
+body {
+	font-family: "Sinteca", system-ui, sans-serif;
+	font-size: 1.25rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: "Jozsika", serif;
+	font-weight: 300;
+}
+
+b,
+strong {
+	font-weight: 600;
+}
+
+/* Custom cursor */
+#cursor-circle {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 40px;
+	height: 40px;
+	background: #f7f8fa;
+	border-radius: 50%;
+	pointer-events: none;
+	z-index: 999999;
+	opacity: 0;
+	transform: translate(-50%, -50%) scale(1);
+	transition:
+		transform 0.25s ease,
+		opacity 0.25s ease;
+	mix-blend-mode: difference;
+}
+
+@media (hover: none) {
+	#cursor-circle {
+		display: none;
+	}
+}
+
+/* Form resets */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="url"],
+input[type="date"],
+select,
+textarea {
+	border: none;
+	border-bottom: solid 1px #000;
+	box-shadow: none;
+	background: transparent;
+	font-family: "Sinteca", system-ui, sans-serif;
+	font-size: 1.25rem;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+input[type="url"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+	border: none;
+	border-bottom: solid 1px #000;
+	box-shadow: none;
+	outline: none;
+}
+
+select {
+	color: #000;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+	width: 0.875rem;
+	height: 0.875rem;
+	border-radius: 50%;
+	vertical-align: text-top;
+	border: 1px solid #000;
+	appearance: none;
+	-webkit-appearance: none;
+	outline: none;
+	cursor: pointer;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+	background-color: #000;
+}
+
+::placeholder {
+	color: #000;
+	opacity: 0.5;
+}
+
+input[type="submit"],
+button[type="submit"] {
+	font-family: "Jozsika", serif;
+	text-transform: lowercase;
+	font-size: 1.125rem;
+	font-weight: 300;
+	border-radius: 60px;
+}

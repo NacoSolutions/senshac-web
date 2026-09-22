@@ -1,0 +1,152 @@
+---
+import Cursor from "../components/Cursor.astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+// src/layouts/Base.astro
+import SEO from "../components/SEO.astro";
+import "virtual:uno.css";
+import globalStyles from "../styles/global.css?url";
+import { getSiteConfig } from "../utils/site-config";
+import { getTranslations as getPublicTranslations } from "../utils/translations";
+
+interface Props {
+	title: string;
+	description: string;
+	image?: string;
+	lang?: string;
+	schema?:
+		| "LocalBusiness"
+		| "Article"
+		| "BreadcrumbList"
+		| Array<"LocalBusiness" | "Article" | "BreadcrumbList">;
+	publishDate?: Date;
+	breadcrumbs?: { name: string; url: string }[];
+	headerStyle?: "default" | "transparent";
+	preloadImage?: string;
+	translationsData?: unknown;
+	siteData?: unknown;
+	aot?: boolean;
+}
+
+const {
+	title,
+	description,
+	image,
+	lang = "es",
+	schema,
+	publishDate,
+	breadcrumbs,
+	headerStyle = "default",
+	preloadImage,
+	translationsData: providedTranslationsData,
+	siteData: providedSiteData,
+} = Astro.props;
+
+const [translationsData, siteData] = await Promise.all([
+	providedTranslationsData ?? getPublicTranslations(lang),
+	providedSiteData ?? getSiteConfig(),
+]);
+
+const mediaBaseUrl = (
+	import.meta.env.PUBLIC_MEDIA_BASE_URL || "https://media.senshac.com"
+).replace(/\/$/, "");
+const fontUrl = (filename: string) => `${mediaBaseUrl}/fonts/${filename}`;
+const fonts = {
+	jozsikaLight: fontUrl("jozsika-light-cb357743.woff2"),
+	sintecaRegular: fontUrl("sinteca-regular.woff2"),
+	sintecaMedium: fontUrl("sinteca-medium.woff2"),
+	sintecaSemibold: fontUrl("sinteca-semibold.woff2"),
+};
+const fontCss = `
+@font-face{font-family:'Jozsika';src:url('${fonts.jozsikaLight}') format('woff2');font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:'Sinteca';src:url('${fonts.sintecaRegular}') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+`;
+const deferredFontCss = `
+@font-face{font-family:'Sinteca';src:url('${fonts.sintecaMedium}') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Sinteca';src:url('${fonts.sintecaSemibold}') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+`;
+const deferredFontScript = `window.addEventListener('load',()=>{const style=document.createElement('style');style.textContent=${JSON.stringify(deferredFontCss)};document.head.append(style)},{once:true});`;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <SEO
+      title={title}
+      description={description}
+      image={image}
+      schema={schema}
+      publishDate={publishDate}
+      breadcrumbs={breadcrumbs}
+      lang={lang}
+    />
+
+    <style is:inline set:html={fontCss}></style>
+    <script is:inline set:html={deferredFontScript}></script>
+    <link rel="preload" href={globalStyles} as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href={globalStyles} /></noscript>
+    <link rel="preconnect" href={mediaBaseUrl} crossorigin />
+    <link rel="preload" href={fonts.jozsikaLight} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fonts.sintecaRegular} as="font" type="font/woff2" crossorigin />
+
+    {preloadImage && <link rel="preload" href={preloadImage} as="image" type="image/webp" fetchpriority="high" />}
+
+    <slot name="head" />
+  </head>
+  <body class:list={["font-sans antialiased", headerStyle === 'default' && "pt-20"]}>
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-black focus:text-white focus:px-4 focus:py-2">
+      Skip to content
+    </a>
+    <Header lang={lang} headerStyle={headerStyle} translations={translationsData as any} siteData={siteData as any} />
+
+    <slot />
+
+    <Footer lang={lang} translations={translationsData as any} siteData={siteData as any} />
+
+    <Cursor />
+
+    <!-- Alpine.js Initialization -->
+    <script>
+      import Alpine from 'alpinejs';
+      import { registerAlpineComponents } from '../utils/alpine';
+
+      const startAlpine = () => {
+        registerAlpineComponents(Alpine);
+        window.Alpine = Alpine;
+        Alpine.start();
+      };
+
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(startAlpine, { timeout: 1000 });
+      } else {
+        globalThis.setTimeout(startAlpine, 0);
+      }
+    </script>
+    <script is:inline data-cfasync="false">
+      // Allow click-through navigation in TinaCMS iframe by holding Alt or Meta/Ctrl
+      document.addEventListener('click', function(e) {
+        if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey) {
+          const link = e.target.closest('a');
+          if (link && link.href) {
+            e.stopPropagation(); // Prevent TinaCMS from intercepting
+            e.preventDefault();  // Stop default so we can control navigation
+            if (link.target === '_blank') {
+              window.open(link.href, '_blank');
+            } else {
+              window.location.href = link.href;
+            }
+          }
+        }
+      }, true); // Use capture phase to run before Tina's listeners
+    </script>
+  </body>
+</html>

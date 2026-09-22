@@ -1,0 +1,36 @@
+---
+import MediaPlaceholder from "./MediaPlaceholder.astro";
+import RichText from "./RichText.astro";
+
+interface Props {
+	label?: string;
+	content?: any;
+	statement?: string;
+	mediaId?: string;
+	imageAlt?: string;
+	placeholderLabel?: string;
+}
+
+const { label, content, statement, mediaId, imageAlt, placeholderLabel } =
+	Astro.props;
+---
+
+<section class="editorial-section">
+  <div class="editorial-shell grid items-center gap-16 md:grid-cols-[minmax(20rem,1fr)_1fr] md:gap-[clamp(4rem,8vw,8rem)]">
+    <div class="max-w-[28rem] mx-auto md:m-0 w-full">
+      <MediaPlaceholder mediaId={mediaId} alt={imageAlt} label={placeholderLabel} aspect="portrait" mediaSlot="grid" />
+    </div>
+    <div class="grid gap-8 max-w-[42rem]">
+      <h1 class="editorial-eyebrow">{label}</h1>
+      <div class="editorial-body whitespace-normal columns-1 gap-10 md:columns-2">
+        <RichText content={content} />
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="editorial-section bg-section-dark py-[clamp(6rem,12vw,12rem)]">
+  <div class="editorial-shell">
+    <h2 class="editorial-display max-w-[20ch]" x-reveal>{statement}</h2>
+  </div>
+</section>

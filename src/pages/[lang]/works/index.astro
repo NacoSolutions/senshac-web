@@ -1,0 +1,267 @@
+---
+// @route-contract pagespeed
+export { getLanguagePaths as getStaticPaths } from "../../../lib/static-paths";
+export const prerender = true;
+
+import { getCollection, getEntry } from "astro:content";
+import MediaPlaceholder from "../../../components/sections/editorial/MediaPlaceholder.astro";
+import Base from "../../../layouts/Base.astro";
+
+const { lang = "es" } = Astro.params;
+const translations = await getEntry("translations", lang);
+const t = translations?.data.projects;
+
+if (!t) {
+	return Astro.redirect("/404");
+}
+
+const allProjects = await getCollection("projects", ({ id, data }) => {
+	return id.startsWith(`${lang}/`) && !data.draft;
+});
+
+// Sort by publishDate descending
+const sortedProjects = allProjects.sort((a, b) => {
+	const dateA = a.data.publishDate?.getTime() || 0;
+	const dateB = b.data.publishDate?.getTime() || 0;
+	return dateB - dateA;
+});
+
+const layouts = [
+	"wide-right",
+	"portrait-left",
+	"wide-center",
+	"landscape-left",
+	"landscape-right",
+];
+
+const works = sortedProjects.map((project, index) => {
+	const bannerBlock = project.data.blocks?.find(
+		(b: any) => b._template === "projectBanner",
+	);
+
+	return {
+		category: project.data.tags?.[0] || "Proyecto",
+		title: project.data.title,
+		summary: project.data.description,
+		href: `/${lang}/works/${project.data.slug}`,
+		mediaId: bannerBlock?.mediaId,
+		alt: bannerBlock?.alt || project.data.title,
+		placeholderLabel: `${project.data.title}: imagen pendiente`,
+		layout: layouts[index % layouts.length],
+	};
+});
+const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
+---
+
+<Base title={t.title} description={t.description} lang={lang} schema="BreadcrumbList" breadcrumbs={breadcrumbs}>
+  <main id="main" class="works-index">
+    <div class="editorial-shell">
+      <h1 class="works-index__title">PROYECTOS,<br /><em>ENSAYOS</em><br />Y OBJETOS</h1>
+
+      <div class="works-index__list">
+        {works.map((work) => {
+          const content = (
+            <>
+              <MediaPlaceholder
+                mediaId={work.mediaId}
+                alt={`${work.category}: ${work.title}`}
+				label={work.placeholderLabel}
+				aspect={work.layout === 'portrait-left' ? 'portrait' : 'landscape'}
+				mediaSlot="content"
+              />
+            </>
+          );
+          return (
+            <article class:list={['works-index__item', `works-index__item--${work.layout}`]}>
+              {work.href ? (
+                <a href={work.href} class="works-index__media">
+                  {content}
+                </a>
+              ) : (
+                <div class="works-index__media" aria-label={`${work.category}: ${work.title}`}>
+                  {content}
+                </div>
+              )}
+              <p class="works-index__label">{work.category} / {work.title}</p>
+              <p class="works-index__summary">{work.summary}</p>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+
+  </main>
+</Base>
+
+<style>
+.works-index {
+  padding-top: clamp(7rem, 12vw, 11rem);
+}
+
+.works-index__title {
+  margin: 0;
+  font-family: 'Sinteca', system-ui, sans-serif;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 500;
+  line-height: 0.78;
+  text-transform: uppercase;
+}
+
+.works-index__title em {
+  font-weight: 500;
+}
+
+.works-index__list {
+  display: grid;
+  gap: clamp(4rem, 9vw, 8rem);
+  padding-top: clamp(5rem, 10vw, 9rem);
+}
+
+.works-index__item {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: 0 1rem;
+}
+
+.works-index__media {
+  display: block;
+}
+
+.works-index__media .editorial-media {
+  height: 100%;
+}
+
+.works-index__label,
+.works-index__summary {
+  margin: 0;
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  line-height: 1.35;
+}
+
+.works-index__label {
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.works-index__item--wide-right .works-index__media {
+  grid-column: 3 / 12;
+}
+
+.works-index__item--wide-right .works-index__label {
+  grid-column: 3 / 8;
+  grid-row: 1;
+  align-self: start;
+  transform: translateY(-1.75rem);
+}
+
+.works-index__item--wide-right .works-index__summary {
+  grid-column: 9 / 13;
+  margin-top: 1rem;
+}
+
+.works-index__item--portrait-left .works-index__media {
+  grid-column: 1 / 7;
+}
+
+.works-index__item--portrait-left .works-index__label {
+  grid-column: 1 / 7;
+  grid-row: 1;
+  align-self: start;
+  transform: translateY(-1.75rem);
+}
+
+.works-index__item--portrait-left .works-index__summary {
+  grid-column: 7 / 12;
+  margin-bottom: 1rem;
+}
+
+.works-index__item--wide-center .works-index__media {
+  grid-column: 3 / 13;
+}
+
+.works-index__item--wide-center .works-index__label {
+  grid-column: 3 / 10;
+  grid-row: 1;
+  align-self: start;
+  transform: translateY(-1.75rem);
+}
+
+.works-index__item--wide-center .works-index__summary {
+  grid-column: 3 / 12;
+  margin-top: 1rem;
+}
+
+.works-index__item--landscape-left .works-index__media {
+  grid-column: 1 / 10;
+}
+
+.works-index__item--landscape-left .works-index__label {
+  grid-column: 1 / 9;
+  grid-row: 1;
+  align-self: start;
+  transform: translateY(-1.75rem);
+}
+
+.works-index__item--landscape-left .works-index__summary {
+  grid-column: 4 / 12;
+  margin-top: 1rem;
+}
+
+.works-index__item--landscape-right .works-index__media {
+  grid-column: 4 / 13;
+}
+
+.works-index__item--landscape-right .works-index__label {
+  grid-column: 4 / 11;
+  grid-row: 1;
+  align-self: start;
+  transform: translateY(-1.75rem);
+}
+
+.works-index__item--landscape-right .works-index__summary {
+  grid-column: 4 / 12;
+  margin-top: 1rem;
+}
+
+@media (max-width: 47.99rem) {
+  .works-index {
+    padding-top: 7rem;
+  }
+
+  .works-index__title {
+    font-size: clamp(2.4rem, 13vw, 3.4rem);
+  }
+
+  .works-index__list {
+    gap: 5rem;
+    padding-top: 5rem;
+  }
+
+  .works-index__item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .works-index__label {
+    order: -1;
+    margin-bottom: 0.6rem;
+    transform: none;
+  }
+
+  .works-index__summary {
+    margin-top: 0.8rem;
+    margin-bottom: 0;
+  }
+
+  .works-index__item--portrait-left .works-index__media {
+    width: 76%;
+  }
+
+  .works-index__item--landscape-right .works-index__media {
+    width: 88%;
+    margin-left: auto;
+  }
+}
+</style>

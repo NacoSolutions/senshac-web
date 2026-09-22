@@ -1,0 +1,41 @@
+---
+import RichText from "./RichText.astro";
+
+interface Item {
+	title?: string;
+	text?: any;
+}
+
+interface Props {
+	title?: string;
+	intro?: any;
+	items?: Item[] | null;
+}
+
+const { title, intro, items: itemList } = Astro.props;
+const items = itemList ?? [];
+const itemHeadingLevel = title ? "h3" : "h2";
+---
+
+<section class="editorial-section">
+  <div class="editorial-shell">
+    {title && <h2 class="editorial-heading editorial-heading--compact" x-reveal>{title}</h2>}
+    {intro && (
+      <div class="editorial-body max-w-[52rem] mb-[clamp(2.5rem,5vw,5rem)] whitespace-normal">
+        <RichText content={intro} />
+      </div>
+    )}
+    <div class="border-t border-[#111]">
+      {items.map((item) => (
+        <article class="grid gap-4 py-6 border-b border-[#111] md:grid-cols-2 md:gap-8 md:py-10">
+          {itemHeadingLevel === "h3" ? (
+            <h3 class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.title}</h3>
+          ) : (
+            <h2 class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.title}</h2>
+          )}
+          <div class="[&>p]:m-0 [&>p]:text-base [&>p]:leading-[1.45]"><RichText content={item.text} /></div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

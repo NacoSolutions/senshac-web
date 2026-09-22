@@ -1,0 +1,65 @@
+---
+import HlsVideo from "../../HlsVideo.astro";
+import R2Picture from "../../R2Picture.astro";
+
+interface Props {
+	mediaId?: string | null;
+	alt?: string;
+	label?: string;
+	kind?: "image" | "video";
+	aspect?: "landscape" | "portrait" | "wide" | "auto";
+	objectFit?: "cover" | "contain";
+	eager?: boolean;
+	variant?: "default" | "banner";
+	mediaSlot?: "full" | "content" | "grid" | "logo";
+}
+
+const {
+	mediaId,
+	alt = "",
+	label = "Media pending",
+	kind = "image",
+	aspect = "landscape",
+	objectFit = "cover",
+	eager = false,
+	variant = "default",
+	mediaSlot = variant === "banner" ? "full" : "content",
+} = Astro.props;
+
+const hasR2Media = Boolean(mediaId);
+const aspectClass =
+	variant === "banner"
+		? "h-full min-h-full aspect-auto"
+		: {
+				landscape: "aspect-[4/3]",
+				portrait: "aspect-[3/4]",
+				wide: "aspect-[16/9]",
+				auto: "aspect-auto",
+			}[aspect];
+
+const fitClass = objectFit === "contain" ? "object-contain" : "object-cover";
+---
+
+<div class:list={['w-full overflow-hidden', variant === 'banner' ? 'bg-[#050505]' : 'bg-[#dedede]', aspectClass]}>
+  {hasR2Media && kind === 'image' ? (
+    <R2Picture
+      id={mediaId!}
+      alt={alt}
+      class={`h-full w-full ${fitClass}`}
+      eager={eager}
+      mediaSlot={mediaSlot}
+    />
+  ) : hasR2Media && kind === 'video' ? (
+    <HlsVideo id={mediaId!} class={`h-full w-full ${fitClass}`} />
+  ) : (
+    <div class:list={[
+      'flex flex-col h-full',
+      variant === 'banner'
+        ? 'items-end justify-end p-4 border-0 text-[#777] text-[0.7rem] text-right uppercase'
+        : 'items-center justify-center gap-2.5 min-h-[18rem] border border-[#b8b8b8] text-[#555] text-[0.85rem] text-center uppercase'
+    ]} role="img" aria-label={label}>
+      {variant !== 'banner' && <span class="text-[#555] text-[0.68rem] tracking-[0.08em]">{kind}</span>}
+      <span>{label}</span>
+    </div>
+  )}
+</div>

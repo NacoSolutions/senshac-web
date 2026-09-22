@@ -1,0 +1,110 @@
+{
+	"nav": {
+		"social": "social",
+		"menu": "menú",
+		"letsTalk": "LET'S TALK",
+		"links": [
+			{
+				"label": "Estudio",
+				"href": "/es/studio"
+			},
+			{
+				"label": "Trabajos",
+				"href": "/es/works"
+			},
+			{
+				"label": "Método",
+				"href": "/es/methods"
+			},
+			{
+				"label": "Contacto",
+				"href": "/es/contact"
+			}
+		]
+	},
+	"footer": {
+		"privacy": "Política de Privacidad",
+		"legal": "Aviso Legal",
+		"links": [
+			{
+				"label": "Estudio",
+				"href": "/es/studio"
+			},
+			{
+				"label": "Trabajos",
+				"href": "/es/works"
+			},
+			{
+				"label": "Método",
+				"href": "/es/methods"
+			},
+			{
+				"label": "Contacto",
+				"href": "/es/contact"
+			}
+		]
+	},
+	"contactForm": {
+		"name": "Nombre",
+		"company": "Empresa",
+		"email": "Email",
+		"phone": "Teléfono",
+		"projectType": "¿Qué tipo de proyecto tienes en mente?",
+		"projectTypes": [
+			{
+				"value": "commercial",
+				"label": "Comercial/Retail"
+			},
+			{
+				"value": "restaurant",
+				"label": "Restaurante/Bar"
+			},
+			{
+				"value": "entertainment",
+				"label": "Entretenimiento"
+			},
+			{
+				"value": "other",
+				"label": "Otro"
+			}
+		],
+		"serviceType": "¿Qué tipo de servicios buscas?",
+		"serviceTypes": [
+			{
+				"value": "fullPackage",
+				"label": "Paquete completo (Diseño + Ejecución)"
+			},
+			{
+				"value": "concept",
+				"label": "Solo concepto de diseño"
+			},
+			{
+				"value": "unsure",
+				"label": "No estoy seguro/a"
+			}
+		],
+		"message": "Cuéntanos más sobre tu proyecto",
+		"privacy": "Acepto la política de privacidad",
+		"submit": "Enviar mensaje",
+		"sending": "Enviando...",
+		"success": "¡Gracias por contarnos tu proyecto!<br />Pronto nos pondremos en contacto contigo.",
+		"error": "Ha ocurrido un error. Por favor, inténtalo de nuevo.",
+		"turnstileFailed": "Verificación de seguridad fallida. Por favor, inténtalo de nuevo.",
+		"invalidEmail": "Email inválido.",
+		"missingFields": "Por favor, completa todos los campos obligatorios."
+	},
+	"projects": {
+		"title": "Trabajos - Sens*Hac",
+		"description": "Explora nuestro portfolio de proyectos de diseño de interiores.",
+		"heading": "Trabajos"
+	},
+	"accessibility": {
+		"skipToContent": "Ir al contenido",
+		"selectLanguage": "Seleccionar idioma",
+		"toggleMenu": "Abrir menú",
+		"closeMenu": "Cerrar menú",
+		"previousSlide": "Diapositiva anterior",
+		"nextSlide": "Siguiente diapositiva",
+		"goToSlide": "Ir a diapositiva"
+	}
+}

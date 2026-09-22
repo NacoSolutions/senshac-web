@@ -1,0 +1,23 @@
+---
+export { getLanguagePaths as getStaticPaths } from "../../lib/static-paths";
+
+import { getEntry, render } from "astro:content";
+// src/pages/[lang]/privacy-policy.astro
+import Base from "../../layouts/Base.astro";
+
+const { lang = "es" } = Astro.params;
+const entry = await getEntry("legal", `${lang}/privacy-policy`);
+if (!entry) {
+	return Astro.redirect("/404");
+}
+const { Content } = await render(entry);
+---
+<Base title={entry.data.title} description={entry.data.description || ''} lang={lang} aot>
+  <section class="py-16 md:py-24">
+    <div class="editorial-shell max-w-4xl">
+      <article class="[&_h1]:text-4xl [&_h1]:mb-8 [&_h2]:text-2xl [&_h2]:mt-12 [&_h2]:mb-4 [&_h3]:text-lg [&_h3]:mt-8 [&_h3]:mb-4 [&_p]:text-[rgba(18,18,18,0.85)] [&_p]:leading-relaxed [&_p]:mb-4 [&_ul]:pl-6 [&_ul]:mb-4 [&_li]:mb-1 [&_a]:underline [&_a]:underline-offset-4">
+        <Content />
+      </article>
+    </div>
+  </section>
+</Base>

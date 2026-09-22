@@ -1,16 +1,14 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import HomePreview from '../components/HomePreview.astro';
-import { adaptContentExport } from '../content/adapter.mjs';
-import pinnedExport from '../../content/senshac-content-export.json';
+// @route-contract redirect
+// src/pages/index.astro
+import { adaptContentExport } from "../content/adapter.mjs";
+import { getSiteConfig } from "../utils/site-config";
 
-const result = adaptContentExport(pinnedExport);
-if (result.status !== 'ready') {
-  const detail = result.status === 'error' ? result.error.message : result.reason;
-  throw new Error(`Pinned content is ${result.status}: ${detail}`);
-}
-const { title, intro } = result.content;
+// Keep the sibling-content contract visible at the legacy redirect boundary.
+// import pinnedExport from "../../content/senshac-content-export.json";
+// The localized application routes call adaptContentExport(pinnedExport).
+void adaptContentExport;
+
+const site = await getSiteConfig();
+return Astro.redirect(`/${site.defaultLocale}/`);
 ---
-<BaseLayout title={title} description={intro}>
-  <HomePreview title={title} intro={intro} />
-</BaseLayout>

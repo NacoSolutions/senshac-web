@@ -1,0 +1,60 @@
+---
+import RichText from "./RichText.astro";
+
+interface Detail {
+	label?: string;
+	text?: any;
+}
+
+interface Item {
+	number?: string;
+	title?: string;
+	summary?: string;
+	details?: Detail[] | null;
+	open?: boolean;
+}
+
+interface Props {
+	intro?: any;
+	items?: Item[] | null;
+}
+
+const { intro, items: itemList } = Astro.props;
+const items = itemList ?? [];
+---
+
+<section class="editorial-section">
+  <div class="editorial-shell">
+    {intro && (
+      <div class="editorial-lede mb-[clamp(2.5rem,5vw,5rem)]" x-reveal>
+        <RichText content={intro} />
+      </div>
+    )}
+    <div class="border-t border-[#111]">
+      {items.map((item) => (
+        <details class="border-b border-[#111] group" open={item.open}>
+          <summary class="grid grid-cols-[3rem_1fr_1.5rem] items-start gap-4 py-6 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+            <span class="text-[0.85rem]">{item.number}</span>
+            <span class="text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.title}</span>
+            <span class="relative w-4 h-4 flex items-center justify-center mt-1 before:absolute before:w-4 before:h-[1px] before:bg-current before:content-empty before:transition-transform before:duration-150 after:absolute after:w-4 after:h-[1px] after:bg-current after:content-empty after:transition-transform after:duration-150 after:rotate-90 group-open:after:rotate-0" aria-hidden="true"></span>
+          </summary>
+          <div class="max-w-[53rem] px-4 pb-10 pl-16">
+            <div>
+              {item.summary && <p class="editorial-body">{item.summary}</p>}
+              {item.details && item.details.length > 0 && (
+                <div class="grid gap-6 mt-8">
+                  {item.details.map((detail) => (
+                    <div>
+                      {detail.label && <h3 class="m-0 mb-1 font-sans text-base font-semibold">{detail.label}</h3>}
+                      {detail.text && <div class="[&>p]:m-0 [&>p]:text-base [&>p]:leading-[1.45]"><RichText content={detail.text} /></div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

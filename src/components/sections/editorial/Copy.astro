@@ -1,0 +1,47 @@
+---
+import { getSiteConfig } from "../../../utils/site-config";
+import R2Picture from "../../R2Picture.astro";
+import RichText from "./RichText.astro";
+
+interface Props {
+	title?: string;
+	body?: any;
+	eyebrow?: string;
+	headingLevel?: "h1" | "h2";
+	showStar?: boolean;
+}
+
+const {
+	title,
+	body,
+	eyebrow,
+	headingLevel = "h2",
+	showStar = false,
+} = Astro.props;
+const site = await getSiteConfig();
+---
+
+<section class="editorial-section">
+  <div class="editorial-shell grid gap-8 relative">
+    {showStar && (
+      <div class="absolute -top-4 -right-2 w-32 md:w-48 lg:w-64 opacity-10 pointer-events-none mix-blend-multiply">
+        {site.branding?.symbol && (
+          <R2Picture
+            id={site.branding.symbol}
+            alt=""
+            class="w-full h-auto"
+            mediaSlot="logo"
+          />
+        )}
+      </div>
+    )}
+    {eyebrow && <p class="editorial-eyebrow">{eyebrow}</p>}
+    {title && headingLevel === 'h1' && <h1 class="editorial-heading editorial-heading--page max-w-none" x-reveal>{title}</h1>}
+    {title && headingLevel !== 'h1' && <h2 class="editorial-heading" x-reveal>{title}</h2>}
+    {body && (
+      <div class:list={['editorial-body max-w-[52rem] whitespace-normal', { 'col-span-full max-w-none': headingLevel === 'h1' }]}>
+        <RichText content={body} />
+      </div>
+    )}
+  </div>
+</section>

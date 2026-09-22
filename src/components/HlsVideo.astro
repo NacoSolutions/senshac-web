@@ -1,0 +1,89 @@
+---
+interface Props {
+	id: string;
+	class?: string;
+	poster?: string;
+	autoplay?: boolean;
+	controls?: boolean;
+	muted?: boolean;
+	loop?: boolean;
+}
+
+const {
+	id,
+	class: className,
+	poster,
+	autoplay = true,
+	controls = false,
+	muted = true,
+	loop = true,
+} = Astro.props;
+const baseUrl = (
+	import.meta.env.PUBLIC_MEDIA_BASE_URL || "https://media.senshac.com"
+).replace(/\/$/, "");
+const cleanId = id
+	.replace(new RegExp(`^${baseUrl}/images/`), "")
+	.replace(new RegExp(`^${baseUrl}/videos/`), "")
+	.replace(/^\/+|\/+$/g, "")
+	.replace(/^videos\//, "")
+	.replace(/\/master\.m3u8$/, "")
+	.replace(/\.[^.]+$/, "");
+const manifest = `${baseUrl}/videos/${cleanId}/master.m3u8`;
+---
+
+  <div x-data={`senshacHlsPlayer(${JSON.stringify(manifest)})`} x-init="setTimeout(() => observe(), 1000)" class="h-full w-full">
+  <video
+    x-ref="video"
+    data-src={manifest}
+    class={className}
+    poster={poster}
+    autoplay={autoplay}
+    controls={controls}
+    muted={muted}
+    loop={loop}
+    playsinline
+    preload="none"
+  ></video>
+</div>
+
+<script>
+  document.addEventListener('alpine:init', () => {
+    window.Alpine.data('senshacHlsPlayer', (manifest: string) => ({
+      player: null as import('hls.js').default | null,
+      observer: null as IntersectionObserver | null,
+      loaded: false,
+      observe() {
+        const video = this.$refs.video as HTMLVideoElement;
+        this.observer = new IntersectionObserver((entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          this.observer?.disconnect();
+          this.init().then(() => {
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && video.autoplay) {
+              video.play().catch(() => {});
+            }
+          });
+        }, { rootMargin: '0px', threshold: 0.01 });
+        this.observer.observe(video);
+      },
+      async init() {
+        if (this.loaded) return;
+        this.loaded = true;
+        const video = this.$refs.video as HTMLVideoElement;
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = manifest;
+          return;
+        }
+        const { default: Hls } = await import('hls.js');
+        if (!Hls.isSupported()) return;
+
+        this.player = new Hls({ enableWorker: true });
+        this.player.loadSource(manifest);
+        this.player.attachMedia(video);
+      },
+      destroy() {
+        this.observer?.disconnect();
+        this.player?.destroy();
+      },
+    }));
+  });
+</script>

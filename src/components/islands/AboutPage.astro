@@ -1,0 +1,19 @@
+---
+import { tinaField } from "@tinacms/astro/tina-field";
+import type { AboutQuery } from "../../../tina/__generated__/types";
+import BlocksRenderer from "../BlocksRenderer.astro";
+
+type AboutPageData = AboutQuery["about"];
+
+interface Props {
+	data?: AboutPageData | null;
+}
+
+const { data } = Astro.props;
+---
+
+<div>
+  {data && data.blocks && data.blocks.map((block: any, index: number) => (
+    <BlocksRenderer block={block} index={index} parentData={data} />
+  ))}
+</div>

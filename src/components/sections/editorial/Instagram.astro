@@ -1,0 +1,247 @@
+---
+import RichText from "./RichText.astro";
+
+interface Props {
+	title?: string;
+	description?: any;
+	tag?: string;
+	limit?: number;
+	maxVisible?: number;
+}
+
+const { title = "Instagram", description, tag } = Astro.props;
+
+const limit = Astro.props.limit || 12;
+const maxVisible = Astro.props.maxVisible || 4;
+
+let posts: any[] = [];
+
+try {
+	const res = await fetch("https://media.senshac.com/instagram/posts.json");
+	if (res.ok) {
+		const allPosts = (await res.json()) as any[];
+
+		// Filter by tag if provided
+		if (tag) {
+			const tagLower = tag.replace(/^#/, "").toLowerCase(); // Normalize: remove leading # if any
+			posts = allPosts.filter((p: any) =>
+				p.caption?.toLowerCase().includes(`#${tagLower}`),
+			);
+		} else {
+			posts = allPosts;
+		}
+	}
+} catch (e) {
+	console.error("Failed to fetch Instagram posts from R2:", e);
+}
+
+const displayPosts = posts.slice(0, limit);
+const isCarousel = displayPosts.length > maxVisible;
+const imageVariant = (url: string | undefined, width: number) =>
+	url?.replace(
+		/\/(?:320|412|480|640|768|1024|1200|1280|1920)\.webp$/,
+		`/${width}.webp`,
+	);
+const imageSrcset = (url?: string) =>
+	[320, 480, 640, 768, 1024, 1280, 1920]
+		.map((width) => `${imageVariant(url, width)} ${width}w`)
+		.join(", ");
+const smallPoster = (url?: string) => imageVariant(url, 320);
+const carouselSlides = (urls: string[]) =>
+	JSON.stringify(
+		urls.map((url) => ({
+			src: url.endsWith(".m3u8") ? url : imageVariant(url, 1280),
+			srcset: url.endsWith(".m3u8") ? "" : imageSrcset(url),
+		})),
+	);
+---
+
+{displayPosts.length > 0 && (
+  <section class="py-16 md:py-24 max-w-7xl mx-auto px-4">
+    <div class="mb-10 text-center md:text-left">
+      <h2 class="text-3xl font-bold mb-4">{title}</h2>
+      {description && (
+        <div class="text-lg text-gray-600 max-w-2xl prose-p:my-2">
+          <RichText content={description} />
+        </div>
+      )}
+    </div>
+
+    <div
+      class={`flex gap-4 pb-4 ${isCarousel ? 'overflow-x-auto snap-x snap-mandatory no-scrollbar flex-nowrap -mx-4 px-4 md:mx-0 md:px-0' : 'flex-wrap justify-center'}`}
+      style={`--desktop-w: calc((100% - (${maxVisible} - 1) * 1rem) / ${maxVisible});`}
+    >
+      {displayPosts.map((post, i) => (
+        <Fragment>
+          {i > 0 && !isCarousel && <div class="w-px bg-gray-200 hidden md:block"></div>}
+          <div
+            class={`aspect-[4/5] bg-transparent flex items-center justify-center group relative overflow-hidden transition-transform hover:scale-[1.02] ${
+              isCarousel
+                ? 'flex-none snap-start w-[85%] md:w-[var(--desktop-w)]'
+                : 'w-[calc(50%-0.5rem)] md:w-[var(--desktop-w)]'
+            }`}
+          >
+          {post.media_type === 'CAROUSEL_ALBUM' && post.children && post.children.length > 0 ? (
+            <div
+              class="absolute inset-0 w-full h-full"
+              x-data={`{ active: 0, playing: !window.matchMedia('(prefers-reduced-motion: reduce)').matches, slides: ${carouselSlides(post.children)} }`}
+              x-init="setInterval(() => { if(playing) active = (active + 1) % slides.length }, 5000)"
+            >
+              <template x-for="(slide, index) in slides" :key="index">
+                <div
+                  class="absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out"
+                  :class="active === index ? 'opacity-100 z-0' : 'opacity-0 z-[-1]'"
+                >
+                  <template x-if="slide.src.endsWith('.m3u8')">
+                    <video :src="slide.src" class="hls-video w-full h-full object-contain" autoplay muted loop playsinline></video>
+                  </template>
+                  <template x-if="!slide.src.endsWith('.m3u8')">
+                    <img
+                      :src="slide.src"
+                      :srcset="slide.srcset"
+                      sizes="(min-width: 768px) 33vw, 85vw"
+                      alt={post.caption?.slice(0, 100) || "Instagram post image"}
+                      class="w-full h-full object-contain"
+                      loading="lazy"
+                    />
+                  </template>
+                </div>
+              </template>
+            </div>
+          ) : post.media_type === 'VIDEO' ? (
+            <video
+              data-src={post.media_url}
+              data-poster={smallPoster(post.thumbnail_url)}
+              class="hls-video absolute inset-0 w-full h-full object-contain"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="none"
+            />
+          ) : (
+            <img
+              src={imageVariant(post.media_url, 1280)}
+              srcset={imageSrcset(post.media_url)}
+              sizes="(min-width: 768px) 33vw, 85vw"
+              alt={post.caption?.slice(0, 100) || "Instagram post image"}
+              class="absolute inset-0 w-full h-full object-contain"
+              loading="lazy"
+            />
+          )}
+            <a href={post.permalink} target="_blank" rel="noopener noreferrer" class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10" aria-label={post.caption?.slice(0, 50) || "Instagram post"}>
+              <span class="i-lucide-instagram text-white w-8 h-8" />
+            </a>
+            {post.media_type === 'CAROUSEL_ALBUM' && (
+              <button
+                class="absolute bottom-4 right-4 z-20 text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-black/50 hover:bg-black/70 rounded-full"
+                @click.prevent="playing = !playing"
+                aria-label="Pause video"
+                :aria-label="playing ? 'Pause video' : 'Play video'"
+              >
+                <span :class="playing ? 'i-lucide-pause' : 'i-lucide-play'" class="block w-4 h-4"></span>
+              </button>
+            )}
+            {post.media_type === 'VIDEO' && (
+              <button
+                class="novedades-video-toggle absolute bottom-4 right-4 z-20 text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-black/50 hover:bg-black/70 rounded-full"
+                aria-label="Pause video"
+              >
+                <span class="i-lucide-pause block w-4 h-4"></span>
+              </button>
+            )}
+          </div>
+        </Fragment>
+      ))}
+    </div>
+
+    <div class="mt-8 text-center">
+      <a href="https://instagram.com/senshac" target="_blank" rel="noopener noreferrer" class="editorial-link mt-0 text-sm tracking-wider">
+        SÍGUENOS EN INSTAGRAM
+      </a>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const videos = document.querySelectorAll("video.hls-video") as NodeListOf<HTMLVideoElement>;
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let hlsLoader: Promise<typeof import('hls.js')> | null = null;
+
+      const loadVideo = async (video: HTMLVideoElement) => {
+        if (video.dataset.loaded === 'true') return;
+        video.dataset.loaded = 'true';
+
+        if (video.dataset.poster) {
+          video.poster = video.dataset.poster;
+        }
+
+        const src = video.dataset.src || video.getAttribute("src");
+        if (!src) return;
+
+        if (src.includes(".m3u8")) {
+          if (video.canPlayType("application/vnd.apple.mpegurl")) {
+            video.src = src;
+          } else {
+            hlsLoader ??= import("hls.js");
+            const { default: Hls } = await hlsLoader;
+            if (Hls.isSupported()) {
+              const hls = new Hls();
+              hls.loadSource(src);
+              hls.attachMedia(video);
+            }
+          }
+        } else {
+          video.src = src;
+        }
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const video = entry.target as HTMLVideoElement;
+          const isPausedManually = video.dataset.pausedManually === 'true';
+
+          if (entry.isIntersecting) {
+            loadVideo(video).then(() => {
+              if (!prefersReducedMotion && !isPausedManually) {
+                video.play().catch(() => {});
+              }
+            });
+          } else {
+            video.pause();
+          }
+        });
+      }, { threshold: 0.1 });
+
+      videos.forEach((video) => {
+        if (prefersReducedMotion) {
+          video.removeAttribute('autoplay');
+          video.pause();
+        }
+        observer.observe(video);
+      });
+
+      document.querySelectorAll(".novedades-video-toggle").forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const container = btn.closest('.group');
+          const video = container?.querySelector('video');
+          if (!video) return;
+
+          const icon = btn.querySelector('span');
+          if (video.paused) {
+            video.play();
+            video.dataset.pausedManually = 'false';
+            icon?.classList.replace('i-lucide-play', 'i-lucide-pause');
+            btn.setAttribute('aria-label', 'Pause video');
+          } else {
+            video.pause();
+            video.dataset.pausedManually = 'true';
+            icon?.classList.replace('i-lucide-pause', 'i-lucide-play');
+            btn.setAttribute('aria-label', 'Play video');
+          }
+        });
+      });
+    });
+  </script>
+)}

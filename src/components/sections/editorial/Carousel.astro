@@ -1,0 +1,88 @@
+---
+import R2Picture from "../../R2Picture.astro";
+
+interface CarouselItem {
+	mediaId: string;
+	alt?: string;
+	caption?: string;
+}
+
+interface Props {
+	items?: CarouselItem[];
+	eagerFirst?: boolean;
+}
+
+const { items = [], eagerFirst = true } = Astro.props;
+
+const id = `carousel-${Math.random().toString(36).substring(2, 9)}`;
+
+function extractMediaId(value?: string | null) {
+	return (value || "")
+		.replace(/^https:\/\/media\.senshac\.com\/images\//, "")
+		.replace(/^\/?images\//, "")
+		.replace(
+			/\/(?:320|412|480|640|768|1024|1200|1280|1920)\.(?:avif|webp)$/,
+			"",
+		)
+		.replace(/\.[^.]+$/, "");
+}
+---
+
+<div class="relative overflow-hidden w-full my-8 md:my-16" id={id} x-data="carousel">
+  <div
+    class="carousel-track relative w-full h-[50vh] md:h-[70vh]"
+    data-carousel={id}
+  >
+    {items.map((slide, index) => (
+      <div class="carousel-slide w-full h-full bg-gray-100 hidden first:block">
+        {slide.mediaId ? (
+          <R2Picture
+            id={extractMediaId(slide.mediaId)}
+            alt={slide.alt || ''}
+			class="w-full h-full object-cover"
+			eager={eagerFirst && index === 0}
+			mediaSlot="full"
+          />
+        ) : (
+          <div class="w-full h-full flex items-center justify-center text-gray-400">
+            [No Image Provided]
+          </div>
+        )}
+        {slide.caption && (
+          <div class="absolute bottom-8 left-8 right-8 text-white z-10">
+            <p class="text-sm md:text-base font-light bg-black/60 p-4 inline-block backdrop-blur-sm">{slide.caption}</p>
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+
+  {items.length > 1 && (
+    <>
+      <button
+        class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white text-black rounded-full flex items-center justify-center shadow-lg transition-colors z-20"
+        aria-label="Previous slide"
+        @click.prevent="prev"
+      >
+        <span class="i-lucide-chevron-left w-6 h-6" />
+      </button>
+      <button
+        class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white text-black rounded-full flex items-center justify-center shadow-lg transition-colors z-20"
+        aria-label="Next slide"
+        @click.prevent="next"
+      >
+        <span class="i-lucide-chevron-right w-6 h-6" />
+      </button>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-0 z-20">
+        {items.map((_, index) => (
+          <button
+            class={`w-10 h-10 p-[15px] box-border bg-clip-content rounded-full transition-colors ${index === 0 ? 'bg-white' : 'bg-white/50 hover:bg-white/80'}`}
+            :class={`{ 'bg-white': current === ${index}, 'bg-white/50 hover:bg-white/80': current !== ${index} }`}
+            aria-label={`Go to slide ${index + 1}`}
+            @click.prevent={`goToTarget(${index})`}
+          ></button>
+        ))}
+      </div>
+    </>
+  )}
+</div>

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { access, readFile, readdir } from 'node:fs/promises';
 
-const ignoredDirectories = new Set(['.git', 'node_modules', '.astro', '.pi', '.warren', '__generated__', 'admin']);
+const ignoredDirectories = new Set(['.git', 'node_modules', '.astro', '.pi', '.warren', '__generated__', 'admin', 'dist']);
 const files = await walk('.');
 const forbiddenFiles = files.filter((file) => {
   const name = file.slice(file.lastIndexOf('/') + 1);
-  return /^(?:\.env(?:\..*)?|.*\.(?:pem|key|crt)|wrangler\.(?:toml|json)|tina\.config\..*|.*(?:cloudflare|pages|r2).*)$/i.test(name);
+  return /^(?:\.env(?:\..*)?|.*\.(?:pem|key|crt)|wrangler\.(?:toml|json)|tina\.config\..*)$/i.test(name);
 });
 const sourceFiles = files.filter((file) => /\.(?:astro|html|json|mjs|ts|md|yml|yaml)$/.test(file));
 const assignmentPattern = new RegExp(

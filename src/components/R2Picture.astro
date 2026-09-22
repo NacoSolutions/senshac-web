@@ -1,0 +1,66 @@
+---
+interface Props {
+	id: string;
+	alt?: string;
+	class?: string;
+	eager?: boolean;
+	sizes?: string;
+	mediaSlot?: "full" | "content" | "grid" | "logo";
+	width?: number | string;
+	height?: number | string;
+	[attribute: string]: unknown;
+}
+
+const SLOT_SIZES = {
+	full: "100vw",
+	content: "(min-width: 1200px) 1152px, (min-width: 768px) 60vw, 100vw",
+	grid: "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw",
+	logo: "(min-width: 768px) 128px, 96px",
+} as const;
+const IMAGE_WIDTHS = [320, 480, 640, 768, 1024, 1280, 1920] as const;
+
+const {
+	id,
+	alt = "",
+	class: className,
+	eager = false,
+	sizes: sizesOverride,
+	mediaSlot = "content",
+	width = 1280,
+	height = 960,
+	...attributes
+} = Astro.props;
+const sizes = sizesOverride ?? SLOT_SIZES[mediaSlot];
+const baseUrl = (
+	import.meta.env.PUBLIC_MEDIA_BASE_URL || "https://media.senshac.com"
+).replace(/\/$/, "");
+const cleanId = id
+	.replace(new RegExp(`^${baseUrl}/images/`), "")
+	.replace(new RegExp(`^${baseUrl}/videos/`), "")
+	.replace(/^\/+|\/+$/g, "")
+	.replace(/^images\//, "")
+	.replace(/\/(?:320|412|480|640|768|1024|1200|1280|1920)\.(?:avif|webp)$/, "")
+	.replace(/\.[^.]+$/, "");
+const url = (width: number, format: "avif" | "webp") =>
+	`${baseUrl}/images/${cleanId}/${width}.${format}?v=${import.meta.env.PUBLIC_MEDIA_ASSET_VERSION || "2026-07-23-slot-ladder-q45"}`;
+const srcset = (format: "avif" | "webp") =>
+	IMAGE_WIDTHS.map((width) => `${url(width, format)} ${width}w`).join(", ");
+---
+
+<picture {...attributes}>
+  <source type="image/avif" srcset={srcset('avif')} sizes={sizes} />
+  <source type="image/webp" srcset={srcset('webp')} sizes={sizes} />
+  <img
+    src={url(1280, 'webp')}
+    srcset={srcset('webp')}
+    sizes={sizes}
+    alt={alt}
+    class={className}
+    style="color: transparent"
+    width={width}
+    height={height}
+    loading={eager ? 'eager' : 'lazy'}
+    decoding={eager ? 'sync' : 'async'}
+    fetchpriority={eager ? 'high' : 'auto'}
+  />
+</picture>

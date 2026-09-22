@@ -1,0 +1,47 @@
+---
+// @route-contract pagespeed
+export { getLanguagePaths as getStaticPaths } from "../../lib/static-paths";
+export const prerender = true;
+
+import { getEntry } from "astro:content";
+import BlocksRenderer from "../../components/BlocksRenderer.astro";
+// src/pages/[lang]/index.astro
+import Base from "../../layouts/Base.astro";
+import { getSiteConfig } from "../../utils/site-config";
+import { getTranslations as getPublicTranslations } from "../../utils/translations";
+
+const { lang } = Astro.params;
+
+const page = await getEntry("pages", `${lang}/home`);
+
+if (!page) {
+	return Astro.redirect("/404");
+}
+
+const { title, description, headerStyle, blocks } = page.data as {
+	title: string;
+	description: string;
+	headerStyle: "default" | "transparent";
+	blocks?: any[];
+};
+
+const translations = await getPublicTranslations(lang ?? "es");
+const site = await getSiteConfig();
+---
+
+<Base
+  title={title}
+  description={description}
+  lang={lang}
+  schema="LocalBusiness"
+  headerStyle={headerStyle}
+  translationsData={translations}
+  siteData={site}
+  aot
+>
+  <main id="main">
+    {blocks && blocks.map((block: any, index: number) => (
+      <BlocksRenderer block={block} index={index} parentData={page.data} />
+    ))}
+  </main>
+</Base>

@@ -1,0 +1,16 @@
+---
+import type { ContactQuery } from "../../../tina/__generated__/types";
+import BlocksRenderer from "../BlocksRenderer.astro";
+
+type ContactPageData = ContactQuery["contact"];
+
+interface Props {
+	data?: ContactPageData | null;
+}
+
+const { data } = Astro.props;
+---
+
+{data && data.blocks && data.blocks.map((block: any, index: number) => (
+  <BlocksRenderer block={block} index={index} parentData={data} />
+))}

@@ -1,0 +1,173 @@
+---
+import { getCollection } from "astro:content";
+import R2Picture from "../../R2Picture.astro";
+import MediaPlaceholder from "./MediaPlaceholder.astro";
+
+interface Item {
+	title?: string;
+	link?: string;
+	mediaId?: string;
+	imageAlt?: string;
+	placeholderLabel?: string;
+}
+
+interface Props {
+	eyebrow?: string;
+	title?: string;
+	ctaText?: string;
+	ctaLink?: string;
+	mediaType?: "image" | "video";
+	mediaId?: string;
+	imageAlt?: string;
+	placeholderLabel?: string;
+	items?: Item[] | null;
+}
+
+const {
+	eyebrow,
+	title,
+	ctaText,
+	ctaLink,
+	mediaType = "image",
+	mediaId,
+	imageAlt,
+	placeholderLabel,
+	items: itemList,
+} = Astro.props;
+const items = itemList ?? [];
+
+// Auto-populate from projects when no items and no media are provided
+const lang = Astro.url.pathname.split("/")[1] || "es";
+let projectSlides: {
+	title: string;
+	href: string;
+	mediaId: string;
+	alt: string;
+}[] = [];
+
+if (items.length === 0 && !mediaId) {
+	const allProjects = await getCollection("projects", ({ id, data }) => {
+		return id.startsWith(`${lang}/`) && !data.draft;
+	});
+	const sorted = allProjects.sort((a, b) => {
+		const dateA = a.data.publishDate?.getTime() || 0;
+		const dateB = b.data.publishDate?.getTime() || 0;
+		return dateB - dateA;
+	});
+	projectSlides = sorted.map((project) => {
+		const bannerBlock = project.data.blocks?.find(
+			(b: any) => b._template === "projectBanner",
+		);
+		return {
+			title: project.data.title,
+			href: `/${lang}/works/${project.data.slug}`,
+			mediaId: (bannerBlock?.mediaId || "")
+				.replace(/^https:\/\/media\.senshac\.com\/images\//, "")
+				.replace(/^\/?images\//, "")
+				.replace(
+					/\/(?:320|412|480|640|768|1024|1200|1280|1920)\.(?:avif|webp)$/,
+					"",
+				)
+				.replace(/\.[^.]+$/, ""),
+			alt: bannerBlock?.alt || project.data.title,
+		};
+	});
+}
+
+const showProjectCarousel = projectSlides.length > 0;
+const carouselId = `showcase-${Math.random().toString(36).substring(2, 9)}`;
+---
+
+<section class="editorial-section">
+  <div class="editorial-shell">
+    {eyebrow && <p class="editorial-eyebrow">{eyebrow}</p>}
+    {title && <h2 class="editorial-heading editorial-heading--compact" x-reveal>{title}</h2>}
+
+    {showProjectCarousel ? (
+      <!-- Project carousel -->
+      <div class="relative overflow-hidden w-full" id={carouselId} x-data="carousel">
+        <div
+          class="carousel-track relative w-full h-[50vh] md:h-[70vh]"
+          data-carousel={carouselId}
+        >
+          {projectSlides.map((slide, index) => (
+            <a href={slide.href} class="carousel-slide w-full h-full bg-gray-100 block group hidden first:block">
+              {slide.mediaId ? (
+				<R2Picture
+                  id={slide.mediaId}
+                  alt={slide.alt}
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+					eager={index === 0}
+					mediaSlot="full"
+					sizes="(min-width: 1280px) 1280px, calc(100vw - 3rem)"
+                />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                  {slide.title}
+                </div>
+              )}
+              <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 bg-gradient-to-t from-black/60 to-transparent z-10">
+                <span class="text-white text-lg md:text-2xl font-light tracking-wide">{slide.title}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+
+        {projectSlides.length > 1 && (
+          <>
+            <button
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white text-black rounded-full flex items-center justify-center shadow-lg transition-colors z-20"
+              aria-label="Previous slide"
+              @click.prevent="prev"
+            >
+              <span class="i-lucide-chevron-left w-6 h-6" />
+            </button>
+            <button
+              class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white text-black rounded-full flex items-center justify-center shadow-lg transition-colors z-20"
+              aria-label="Next slide"
+              @click.prevent="next"
+            >
+              <span class="i-lucide-chevron-right w-6 h-6" />
+            </button>
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-0 z-20">
+              {projectSlides.map((_, index) => (
+                <button
+                  class={`w-10 h-10 p-[15px] box-border bg-clip-content rounded-full transition-colors ${index === 0 ? 'bg-white' : 'bg-white/50 hover:bg-white/80'}`}
+                  :class={`{ 'bg-white': current === ${index}, 'bg-white/50 hover:bg-white/80': current !== ${index} }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                  @click.prevent={`goToTarget(${index})`}
+                ></button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    ) : items.length > 0 ? (
+      <div class="grid gap-8 grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]">
+        {items.map((item) => (
+          <a href={item.link || '#'} class="flex flex-col gap-4 decoration-none text-inherit">
+			<MediaPlaceholder
+              mediaId={item.mediaId}
+              alt={item.imageAlt}
+              label={item.placeholderLabel}
+				aspect="landscape"
+				mediaSlot="grid"
+            />
+            <span class="text-[1.15rem] font-medium uppercase">{item.title}</span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <MediaPlaceholder
+        mediaId={mediaId}
+        alt={imageAlt}
+        kind={mediaType || 'image'}
+        label={placeholderLabel}
+        aspect="wide"
+        mediaSlot="full"
+      />
+    )}
+
+    {ctaText && ctaLink && <a class="editorial-link mt-[clamp(2rem,5vw,4rem)]" href={ctaLink}>{ctaText}</a>}
+  </div>
+</section>

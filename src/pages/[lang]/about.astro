@@ -1,0 +1,6 @@
+---
+// @route-contract redirect
+export { getLanguagePaths as getStaticPaths } from "../../lib/static-paths";
+
+return Astro.redirect(`/${Astro.params.lang}/studio`, 301);
+---
