@@ -24,7 +24,7 @@ for (const file of sourceFiles) {
 await access('content/tina-fixture.json');
 await access('content/tina-schema.json');
 await access('wrangler.jsonc');
-await access('dist/client/es/methods/index.html');
+await access('dist/es/methods/index.html');
 
 if (failures.length) {
   console.error(failures.join('\n'));
