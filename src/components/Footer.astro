@@ -6,17 +6,33 @@ import { getSiteConfig } from "../utils/site-config";
 import { getTranslations, type Translations } from "../utils/translations";
 import R2Picture from "./R2Picture.astro";
 
+type Appearance = "transparent-adaptive" | "transparent-light" | "transparent-dark" | "opaque-light" | "opaque-dark";
+type ChromePart = { mode?: "fixed" | "scrolling"; atFinal?: Appearance; scrolling?: Appearance };
+
 interface Props {
 	lang: string;
 	translations?: Translations;
 	siteData?: SiteConfigQuery["siteConfig"];
+	chrome?: { footer?: ChromePart };
 }
 
 const {
 	lang,
 	translations: propTranslations,
 	siteData: propSiteData,
+	chrome: propChrome,
 } = Astro.props;
+const footer = propChrome?.footer;
+const mode = footer?.mode ?? "scrolling";
+const scrollingAppearance = footer?.scrolling ?? "opaque-dark";
+const finalAppearance = footer?.atFinal ?? "opaque-dark";
+const appearanceClasses: Record<Appearance, string> = {
+	"transparent-adaptive": "bg-transparent text-white mix-blend-difference",
+	"transparent-light": "bg-transparent text-white",
+	"transparent-dark": "bg-transparent text-gray-900",
+	"opaque-light": "bg-white text-gray-900",
+	"opaque-dark": "bg-black text-white",
+};
 
 const t = propTranslations ?? (await getTranslations(lang));
 const site = (propSiteData ?? (await getSiteConfig())) as any;
@@ -27,7 +43,15 @@ const navLinks = (t.footer as any).links || [];
 const socialLinks = site.socialLinks;
 ---
 
-<footer class="text-white mix-blend-difference">
+<footer
+  x-data={`{ scrolled: false, scrollingAppearance: '${scrollingAppearance}', finalAppearance: '${finalAppearance}' }`}
+  x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 50 })"
+  class:list={[mode === "fixed" ? "fixed bottom-0 left-0 right-0 z-40" : "relative"]}
+  data-chrome-mode={mode}
+  data-chrome-at-final={finalAppearance}
+  data-chrome-scrolling={scrollingAppearance}
+  x-bind:class={`scrolled ? '${appearanceClasses[finalAppearance]}' : '${appearanceClasses[scrollingAppearance]}'`}
+>
   <!-- Section 1: Social/Contact + Logo -->
   <div class="max-w-7xl mx-auto px-4 md:px-8">
     <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-8 pt-16 pb-8">

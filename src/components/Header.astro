@@ -6,11 +6,15 @@ import { getSiteConfig } from "../utils/site-config";
 import { getTranslations, type Translations } from "../utils/translations";
 import R2Picture from "./R2Picture.astro";
 
+type Appearance = "transparent-adaptive" | "transparent-light" | "transparent-dark" | "opaque-light" | "opaque-dark";
+type ChromePart = { mode?: "fixed" | "scrolling"; atFinal?: Appearance; scrolling?: Appearance };
+
 interface Props {
 	lang: string;
 	headerStyle?: "default" | "transparent";
 	translations?: Translations;
 	siteData?: SiteConfigQuery["siteConfig"];
+	chrome?: { header?: ChromePart };
 }
 
 const {
@@ -18,10 +22,24 @@ const {
 	headerStyle = "default",
 	translations: propTranslations,
 	siteData: propSiteData,
+	chrome: propChrome,
 } = Astro.props;
 const currentPath = Astro.url.pathname;
 
 const isTransparent = headerStyle === "transparent";
+const header = propChrome?.header;
+const mode = header?.mode ?? "fixed";
+const scrollingAppearance = header?.scrolling ?? (isTransparent ? "transparent-adaptive" : "opaque-light");
+const finalAppearance = header?.atFinal ?? "opaque-light";
+const appearanceClasses: Record<Appearance, string> = {
+	"transparent-adaptive": "bg-transparent text-white mix-blend-difference",
+	"transparent-light": "bg-transparent text-white",
+	"transparent-dark": "bg-transparent text-gray-900",
+	"opaque-light": "bg-white/95 text-gray-900 backdrop-blur-sm border-b border-gray-100",
+	"opaque-dark": "bg-black/95 text-white backdrop-blur-sm border-b border-white/20",
+};
+const initialAppearance = appearanceClasses[scrollingAppearance];
+const finalAppearanceClasses = appearanceClasses[finalAppearance];
 
 const t = propTranslations ?? (await getTranslations(lang));
 const site = (propSiteData ?? (await getSiteConfig())) as any;
@@ -50,14 +68,21 @@ const getLocalizedPath = (targetLang: string) => {
     menuOpen: false,
     langOpen: false,
     scrolled: false,
-    isTransparent: ${isTransparent}
+    isTransparent: ${isTransparent},
+    appearance: '${scrollingAppearance}',
+    scrollingAppearance: '${scrollingAppearance}',
+    finalAppearance: '${finalAppearance}'
   }`}
   x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 50 })"
 >
   <header
-    class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+    class:list={[mode === "fixed" ? "fixed" : "relative", "top-0 left-0 right-0 z-50 transition-all duration-300"]}
     data-header-style={headerStyle}
-    x-bind:class="(isTransparent && !scrolled && !menuOpen) ? 'bg-transparent' : 'bg-white/95 backdrop-blur-sm border-b border-gray-100'"
+    data-chrome-mode={mode}
+    data-chrome-at-final={finalAppearance}
+    data-chrome-scrolling={scrollingAppearance}
+    x-bind:class={`appearance === '${scrollingAppearance}' ? '${initialAppearance}' : '${finalAppearanceClasses}'`}
+    x-effect="appearance = scrolled ? finalAppearance : scrollingAppearance"
   >
     <nav class="w-full px-4 md:px-8 h-20 flex items-center justify-between">
       <!-- Logo -->
