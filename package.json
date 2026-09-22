@@ -5,7 +5,7 @@
   "packageManager": "bun@1.3.13",
   "scripts": {
     "dev:cms": "tinacms dev -c \"astro dev\"",
-		"tina:generate": "if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build --skip-cloud-checks; else tinacms build --local --skip-cloud-checks; fi && rm -rf public/admin",
+		"tina:generate": "if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build --skip-cloud-checks; else tinacms build --local --skip-cloud-checks; fi",
 		"build": "node scripts/sync-editorial-content.mjs && if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build --skip-cloud-checks; else tinacms build --local --skip-cloud-checks; fi && astro build && node scripts/normalize-pages-wrangler.mjs",
     "verify:ci": "CF_PAGES=1 bun run build && bash scripts/normalize-tina-build && bun run acceptance --skip-build && bun run check:all && git diff --exit-code",
     "deploy": "bash scripts/deploy",
@@ -57,10 +57,11 @@
     "check:secrets-policy": "bun run scripts/check-secret-policy.ts",
     "test:secrets:sops": "bash scripts/sops-age-smoke",
     "check:leaks": "betterleaks git --redact --no-banner --no-color .",
-    "typecheck": "astro check",
+    "typecheck": "node scripts/typecheck.mjs",
     "preview:check": "node scripts/preview-check.mjs",
+    "check:admin-routing": "node scripts/admin-routing-check.mjs",
     "repository:check": "node scripts/repository-check.mjs",
-    "quality": "npm run lint && npm test && npm run tina:generate && npm run typecheck && npm run build && npm run preview:check && npm run repository:check"
+    "quality": "npm run lint && npm test && npm run tina:generate && npm run typecheck && npm run build && npm run check:admin-routing && npm run preview:check && npm run repository:check"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.7.0",

@@ -20,6 +20,14 @@ promoting a reviewed commit. This target is documentation only: Pages settings,
 custom domains, DNS, bindings, and credentials remain platform-owned and are
 not configured here.
 
+Tina admin routing has one canonical entry point: `/admin/`. Pages redirects
+`/admin` and the legacy localized `/es/admin` path to `/admin/`; no localized
+admin bundle is generated. The Tina CLI writes `public/admin/index.html` and
+its bridge/assets before Astro builds, and the Pages packaging step preserves
+that directory in `dist/admin/`. The admin route remains outside the public
+cache, and Tina's auth, media, and live-edit island routes remain handled by
+the Astro integration.
+
 The Pages preview environment must provide `NEXT_PUBLIC_TINA_CLIENT_ID` (the
 non-secret Tina Cloud project ID) and `TINA_TOKEN` (the Tina Cloud read-only
 token). Configure these in Tina Cloud/Pages secret settings; never commit
