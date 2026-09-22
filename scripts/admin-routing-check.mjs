@@ -13,7 +13,12 @@ assert.doesNotMatch(redirects, /^\/\S+\s+\/admin\/index\.html/m);
 await access(adminHtml);
 const html = await readFile(adminHtml, "utf8");
 assert.match(html, /<html/i);
-assert.match(html, /(?:src|href)=["'][^"']+\.(?:js|css)/i);
+const assetUrls = [...html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css))["']/gi)].map((match) => match[1]);
+assert.ok(assetUrls.length > 0, "Tina admin HTML has no JS or CSS assets");
+for (const assetUrl of assetUrls) {
+	assert.ok(assetUrl.startsWith("/"), `Tina admin asset is not root-relative: ${assetUrl}`);
+	await access(`dist${new URL(assetUrl, "https://senshac.invalid").pathname}`);
+}
 await access("dist/admin/bridge.js");
 await access("dist/_worker.js");
 
@@ -28,8 +33,12 @@ async function assertNoBrowserExternalization(directory) {
 		}
 		if (!entry.name.endsWith(".js")) continue;
 		const source = await readFile(path, "utf8");
-		if (source.includes('Cannot access ".custom"')) {
-			throw new Error(`Tina admin bundle contains browser externalization: ${path}`);
+		for (const marker of [
+			"__vite-browser-external_",
+			'Module \"\" has been externalized',
+			'Cannot access \".custom\"',
+		]) {
+			if (source.includes(marker)) throw new Error(`Tina admin bundle contains browser externalization (${marker}): ${path}`);
 		}
 	}
 }
