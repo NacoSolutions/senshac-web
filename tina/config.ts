@@ -829,6 +829,9 @@ export default defineConfig({
 	branch: process.env.TINA_BRANCH || process.env.CF_PAGES_BRANCH || "main",
 	clientId: process.env.TINA_CLIENT_ID || "",
 	token: process.env.TINA_TOKEN || "",
+	// Resolved relative to tina/. TinaCloud uses the configured content repo;
+	// local dev and CI use the sibling checkout when it is available.
+	localContentPath: process.env.TINA_LOCAL_CONTENT_PATH || "../../../senshac-content/main",
 
 	build: {
 		outputFolder: "admin",
@@ -850,7 +853,7 @@ export default defineConfig({
 			{
 				name: "siteConfig",
 				label: "Site Configuration",
-				path: "src/content/config",
+				path: "config",
 				format: "json",
 				match: { include: "site" },
 				fields: siteConfigFields,
@@ -866,7 +869,7 @@ export default defineConfig({
 			{
 				name: "home",
 				label: "Pages / Home",
-				path: "src/content/pages",
+				path: "pages",
 				format: "json",
 				match: { include: "*/home" },
 				fields: homePageFields,
@@ -878,7 +881,7 @@ export default defineConfig({
 			{
 				name: "about",
 				label: "Pages / Studio",
-				path: "src/content/pages",
+				path: "pages",
 				format: "json",
 				match: { include: "*/about" },
 				fields: aboutPageFields,
@@ -890,7 +893,7 @@ export default defineConfig({
 			{
 				name: "services",
 				label: "Pages / Methods",
-				path: "src/content/pages",
+				path: "pages",
 				format: "json",
 				match: { include: "*/services" },
 				fields: servicesPageFields,
@@ -902,7 +905,7 @@ export default defineConfig({
 			{
 				name: "contact",
 				label: "Pages / Contact",
-				path: "src/content/pages",
+				path: "pages",
 				format: "json",
 				match: { include: "*/contact" },
 				fields: contactPageFields,
@@ -918,7 +921,7 @@ export default defineConfig({
 			{
 				name: "legal",
 				label: "Legal / Pages",
-				path: "src/content/legal",
+				path: "legal",
 				format: "mdx",
 				fields: legalPageFields,
 				ui: {
@@ -933,7 +936,7 @@ export default defineConfig({
 			{
 				name: "projects",
 				label: "Portfolio / Projects",
-				path: "src/content/projects",
+				path: "projects",
 				format: "json",
 				fields: projectFields,
 				defaultItem: () => {
@@ -982,7 +985,7 @@ export default defineConfig({
 			{
 				name: "translations",
 				label: "System / Translations",
-				path: "src/content/translations",
+				path: "translations",
 				format: "json",
 				fields: translationFields,
 				ui: {

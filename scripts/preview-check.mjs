@@ -11,7 +11,8 @@ assert.ok(intro);
 
 for (const locale of ['es', 'ca', 'en']) {
   const localizedRoute = await readBuiltPage(`${locale}/methods/index.html`);
-  assert.match(localizedRoute, /<title>Redirecting to: \/404<\/title>/);
+  assert.doesNotMatch(localizedRoute, /<title>Redirecting to: \/404<\/title>/);
+  assert.match(localizedRoute, /<main/);
 }
 
 const notFound = await readBuiltPage('404.html');
@@ -34,4 +35,3 @@ async function readBuiltPage(name) {
   }
   throw new Error(`Built page not found: ${name}`);
 }
-
