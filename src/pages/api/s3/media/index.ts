@@ -6,29 +6,48 @@ import type { APIRoute } from "astro";
 import {
 	authorized,
 	getS3Client,
+	allowedMediaOrigin,
 	mediaEnv,
+	mediaOptions,
+	mediaResponse,
 	publicMediaUrl,
 	safeMediaKey,
 } from "../../../../lib/r2-media";
 
-export const GET: APIRoute = async ({ request, locals }) => {
-	if (!(await authorized(request))) {
-		return Response.json({ message: "Unauthorized" }, { status: 401 });
-	}
-
+export const OPTIONS: APIRoute = async ({ request, locals }) => {
 	const env = mediaEnv(locals);
+	if (!(await authorized(request))) {
+		return mediaResponse(request, env, { message: "Unauthorized" }, { status: 401 });
+	}
+	return mediaOptions(request, env);
+};
+
+export const GET: APIRoute = async ({ request, locals }) => {
+	const env = mediaEnv(locals);
+	const origin = request.headers.get("origin");
+	if (origin && !allowedMediaOrigin(origin, env)) {
+		return mediaResponse(request, env, { message: "Origin not allowed" }, { status: 403 });
+	}
+	if (!(await authorized(request))) {
+		return mediaResponse(request, env, { message: "Unauthorized" }, { status: 401 });
+	}
 	const url = new URL(request.url);
 
 	// 1. Upload URL generation (always requires S3 presigning)
 	const uploadKey = url.searchParams.get("key");
 	if (uploadKey) {
 		const bucket = env.S3_BUCKET;
-		const key = safeMediaKey(uploadKey);
+		let key: string;
+		try {
+			key = safeMediaKey(uploadKey);
+		} catch {
+			return mediaResponse(request, env, { message: "Invalid media key" }, { status: 400 });
+		}
 		const expiresIn = Number(url.searchParams.get("expiresIn")) || 3600;
 
 		if (import.meta.env.DEV) {
 			// Bypass AWS SDK which causes Vite SSR interop issues locally
-			return Response.json({
+			return mediaResponse(request, env, {
 				signedUrl: `${env.S3_ENDPOINT}/${bucket}/${key}?presigned=true&expiresIn=${expiresIn}`,
 				src: publicMediaUrl(key, env.PUBLIC_MEDIA_BASE_URL),
 			});
@@ -39,7 +58,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 			client = await getS3Client(env);
 		} catch (error) {
 			console.error("[S3 API Error]:", error);
-			return Response.json(
+			return mediaResponse(request, env,
 				{
 					message: "S3 binding is not configured properly",
 					error: String(error),
@@ -50,12 +69,12 @@ export const GET: APIRoute = async ({ request, locals }) => {
 		try {
 			const command = new PutObjectCommand({ Bucket: bucket, Key: key });
 			const signedUrl = await getSignedUrl(client, command, { expiresIn });
-			return Response.json({
+			return mediaResponse(request, env, {
 				signedUrl,
 				src: publicMediaUrl(key, env.PUBLIC_MEDIA_BASE_URL),
 			});
 		} catch (e) {
-			return Response.json(
+			return mediaResponse(request, env,
 				{ message: "Failed to create upload URL" },
 				{ status: 500 },
 			);
@@ -64,9 +83,14 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
 	// 2. Listing directory contents
 	const directory = url.searchParams.get("directory") || "";
-	const prefix = directory
-		? `${safeMediaKey(directory).replace(/\/$/, "")}/`
-		: "";
+	let prefix = "";
+	if (directory) {
+		try {
+			prefix = `${safeMediaKey(directory).replace(/\/$/, "")}/`;
+		} catch {
+			return mediaResponse(request, env, { message: "Invalid media directory" }, { status: 400 });
+		}
+	}
 	const limit = Math.min(Number(url.searchParams.get("limit")) || 500, 1000);
 	const cursor = url.searchParams.get("offset") || undefined;
 	const maxKeys = directory && !cursor ? limit + 1 : limit;
@@ -110,7 +134,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 					};
 				});
 
-			return Response.json({
+			return mediaResponse(request, env, {
 				items: [...directories, ...objects],
 				offset: list.truncated ? list.cursor : undefined,
 			});
@@ -122,7 +146,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 			client = await getS3Client(env);
 		} catch (error) {
 			console.error("[S3 API Error]:", error);
-			return Response.json(
+			return mediaResponse(request, env,
 				{ message: "S3 binding is not configured properly" },
 				{ status: 503 },
 			);
@@ -169,11 +193,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
 				};
 			});
 
-		return Response.json({
+		return mediaResponse(request, env, {
 			items: [...directories, ...objects],
 			offset: result.NextMarker,
 		});
 	} catch (e) {
-		return Response.json({ message: "Failed to list media" }, { status: 500 });
+		return mediaResponse(request, env, { message: "Failed to list media" }, { status: 500 });
 	}
 };
