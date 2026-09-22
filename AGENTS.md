@@ -67,3 +67,12 @@ deliberate whitespace-only lockfile change, then use the TinaCloud branch
 Warren reads and executes the repository-local `.seeds/` queue. Keep active
 follow-up work in Seeds, inspect the queue before implementation, and preserve
 its tracked JSONL records with the repository changes.
+
+## Portable rules and CLI skills
+
+Load `.agents/rules/` for Caveman ultra, direct execution, positive phrasing,
+defense in depth, gentle coding, token economy, and llm-shorthand. Load
+`instruction-specificity.md` when authoring agent guidance. Use the local
+`seeds-cli`, `mulch-cli`, `warren-operations`, and
+`verification-before-completion` skills for tracker, expertise, Warren, and
+completion work. Load role-specific skills for the implementation surface.
