@@ -12,7 +12,7 @@ jobs:
   contract:
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_TINA_CLIENT_ID: ${{ secrets.TINA_CLOUD_CLIENT_ID }}
+      TINA_CLIENT_ID: ${{ secrets.TINA_CLOUD_CLIENT_ID }}
       TINA_TOKEN: ${{ secrets.TINA_CLOUD_READ_ONLY_TOKEN }}
     # Consumer pin: digest published by senshac-runner workflow 35397460307.
     container:
