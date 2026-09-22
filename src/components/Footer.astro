@@ -27,9 +27,9 @@ const navLinks = (t.footer as any).links || [];
 const socialLinks = site.socialLinks;
 ---
 
-<footer class="bg-black text-white">
+<footer class="text-white">
   <!-- Section 1: Social/Contact + Logo -->
-  <div class="max-w-7xl mx-auto px-4 md:px-8">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 mix-blend-difference">
     <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-8 pt-16 pb-8">
       <!-- Logo -->
         <a href={`/${lang}/`} aria-label={site.company.name}>
@@ -83,7 +83,7 @@ const socialLinks = site.socialLinks;
   </div>
 
   <!-- Section 2: Navigation Links -->
-  <div class="border-t border-b border-white/20">
+  <div class="border-t border-b border-white/20 mix-blend-difference">
     <div class="max-w-7xl mx-auto px-4 md:px-8">
         <div class="flex flex-wrap justify-between gap-4 py-8">
           {navLinks.map((link: { href: string; label: string }, index: number) => (
@@ -100,7 +100,7 @@ const socialLinks = site.socialLinks;
   </div>
 
   <!-- Section 3: Copyright + Legal -->
-  <div class="max-w-7xl mx-auto px-4 md:px-8">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 mix-blend-difference">
     <div class="flex flex-wrap justify-between gap-4 py-4">
       <!-- Attribution -->
       <div class="text-sm text-white/70">
