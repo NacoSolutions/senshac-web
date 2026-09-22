@@ -6,3 +6,6 @@ dist/
 !.env.example
 /public/admin/
 /tina/__generated__/
+/src/content/pages/**/*.json
+/src/content/legal/**/*.mdx
+/src/content/projects/**/*.json

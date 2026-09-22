@@ -1,12 +1,12 @@
 # Editorial content boundary
 
-The preview consumes a deliberately small, repository-local, read-only export
-from the sibling `senshac-content` repository. Tina's `articles` collection
-likewise points at that sibling through `localContentPath: '../senshac-content'`;
-article Markdown/MDX files are never owned by or copied into `senshac-web`.
-For local Tina editing, check out `NacoSolutions/senshac-content` beside this
-repository. CI and preview builds use the committed export and do not require
-that checkout or any credentials. The pinned export is
+The site consumes editorial pages, legal files, and projects from the sibling
+`senshac-content` repository. `scripts/sync-editorial-content.mjs` uses the
+pinned content revision, preferring a sibling checkout for local work and a
+public GitHub archive during CI/Pages builds. Generated files remain ignored;
+the content repository remains the editorial source of truth. For local Tina
+editing, check out `NacoSolutions/senshac-content` beside this repository. The
+small pinned export is
 `content/senshac-content-export.json` and uses this envelope:
 
 ```json
@@ -40,14 +40,11 @@ and adapter tests.
 
 ## Refresh and review procedure
 
-To refresh the preview export, a maintainer must obtain a new immutable
-`senshac-content` commit, export the approved contract from that revision, and
-update both `sourceRevision` and the JSON payload in one reviewed change. The
-revision must be the full commit ID (not a branch or tag), and the adapter pin
-in `src/content/adapter.mjs` must match it. Run `npm run quality`, inspect the
-diff for editorial scope and secrets, and have an owner review the source
-revision, contract version, and rendered preview before merging. Do not refresh
-it from a network during an application build.
+To refresh deployed editorial content, a maintainer must update the immutable
+`SENSHAC_CONTENT_REVISION` pin after reviewing the corresponding
+`senshac-content` commit. The revision must be the full commit ID, not a branch
+or tag. Run the quality gate, inspect the rendered preview, and have an owner
+review the content source and deployment diff before merging.
 
 TinaCMS credentials, write access, Cloudflare Pages configuration, R2 bindings,
 and a full content migration remain out of scope until the editorial workflow
