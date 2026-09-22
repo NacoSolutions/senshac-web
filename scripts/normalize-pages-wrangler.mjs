@@ -11,5 +11,6 @@ await rm("dist/client", { recursive: true, force: true });
 await rm("dist/server/wrangler.json", { force: true });
 await rm("dist/server/.prerender", { recursive: true, force: true });
 await rename("dist/server", "dist/_worker.js");
+await rm(".wrangler", { recursive: true, force: true });
 
 console.log("Pages output packaged: dist static assets + dist/_worker.js");
