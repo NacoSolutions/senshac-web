@@ -1,0 +1,30 @@
+---
+import type { SiteConfigQuery } from "../../../tina/__generated__/types";
+import {
+	getSiteConfigTina,
+	getTinaRuntimeEnv,
+	getTranslations,
+} from "../../lib/tina-data";
+import type { Translations } from "../../utils/translations";
+import Footer from "../Footer.astro";
+
+interface Props {
+	data?: Translations;
+	siteData?: SiteConfigQuery["siteConfig"];
+	lang: string;
+	relativePath?: string;
+}
+
+let { data, siteData, lang } = Astro.props;
+const tinaEnv = getTinaRuntimeEnv(Astro.locals);
+
+if (!data) {
+	const transRes = await getTranslations(`${lang}.json`, tinaEnv);
+	data = transRes.data.translations as any;
+}
+if (!siteData) {
+	const siteRes = await getSiteConfigTina("site.json", tinaEnv);
+	siteData = siteRes.data.siteConfig;
+}
+---
+<Footer lang={lang} translations={data!} siteData={siteData!} />

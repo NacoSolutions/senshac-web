@@ -1,0 +1,91 @@
+---
+// src/components/sections/projects/Details.astro
+import R2Picture from "../../R2Picture.astro";
+
+interface Props {
+	title: string;
+	subtitle?: string;
+	services: string;
+	servicesLabel?: string;
+	category: string;
+	categoryLabel?: string;
+	area: string;
+	areaLabel?: string;
+	location: string;
+	locationLabel?: string;
+	mediaId?: string;
+	eager?: boolean;
+}
+
+const {
+	title,
+	subtitle,
+	services,
+	servicesLabel = "SERVICES",
+	category,
+	categoryLabel = "CATEGORY",
+	area,
+	areaLabel = "AREA",
+	location,
+	locationLabel = "LOCATION",
+	mediaId,
+	eager = false,
+} = Astro.props;
+---
+
+<section class="py-12 md:py-16">
+  <div class="max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
+    <!-- Title and subtitle -->
+    <div class="mb-8 md:mb-12">
+      <h1 class="text-3xl md:text-4xl lg:text-5xl font-sans font-medium tracking-tight uppercase mb-4 md:mb-6">
+        {title}
+      </h1>
+      {subtitle && (
+        <p class="text-xl md:text-2xl lg:text-3xl font-serif italic text-neutral-800 max-w-3xl">
+          {subtitle}
+        </p>
+      )}
+    </div>
+
+    <!-- Info grid - 4 columns -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-10 md:mb-14">
+      <div>
+        <p class="text-xs md:text-sm text-neutral-500 uppercase tracking-wider mb-1">
+          {servicesLabel}
+        </p>
+        <p class="text-sm md:text-base font-medium text-neutral-900">{services}</p>
+      </div>
+      <div>
+        <p class="text-xs md:text-sm text-neutral-500 uppercase tracking-wider mb-1">
+          {categoryLabel}
+        </p>
+        <p class="text-sm md:text-base font-medium text-neutral-900">{category}</p>
+      </div>
+      <div>
+        <p class="text-xs md:text-sm text-neutral-500 uppercase tracking-wider mb-1">
+          {areaLabel}
+        </p>
+        <p class="text-sm md:text-base font-medium text-neutral-900">{area}</p>
+      </div>
+      <div>
+        <p class="text-xs md:text-sm text-neutral-500 uppercase tracking-wider mb-1">
+          {locationLabel}
+        </p>
+        <p class="text-sm md:text-base font-medium text-neutral-900">{location}</p>
+      </div>
+    </div>
+
+    <!-- Detail image -->
+    {mediaId && (
+      <div class="w-full">
+        <R2Picture
+          id={mediaId}
+          alt={title}
+			class="w-full h-auto object-cover"
+			eager={eager}
+			mediaSlot="content"
+        />
+      </div>
+    )}
+  </div>
+</section>

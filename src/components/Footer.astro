@@ -1,0 +1,130 @@
+---
+import { tinaField } from "@tinacms/astro/tina-field";
+import type { SiteConfigQuery } from "../../tina/__generated__/types";
+import { getSiteConfig } from "../utils/site-config";
+// src/components/Footer.astro
+import { getTranslations, type Translations } from "../utils/translations";
+import R2Picture from "./R2Picture.astro";
+
+interface Props {
+	lang: string;
+	translations?: Translations;
+	siteData?: SiteConfigQuery["siteConfig"];
+}
+
+const {
+	lang,
+	translations: propTranslations,
+	siteData: propSiteData,
+} = Astro.props;
+
+const t = propTranslations ?? (await getTranslations(lang));
+const site = (propSiteData ?? (await getSiteConfig())) as any;
+
+const navLinks = (t.footer as any).links || [];
+
+// Use social links from site config
+const socialLinks = site.socialLinks;
+---
+
+<footer class="bg-black text-white">
+  <!-- Section 1: Social/Contact + Logo -->
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-8 pt-16 pb-8">
+      <!-- Logo -->
+        <a href={`/${lang}/`} aria-label={site.company.name}>
+          <R2Picture
+            id={site.branding.symbolWhite}
+            alt={site.company.name.toLowerCase()}
+            class="h-12 w-auto"
+            mediaSlot="logo"
+            width="900"
+            height="900"
+            data-tina-field={tinaField(site.branding, 'symbolWhite')}
+          />
+        </a>
+
+      <!-- Social + Contact -->
+      <div class="flex flex-col items-start sm:items-end">
+          <!-- Social Icons -->
+          <div class="flex gap-4 mb-2">
+            {socialLinks.map((link: any, index: number) => (
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-white hover:text-gray-300 transition-colors"
+                aria-label={link.name}
+              >
+                <span data-tina-field={tinaField(site.socialLinks, index)} class="inline-block">
+                  <span class:list={[link.icon, "w-5 h-5 block"]} />
+                </span>
+              </a>
+            ))}
+          </div>
+
+        <!-- Contact Info -->
+          <div class="text-lg text-white">
+            <a
+              href={`mailto:${site.contact.email}`}
+              class="block hover:text-gray-300 transition-colors"
+            >
+              <span data-tina-field={tinaField(site.contact, 'email')}>{site.contact.email}</span>
+            </a>
+            <a
+              href={`tel:${site.contact.phoneLink || site.contact.phone.replace(/\s/g, '')}`}
+              class="block hover:text-gray-300 transition-colors"
+            >
+              <span data-tina-field={tinaField(site.contact, 'phone')}>{site.contact.phone}</span>
+            </a>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Navigation Links -->
+  <div class="border-t border-b border-white/20">
+    <div class="max-w-7xl mx-auto px-4 md:px-8">
+        <div class="flex flex-wrap justify-between gap-4 py-8">
+          {navLinks.map((link: { href: string; label: string }, index: number) => (
+            <a
+              href={link.href}
+              class="page-link text-white/50 hover:text-white transition-colors"
+            >
+              <span data-tina-field={tinaField((t.footer as any).links, index)}>{link.label}</span>
+              <span class="page-link-icon i-lucide-arrow-up-right" />
+            </a>
+          ))}
+        </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Copyright + Legal -->
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <div class="flex flex-wrap justify-between gap-4 py-4">
+      <!-- Attribution -->
+      <div class="text-sm text-white/70">
+        {site.attribution?.design && <p data-tina-field={tinaField(site.attribution, 'design')}>Design by {site.attribution.design}</p>}
+        {site.attribution?.development && <p data-tina-field={tinaField(site.attribution, 'development')}>Development by {site.attribution.development}</p>}
+      </div>
+
+      <!-- Legal Links -->
+      <div class="text-sm text-white/70 ">
+        <p><a
+          href={`/${lang}/privacy-policy`}
+          class="hover:text-white transition-colors py-1"
+          data-tina-field={tinaField(t.footer, 'privacy')}
+        >
+          {t.footer.privacy}
+        </a></p>
+        <p><a
+          href={`/${lang}/legal-notice`}
+          class="hover:text-white transition-colors py-1"
+          data-tina-field={tinaField(t.footer, 'legal')}
+        >
+          {t.footer.legal}
+        </a></p>
+      </div>
+    </div>
+  </div>
+</footer>

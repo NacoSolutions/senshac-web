@@ -1,0 +1,71 @@
+---
+import MediaPlaceholder from "./MediaPlaceholder.astro";
+
+interface Props {
+	title?: string;
+	subtitle?: string;
+	topRight?: {
+		lines?: string[];
+	};
+	mediaId?: string;
+	imageAlt?: string;
+	placeholderLabel?: string;
+	objectFit?: "cover" | "contain";
+	eager?: boolean;
+}
+
+const {
+	title,
+	subtitle,
+	topRight,
+	mediaId,
+	imageAlt,
+	placeholderLabel,
+	objectFit = "cover",
+	eager = false,
+} = Astro.props;
+---
+
+<section class="relative min-h-[550px] h-[100svh] overflow-hidden text-white bg-[#050505]">
+  <div class="absolute inset-0">
+    <MediaPlaceholder
+      mediaId={mediaId}
+      alt={imageAlt}
+      label={placeholderLabel}
+      aspect="wide"
+      objectFit={objectFit}
+      eager={eager}
+      variant="banner"
+    />
+  </div>
+  <div class="absolute inset-0 bg-black/22" aria-hidden="true"></div>
+  <div class="relative z-1 h-full editorial-shell">
+    {topRight?.lines?.length && (
+      <div class="absolute top-[10%] right-0 flex flex-col font-jozsika text-[clamp(2rem,3.5vw,2.75rem)] font-light leading-[0.9]" aria-label={topRight.lines.join(' ')}>
+        {topRight.lines.map((line, index) => {
+          const hasRegistrationMark = line.endsWith(' R');
+          const label = hasRegistrationMark ? line.slice(0, -2) : line;
+
+          return (
+            <span class:list={['block', { 'pl-20': index % 2 === 1 }]}>
+              {label}
+              {hasRegistrationMark && <span class="inline-block -m-2 py-0.5 px-2 border border-current rounded-full text-base leading-none">R</span>}
+            </span>
+          );
+        })}
+      </div>
+    )}
+    <div class="absolute right-0 bottom-[calc(10%+1rem)] left-0 md:bottom-[calc(15%+2rem)]">
+      {title && (
+        <h1 class="m-0 font-sans text-[clamp(3rem,8vw,6rem)] font-normal leading-[1.1] md:leading-[7.25rem] whitespace-pre-line tracking-tight" aria-label={title.replaceAll('\n', ' ')}>
+          {title.split('\n').map((line, index) => (
+            <span class:list={['block', { 'pl-[1em]': index === 1 }]}>
+              {line}
+            </span>
+          ))}
+        </h1>
+      )}
+      {subtitle && <p class="mt-[0.45rem] mb-0 font-jozsika text-[clamp(1.25rem,3vw,2rem)] font-light leading-normal">{subtitle}</p>}
+    </div>
+  </div>
+</section>

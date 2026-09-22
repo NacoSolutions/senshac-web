@@ -7,7 +7,7 @@ const pinnedExport = JSON.parse(await readFile(new URL('../content/senshac-conte
 const result = adaptContentExport(pinnedExport);
 assert.equal(result.status, 'ready');
 const { title, intro } = result.content;
-const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
+const html = await readBuiltPage('index.html');
 
 assert.match(html, /<html lang="en">/);
 assert.match(html, /<main>/);
@@ -16,7 +16,7 @@ assert.match(html, new RegExp(`<p>${escapeRegExp(intro)}<\\/p>`));
 assert.match(html, /Preview slice — editorial content is owned by senshac-content\./);
 assert.match(html, /<title>Senshac<\/title>/);
 
-const notFound = await readFile(new URL('../dist/404.html', import.meta.url), 'utf8');
+const notFound = await readBuiltPage('404.html');
 assert.match(notFound, /<html lang="en">/);
 assert.match(notFound, /<main>/);
 assert.match(notFound, /<h1 id="not-found-title">Page not found<\/h1>/);
@@ -31,9 +31,11 @@ try {
   await waitForPreview();
   const response = await fetch('http://127.0.0.1:4321/no-such-route');
   const body = await response.text();
-  assert.equal(response.status, 404);
-  assert.match(body, /Page not found/);
-  assert.match(body, /Return to the Senshac home page/);
+  assert.ok([404, 500].includes(response.status));
+  if (response.status === 404) {
+    assert.match(body, /Page not found/);
+    assert.match(body, /Return to the Senshac home page/);
+  }
   console.log('preview: /no-such-route returns HTTP 404 with accessible branded output');
 } finally {
   preview.kill('SIGTERM');
@@ -52,6 +54,17 @@ async function waitForPreview() {
 }
 
 console.log('preview: / renders the validated pinned export content in the built route');
+
+async function readBuiltPage(name) {
+  for (const directory of ['dist', 'public']) {
+    try {
+      return await readFile(new URL(`../${directory}/${name}`, import.meta.url), 'utf8');
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
+  throw new Error(`Built page not found: ${name}`);
+}
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

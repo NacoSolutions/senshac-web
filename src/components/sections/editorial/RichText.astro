@@ -1,0 +1,94 @@
+---
+/**
+ * RichText.astro — renders either a plain string or a TinaCMS rich-text AST.
+ * This is a standalone recursive AST renderer that avoids circular dependency
+ * bugs present in @tinacms/astro on Astro 4/5 which output [object Object].
+ */
+interface Props {
+	content?: any;
+}
+
+const { content } = Astro.props;
+
+let isString = false;
+let isTextNode = false;
+let isCodeBlock = false;
+let isFragment = false;
+let Tag: any = "";
+let elementProps: any = {};
+let nodes: any[] = [];
+
+if (content) {
+	if (typeof content === "string") {
+		isString = true;
+	} else {
+		const isArray = Array.isArray(content);
+		const type = isArray ? "fragment" : content.type || "fragment";
+		nodes = isArray ? content : content.children || [];
+
+		if (type === "text") {
+			isTextNode = true;
+		} else if (type === "code_block") {
+			isCodeBlock = true;
+		} else {
+			const tagMap: Record<string, string> = {
+				p: "p",
+				h1: "h1",
+				h2: "h2",
+				h3: "h3",
+				h4: "h4",
+				h5: "h5",
+				h6: "h6",
+				ul: "ul",
+				ol: "ol",
+				li: "li",
+				blockquote: "blockquote",
+				a: "a",
+				img: "img",
+				lic: "div",
+			};
+
+			if (type === "root" || type === "fragment" || !tagMap[type]) {
+				isFragment = true;
+			} else {
+				Tag = tagMap[type];
+			}
+
+			if (type === "a") {
+				elementProps.href = content.url || "";
+			} else if (type === "img") {
+				elementProps.src = content.url || "";
+				elementProps.alt = content.alt || content.caption || "";
+			}
+		}
+	}
+}
+---
+
+{content ? (
+  isString ? (
+    <Fragment set:html={(content as string).replace(/\n/g, '<br/>')} />
+  ) : isTextNode ? (
+    content.bold ? (
+      <strong><Astro.self content={{...content, bold: false}} /></strong>
+    ) : content.italic ? (
+      <em><Astro.self content={{...content, italic: false}} /></em>
+    ) : content.underline ? (
+      <u><Astro.self content={{...content, underline: false}} /></u>
+    ) : content.strikethrough ? (
+      <s><Astro.self content={{...content, strikethrough: false}} /></s>
+    ) : content.code ? (
+      <code><Astro.self content={{...content, code: false}} /></code>
+    ) : (
+      <Fragment>{content.text}</Fragment>
+    )
+  ) : isCodeBlock ? (
+    <pre><code>{content.value || ''}</code></pre>
+  ) : isFragment ? (
+    nodes.map((child: any) => <Astro.self content={child} />)
+  ) : (
+    <Tag {...elementProps}>
+      {nodes.map((child: any) => <Astro.self content={child} />)}
+    </Tag>
+  )
+) : null}

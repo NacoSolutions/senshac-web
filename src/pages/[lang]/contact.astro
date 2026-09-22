@@ -1,0 +1,30 @@
+---
+export const prerender = false;
+
+import { getEntry } from "astro:content";
+import BlocksRenderer from "../../components/BlocksRenderer.astro";
+// src/pages/[lang]/contact.astro
+import Base from "../../layouts/Base.astro";
+
+const { lang } = Astro.params;
+
+const page = await getEntry("pages", `${lang}/contact`);
+
+if (!page) {
+	return Astro.redirect("/404");
+}
+
+const { title, description, blocks } = page.data as {
+	title: string;
+	description: string;
+	blocks?: any[];
+};
+---
+
+<Base title={title} description={description} lang={lang ?? "es"} schema="LocalBusiness" headerStyle="default" aot>
+  <main class="min-h-screen">
+    {blocks && blocks.map((block: any, index: number) => (
+      <BlocksRenderer block={block} index={index} parentData={page.data} />
+    ))}
+  </main>
+</Base>

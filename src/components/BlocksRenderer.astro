@@ -1,0 +1,123 @@
+---
+import { tinaField } from "@tinacms/astro/tina-field";
+import R2Picture from "./R2Picture.astro";
+
+// Contact Sections
+import ContactFormBlock from "./sections/contact/ContactBlock.astro";
+import EditorialAccordion from "./sections/editorial/Accordion.astro";
+import EditorialBanner from "./sections/editorial/Banner.astro";
+import EditorialCarousel from "./sections/editorial/Carousel.astro";
+import EditorialCopy from "./sections/editorial/Copy.astro";
+import EditorialCta from "./sections/editorial/Cta.astro";
+// Editorial Sections
+import EditorialHero from "./sections/editorial/Hero.astro";
+import EditorialInstagram from "./sections/editorial/Instagram.astro";
+import EditorialMission from "./sections/editorial/Mission.astro";
+import RichText from "./sections/editorial/RichText.astro";
+import EditorialRows from "./sections/editorial/Rows.astro";
+import EditorialShowcase from "./sections/editorial/Showcase.astro";
+import ProjectCollaborators from "./sections/projects/Collaborators.astro";
+// Project Sections
+import ProjectDetails from "./sections/projects/Details.astro";
+
+// Type definition for our block
+interface Props {
+	block: any;
+	index: number;
+	parentData: any;
+}
+
+const { block, index, parentData } = Astro.props;
+let template = block._template;
+
+if (!template && block.__typename) {
+	const match = block.__typename.match(/Blocks(.*)$/);
+	if (match) {
+		const pascal = match[1];
+		template = pascal.charAt(0).toLowerCase() + pascal.slice(1);
+	}
+}
+
+function mediaId(value?: string | null) {
+	return (value || "")
+		.replace(/^https:\/\/media\.senshac\.com\/images\//, "")
+		.replace(/^\/?images\//, "")
+		.replace(
+			/\/(?:320|412|480|640|768|1024|1200|1280|1920)\.(?:avif|webp)$/,
+			"",
+		)
+		.replace(/\.[^.]+$/, "");
+}
+---
+
+<div data-tina-field={tinaField(parentData.blocks, index)}>
+  {template === 'editorialBanner' && <EditorialBanner {...block} eager={index === 0} />}
+  {template === 'editorialHero' && <EditorialHero {...block} eager={index === 0} />}
+  {template === 'editorialCopy' && <EditorialCopy {...block} />}
+  {template === 'editorialAccordion' && <EditorialAccordion {...block} />}
+  {template === 'editorialRows' && <EditorialRows {...block} />}
+  {template === 'editorialCta' && <EditorialCta {...block} />}
+  {template === 'editorialShowcase' && (
+    <EditorialShowcase
+      {...block}
+      items={block.items}
+    />
+  )}
+  {template === 'editorialMission' && <EditorialMission {...block} />}
+  {template === 'editorialCarousel' && <EditorialCarousel {...block} eagerFirst={index === 0} />}
+  {template === 'editorialInstagram' && <EditorialInstagram {...block} />}
+  {template === 'editorialGallery' && block.images && (
+    <section class="max-w-7xl mx-auto px-4 my-16">
+      <div class={`grid gap-4 grid-cols-1 md:grid-cols-${block.cols || 2}`}>
+        {block.images.map((img: any, imageIndex: number) => (
+          <R2Picture id={mediaId(img.mediaId)} alt={img.alt} class="w-full h-auto object-cover aspect-square md:aspect-auto" eager={index === 0 && imageIndex === 0} mediaSlot="grid" />
+        ))}
+      </div>
+    </section>
+  )}
+
+  {template === 'projectBanner' && (
+    <div class="w-full aspect-video overflow-hidden">
+      <R2Picture
+        id={mediaId(block.mediaId)}
+        alt={block.alt}
+		class="w-full h-full object-cover"
+		eager={index === 0}
+		mediaSlot="full"
+      />
+    </div>
+  )}
+  {template === 'contactForm' && <ContactFormBlock {...block} />}
+  {template === 'projectDetails' && <ProjectDetails {...block} eager={index === 0} />}
+  {template === 'projectBrief' && (
+    <section class="py-16 md:py-24 max-w-7xl mx-auto px-4">
+      <h2 class="text-3xl font-bold mb-6">{block.title}</h2>
+      <div class="text-lg text-gray-600 mb-12 [[prose-p:my-2_p]:my-2_p]:my-2">
+        <RichText content={block.text} />
+      </div>
+    </section>
+  )}
+  {template === 'projectConcept' && (
+    <section class="py-16 md:py-24 max-w-7xl mx-auto px-4 bg-gray-50">
+      <h2 class="text-3xl font-bold mb-6">{block.title}</h2>
+      <div class="text-lg text-gray-600 mb-12 [[prose-p:my-2_p]:my-2_p]:my-2">
+        <RichText content={block.text} />
+      </div>
+    </section>
+  )}
+  {template === 'projectStrategy' && (
+    <section class="py-16 md:py-24 max-w-7xl mx-auto px-4">
+      <h2 class="text-3xl font-bold mb-6">{block.title}</h2>
+      <div class="text-lg text-gray-600 mb-12 [[prose-p:my-2_p]:my-2_p]:my-2">
+        <RichText content={block.text} />
+      </div>
+    </section>
+  )}
+  {template === 'projectCollaborators' && <ProjectCollaborators list={block.list} />}
+  {template === 'projectFinalImage' && (
+    <div class="w-full mt-16">
+      <R2Picture id={mediaId(block.mediaId)} alt={block.alt} class="w-full h-auto" mediaSlot="full" />
+    </div>
+  )}
+
+</div>

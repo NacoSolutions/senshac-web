@@ -1,0 +1,15 @@
+---
+interface Props {
+	text?: string;
+	link?: string;
+}
+
+const { text, link } = Astro.props;
+---
+
+<section class="py-8 border-y border-[#111] text-center">
+  <div class="editorial-shell">
+    <a href={link || '#'} class="inline-flex items-center gap-[0.25em] text-[clamp(1.15rem,2vw,1.6rem)] decoration-none border-b-2 border-current pb-[0.1em] transition-opacity duration-200 hover:opacity-70 after:content-empty after:inline-block after:w-[1.1em] after:h-[1.1em] after:bg-current after:[mask:url('data:image/svg+xml;utf8,<svg_xmlns=\'http://www.w3.org/2000/svg\'_width=\'24\'_height=\'24\'_viewBox=\'0_0_24_24\'_fill=\'none\'_stroke=\'currentColor\'_stroke-width=\'1.5\'_stroke-linecap=\'round\'_stroke-linejoin=\'round\'><path_d=\'M7_17L17_7\'/><path_d=\'M7_7h10v10\'/></svg>')_no-repeat_center/contain] after:[-webkit-mask:url('data:image/svg+xml;utf8,<svg_xmlns=\'http://www.w3.org/2000/svg\'_width=\'24\'_height=\'24\'_viewBox=\'0_0_24_24\'_fill=\'none\'_stroke=\'currentColor\'_stroke-width=\'1.5\'_stroke-linecap=\'round\'_stroke-linejoin=\'round\'><path_d=\'M7_17L17_7\'/><path_d=\'M7_7h10v10\'/></svg>')_no-repeat_center/contain]">{text}</a>
+  </div>
+</section>
+

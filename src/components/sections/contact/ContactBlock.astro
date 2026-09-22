@@ -1,0 +1,87 @@
+---
+import { getSiteConfig } from "../../../utils/site-config";
+// src/components/sections/contact/ContactBlock.astro
+import ContactForm from "../../ContactForm.astro";
+import R2Picture from "../../R2Picture.astro";
+
+interface Props {
+	heading?: string;
+	subheading?: string;
+	mediaId?: string;
+	lang?: string;
+}
+
+const { heading, subheading, mediaId } = Astro.props;
+const lang = Astro.params.lang || "es";
+const site = await getSiteConfig();
+---
+
+<section class="relative w-full">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="relative aspect-[16/7] overflow-hidden">
+      {mediaId && (
+        <div class="w-full h-full">
+          <R2Picture
+            id={mediaId}
+            alt=""
+			class="w-full h-full object-cover"
+			eager
+			mediaSlot="content"
+          />
+        </div>
+      )}
+      <!-- White symbol overlay -->
+      <div class="absolute inset-0 flex items-center justify-center">
+        {site.branding?.symbolWhite && (
+          <R2Picture
+            id={site.branding.symbolWhite}
+			alt=""
+			class="w-24 md:w-32 h-auto"
+			mediaSlot="logo"
+          />
+        )}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-16 md:py-24">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid md:grid-cols-2 gap-16">
+      <!-- Contact Info -->
+      <div>
+        {heading && (
+          <h1 class="text-sm uppercase tracking-wider text-gray-500 mb-6">{heading}</h1>
+        )}
+        {subheading && (
+          <p class="text-4xl md:text-5xl font-bold mb-8">{subheading}</p>
+        )}
+
+        <div class="space-y-2 mb-8">
+          {site.contact?.email && (
+            <a
+              href={`mailto:${site.contact.email}`}
+              class="block text-lg hover:text-gray-600 transition-colors"
+            >
+              {site.contact.email}
+            </a>
+          )}
+          {site.contact?.phone && (
+            <a
+              href={`tel:${site.contact.phoneLink || site.contact.phone.replace(/\s/g, '')}`}
+              class="block text-lg hover:text-gray-600 transition-colors"
+            >
+              {site.contact.phone}
+            </a>
+          )}
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <div>
+        <ContactForm lang={lang} />
+      </div>
+    </div>
+  </div>
+</section>
