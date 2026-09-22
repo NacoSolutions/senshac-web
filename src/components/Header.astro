@@ -66,7 +66,7 @@ const getLocalizedPath = (targetLang: string) => {
           x-show="isTransparent && !scrolled && !menuOpen"
           id={site.branding?.logoWhite || ''}
           alt={site.company?.name?.toLowerCase() || ''}
-          class="h-8 w-auto"
+          class="h-8 w-auto mix-blend-difference"
           mediaSlot="logo"
           width="768"
           height="142"
@@ -92,7 +92,7 @@ const getLocalizedPath = (targetLang: string) => {
           <button
             type="button"
             class="flex items-center gap-1 text-sm uppercase tracking-wider transition-colors"
-            x-bind:class="(isTransparent && !scrolled && !menuOpen) ? 'text-white/80 hover:text-white' : 'text-gray-600 hover:text-black'"
+            x-bind:class="(isTransparent && !scrolled && !menuOpen) ? 'text-white mix-blend-difference hover:opacity-80' : 'text-gray-600 hover:text-black'"
             x-on:click="langOpen = !langOpen"
             aria-label={`Select language, current: ${lang.toUpperCase()}`}
           >
@@ -126,7 +126,7 @@ const getLocalizedPath = (targetLang: string) => {
         <button
           type="button"
           class="p-2 transition-colors"
-          x-bind:class="(isTransparent && !scrolled && !menuOpen) ? 'text-white hover:text-white/80' : 'text-gray-800 hover:text-black'"
+          x-bind:class="(isTransparent && !scrolled && !menuOpen) ? 'text-white mix-blend-difference hover:opacity-80' : 'text-gray-800 hover:text-black'"
           x-on:click="menuOpen = !menuOpen"
           aria-label="Toggle menu"
           aria-expanded="false"
