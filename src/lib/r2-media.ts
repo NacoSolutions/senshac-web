@@ -16,6 +16,9 @@ export interface RuntimeEnv {
 	PUBLIC_MEDIA_BASE_URL?: string;
 	// Fallback for old bindings if they exist
 	R2_UPLOAD_SIGNING_SECRET?: string;
+	/** Comma-separated exact origins allowed to use the Tina/admin media API. */
+	TINA_MEDIA_ALLOWED_ORIGINS?: string;
+	MEDIA_ALLOWED_ORIGINS?: string;
 	MEDIA_RAW?: any;
 }
 
@@ -56,6 +59,13 @@ export function mediaEnv(_locals: App.Locals) {
 			cfEnv.R2_UPLOAD_SIGNING_SECRET ||
 			processEnv.R2_UPLOAD_SIGNING_SECRET ||
 			import.meta.env.R2_UPLOAD_SIGNING_SECRET,
+		TINA_MEDIA_ALLOWED_ORIGINS:
+			cfEnv.TINA_MEDIA_ALLOWED_ORIGINS ||
+			processEnv.TINA_MEDIA_ALLOWED_ORIGINS ||
+			import.meta.env.TINA_MEDIA_ALLOWED_ORIGINS ||
+			cfEnv.MEDIA_ALLOWED_ORIGINS ||
+			processEnv.MEDIA_ALLOWED_ORIGINS ||
+			import.meta.env.MEDIA_ALLOWED_ORIGINS,
 		MEDIA_RAW: cfEnv.MEDIA_RAW,
 	} as RuntimeEnv;
 	console.log(
@@ -89,6 +99,55 @@ export async function getS3Client(env: RuntimeEnv) {
 	} catch (err: any) {
 		throw new Error(`S3Client constructor failed: ${err.message || err}`);
 	}
+}
+
+const CORS_METHODS = "GET, DELETE, OPTIONS";
+const CORS_HEADERS = "Authorization, Authz, Content-Type";
+
+function originFrom(value: string) {
+	try {
+		const url = new URL(value);
+		if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+		return url.origin;
+	} catch {
+		return null;
+	}
+}
+
+export function allowedMediaOrigin(origin: string | null, env: RuntimeEnv) {
+	if (!origin) return false;
+	const normalized = originFrom(origin);
+	if (!normalized) return false;
+	return (env.TINA_MEDIA_ALLOWED_ORIGINS || "")
+		.split(",")
+		.map((entry) => originFrom(entry.trim()))
+		.filter((entry): entry is string => Boolean(entry))
+		.includes(normalized);
+}
+
+export function mediaCorsHeaders(request: Request, env: RuntimeEnv) {
+	const origin = request.headers.get("origin");
+	const headers = new Headers({ Vary: "Origin", "Access-Control-Allow-Methods": CORS_METHODS, "Access-Control-Allow-Headers": CORS_HEADERS });
+	if (allowedMediaOrigin(origin, env)) headers.set("Access-Control-Allow-Origin", origin as string);
+	return { headers, allowed: !origin || allowedMediaOrigin(origin, env) };
+}
+
+export function mediaResponse(
+	request: Request,
+	env: RuntimeEnv,
+	body: unknown,
+	init: ResponseInit = {},
+) {
+	const cors = mediaCorsHeaders(request, env);
+	const headers = new Headers(init.headers);
+	cors.headers.forEach((value, key) => headers.set(key, value));
+	return Response.json(body, { ...init, headers });
+}
+
+export function mediaOptions(request: Request, env: RuntimeEnv) {
+	const cors = mediaCorsHeaders(request, env);
+	if (!cors.allowed) return mediaResponse(request, env, { message: "Origin not allowed" }, { status: 403 });
+	return new Response(null, { status: 204, headers: cors.headers });
 }
 
 export async function authorized(request: Request) {
