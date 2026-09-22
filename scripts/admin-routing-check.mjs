@@ -35,4 +35,28 @@ async function assertNoBrowserExternalization(directory) {
 }
 await assertNoBrowserExternalization("dist/admin");
 
-console.log("admin routing: /admin/ and /es/admin are covered; Tina assets are packaged");
+// Astro inlines the UnoCSS layer into rendered pages. Check the shipped CSS,
+// rather than source classes, so missing Iconify collections cannot regress.
+async function readHtml(directory) {
+	const html = [];
+	for (const entry of await readdir(directory, { withFileTypes: true })) {
+		const path = `${directory}/${entry.name}`;
+		if (entry.isDirectory()) html.push(...(await readHtml(path)));
+		else if (entry.name.endsWith(".html")) html.push(await readFile(path, "utf8"));
+	}
+	return html;
+}
+const publicHtml = (await readHtml("dist")).join("\n");
+for (const icon of [
+	"i-lucide-menu",
+	"i-lucide-x",
+	"i-lucide-chevron-down",
+	"i-lucide-arrow-up-right",
+	"i-simple-icons-instagram",
+	"i-simple-icons-linkedin",
+]) {
+	assert.ok(publicHtml.includes(`.${icon}{`), `missing emitted icon CSS: ${icon}`);
+}
+assert.ok(publicHtml.includes("--un-icon:url("), "icon CSS has no emitted mask source");
+
+console.log("admin routing and generated icon CSS: covered");
