@@ -3,10 +3,27 @@ import { defineCollection } from "astro:content";
 import { z } from "astro:schema";
 import { glob } from "astro/loaders";
 
+const appearancePreset = z.enum([
+	"transparent-adaptive",
+	"transparent-light",
+	"transparent-dark",
+	"opaque-light",
+	"opaque-dark",
+]);
+
+const chromePart = z.object({
+	mode: z.enum(["fixed", "scrolling"]),
+	atFinal: appearancePreset,
+	scrolling: appearancePreset,
+});
+
 // Site configuration (global business info)
 const siteConfig = defineCollection({
 	loader: glob({ pattern: "site.json", base: "src/content/config" }),
 	schema: z.object({
+		chrome: z
+			.object({ header: chromePart, footer: chromePart })
+			.optional(),
 		siteUrl: z.string(),
 		locales: z.array(z.string()),
 		defaultLocale: z.string(),

@@ -27,8 +27,50 @@ const galleryFields: TinaField[] = [
 // SITE CONFIG FIELDS
 // ============================================================================
 
+const appearancePresets = [
+	"transparent-adaptive",
+	"transparent-light",
+	"transparent-dark",
+	"opaque-light",
+	"opaque-dark",
+];
+
+const chromeFields: TinaField = {
+	type: "object",
+	name: "chrome",
+	label: "Site Chrome",
+	fields: [
+		...(["header", "footer"] as const).map((name) => ({
+			type: "object" as const,
+			name,
+			label: name === "header" ? "Header" : "Footer",
+			fields: [
+				{
+					type: "string" as const,
+					name: "mode",
+					label: "Mode",
+					options: ["fixed", "scrolling"],
+				},
+				{
+					type: "string" as const,
+					name: "atFinal",
+					label: "At Final Appearance",
+					options: appearancePresets,
+				},
+				{
+					type: "string" as const,
+					name: "scrolling",
+					label: "Scrolling Appearance",
+					options: appearancePresets,
+				},
+			],
+		})),
+	],
+};
+
 const siteConfigFields: TinaField[] = [
 	{ type: "string" as const, name: "siteUrl", label: "Site URL" },
+	chromeFields,
 	{ type: "string" as const, name: "locales", label: "Locales", list: true },
 	{ type: "string" as const, name: "defaultLocale", label: "Default Locale" },
 	{

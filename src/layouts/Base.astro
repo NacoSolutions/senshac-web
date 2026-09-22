@@ -47,6 +47,15 @@ const [translationsData, siteData] = await Promise.all([
 	providedSiteData ?? getSiteConfig(),
 ]);
 
+const siteChrome = (siteData as any).chrome ?? {
+	header: {
+		mode: "fixed",
+		atFinal: "opaque-light",
+		scrolling: headerStyle === "transparent" ? "transparent-adaptive" : "opaque-light",
+	},
+	footer: { mode: "scrolling", atFinal: "opaque-dark", scrolling: "opaque-dark" },
+};
+
 const mediaBaseUrl = (
 	import.meta.env.PUBLIC_MEDIA_BASE_URL || "https://media.senshac.com"
 ).replace(/\/$/, "");
@@ -106,11 +115,11 @@ const deferredFontScript = `window.addEventListener('load',()=>{const style=docu
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-black focus:text-white focus:px-4 focus:py-2">
       Skip to content
     </a>
-    <Header lang={lang} headerStyle={headerStyle} translations={translationsData as any} siteData={siteData as any} />
+    <Header lang={lang} headerStyle={headerStyle} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
 
     <slot />
 
-    <Footer lang={lang} translations={translationsData as any} siteData={siteData as any} />
+    <Footer lang={lang} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
 
     <Cursor />
 
