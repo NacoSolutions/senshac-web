@@ -5,7 +5,7 @@ const ignoredDirectories = new Set(['.git', 'node_modules', '.astro', '.pi', '.w
 const files = await walk('.');
 const forbiddenFiles = files.filter((file) => {
   const name = file.slice(file.lastIndexOf('/') + 1);
-  return /^(?:\.env(?:\..*)?|.*\.(?:pem|key|crt)|wrangler\.(?:toml|json)|tina\.config\..*)$/i.test(name);
+  return /^(?:\.env(?:\..*)?|.*\.(?:pem|key|crt)|tina\.config\..*)$/i.test(name);
 });
 const sourceFiles = files.filter((file) => /\.(?:astro|html|json|mjs|ts|md|yml|yaml)$/.test(file));
 const assignmentPattern = new RegExp(
@@ -21,10 +21,10 @@ for (const file of sourceFiles) {
   if (assignmentPattern.test(text)) failures.push(`${file}: secret-like assignment`);
 }
 
-assert.equal(await readFile('astro.config.mjs', 'utf8').then((text) => text.includes("site: 'https://preview.invalid'")), true);
 await access('content/tina-fixture.json');
 await access('content/tina-schema.json');
-await access('dist/index.html');
+await access('wrangler.jsonc');
+await access('dist/client/es/methods/index.html');
 
 if (failures.length) {
   console.error(failures.join('\n'));

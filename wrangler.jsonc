@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "senshac",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-06-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "PUBLIC_MEDIA_BASE_URL": "https://media.senshac.com"
+  },
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_RAW",
+      "bucket_name": "senshac-media-raw"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "531733b2d8b04dc1955e55130691d430"
+    }
+  ]
+}
