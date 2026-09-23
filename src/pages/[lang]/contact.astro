@@ -5,6 +5,7 @@ import { getEntry } from "astro:content";
 import BlocksRenderer from "../../components/BlocksRenderer.astro";
 // src/pages/[lang]/contact.astro
 import Base from "../../layouts/Base.astro";
+import TinaIsland from "@tinacms/astro/TinaIsland.astro";
 
 const { lang } = Astro.params;
 
@@ -22,9 +23,11 @@ const { title, description, blocks } = page.data as {
 ---
 
 <Base title={title} description={description} lang={lang ?? "es"} schema="LocalBusiness" headerStyle="default" aot>
-  <main class="min-h-screen">
+  <TinaIsland name="contact" wrapper={{ tag: "main" }} params={{ relativePath: `${lang}/contact.json` }} primary>
+<main class="min-h-screen">
     {blocks && blocks.map((block: any, index: number) => (
       <BlocksRenderer block={block} index={index} parentData={page.data} />
     ))}
   </main>
+  </TinaIsland>
 </Base>
