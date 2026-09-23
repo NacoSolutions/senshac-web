@@ -869,7 +869,7 @@ function localeFromDocument(document: {
 
 export default defineConfig({
 	branch: process.env.TINA_BRANCH || process.env.CF_PAGES_BRANCH || "main",
-	clientId: process.env.TINA_CLIENT_ID || "",
+	clientId: process.env.TINA_CLIENT_ID || process.env.NEXT_PUBLIC_TINA_CLIENT_ID || "",
 	token: process.env.TINA_TOKEN || "",
 	// Resolved relative to tina/. TinaCloud uses the configured content repo;
 	// local dev and CI use the sibling checkout when it is available.

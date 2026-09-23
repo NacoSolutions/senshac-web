@@ -5,8 +5,8 @@
   "packageManager": "bun@1.3.13",
   "scripts": {
     "dev:cms": "tinacms dev -c \"astro dev\"",
-    "tina:generate": "if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build --skip-cloud-checks; else tinacms build --local --skip-cloud-checks; fi && node scripts/normalize-tina-admin.mjs",
-    "build": "node scripts/sync-editorial-content.mjs && if [ -n \"$TINA_CLIENT_ID\" ] && [ -n \"$TINA_TOKEN\" ]; then tinacms build --skip-cloud-checks; else tinacms build --local --skip-cloud-checks; fi && astro build && node scripts/normalize-pages-wrangler.mjs && node scripts/normalize-tina-admin.mjs public dist",
+    "tina:generate": "if ( [ -n \"$TINA_CLIENT_ID\" ] || [ -n \"$NEXT_PUBLIC_TINA_CLIENT_ID\" ] ) && [ -n \"$TINA_TOKEN\" ]; then tinacms build --skip-cloud-checks; else tinacms build --local --skip-cloud-checks; fi && node scripts/normalize-tina-admin.mjs",
+    "build": "node scripts/sync-editorial-content.mjs && if ( [ -n \"$TINA_CLIENT_ID\" ] || [ -n \"$NEXT_PUBLIC_TINA_CLIENT_ID\" ] ) && [ -n \"$TINA_TOKEN\" ]; then tinacms build --skip-cloud-checks; else tinacms build --local --skip-cloud-checks; fi && astro build && node scripts/normalize-pages-wrangler.mjs && node scripts/normalize-tina-admin.mjs public dist",
     "verify:ci": "CF_PAGES=1 bun run build && bun run acceptance --skip-build && bun run check:all && git diff --exit-code",
     "deploy": "bash scripts/deploy",
     "wt:merge": "bash scripts/wt-merge",
