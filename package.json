@@ -29,7 +29,7 @@
     "lint:fix": "biome check --write .",
     "check:deps": "bash scripts/with-timeout 120 knip",
     "check:precommit": "CHECK_CLEAN_ALLOW_STAGED=1 bun run check:clean && bun run lint && bun run check:seeds",
-    "check:prepush": "rm -rf node_modules && bun install --frozen-lockfile && bun run verify:ci",
+    "check:prepush": "bun install --frozen-lockfile && bun run quality",
     "check:all": "bun run check:clean && bun run check && bun run lint && bun run check:deps && bun run check:coverage && bun run check:debt-markers && bun run check:file-sizes && bun run check:bundle-size && bun run check:worker-size && bun run check:ci-parity && bun run gen:docs:check && bun run gen:openapi:check && bun run check:secrets-policy && bun run check:seeds && bun run check:agents && bun run check:leaks",
     "check:agents": "bun run scripts/validate-agents-md.ts",
     "test": "node --test",
@@ -61,7 +61,8 @@
     "preview:check": "node scripts/preview-check.mjs",
     "check:admin-routing": "node scripts/admin-routing-check.mjs",
     "repository:check": "node scripts/repository-check.mjs",
-    "quality": "npm run lint && npm test && npm run tina:generate && npm run typecheck && npm run build && npm run check:admin-routing && npm run preview:check && npm run repository:check"
+    "quality": "npm run lint && npm test && npm run check:tina-lock && npm run tina:generate && npm run check:tina-lock && npm run typecheck && npm run build && npm run check:admin-routing && npm run preview:check && npm run repository:check",
+    "check:tina-lock": "node scripts/check-tina-lock.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.7.0",
