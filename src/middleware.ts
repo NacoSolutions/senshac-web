@@ -4,6 +4,19 @@ import { NodeHtmlMarkdown } from "node-html-markdown";
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	const url = new URL(context.request.url);
+
+	// Pages with an SSR worker do not reliably apply directory-index resolution
+	// to the generated public/admin/index.html asset. Redirect every legacy
+	// admin entry to the concrete static Tina bundle instead.
+	if (
+		url.pathname === "/admin" ||
+		url.pathname === "/admin/" ||
+		url.pathname === "/es/admin" ||
+		url.pathname === "/es/admin/"
+	) {
+		const adminUrl = new URL("/admin/index.html", url);
+		return Response.redirect(adminUrl, 302);
+	}
 	const acceptsMarkdown =
 		context.request.headers.get("Accept")?.includes("text/markdown") ?? false;
 	const canUseEdgeCache =

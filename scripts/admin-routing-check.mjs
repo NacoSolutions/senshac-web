@@ -5,9 +5,14 @@ const redirects = await readFile("public/_redirects", "utf8");
 const adminHtml = "dist/admin/index.html";
 
 // Pages must redirect legacy entry URLs before serving Tina's generated bundle.
-assert.match(redirects, /^\/admin \/admin\/ 301$/m);
-assert.match(redirects, /^\/es\/admin \/admin\/ 301$/m);
-assert.doesNotMatch(redirects, /^\/\S+\s+\/admin\/index\.html/m);
+for (const entry of [
+	"/admin /admin/index.html 302",
+	"/admin/ /admin/index.html 302",
+	"/es/admin /admin/index.html 302",
+	"/es/admin/ /admin/index.html 302",
+]) {
+	assert.match(redirects, new RegExp(`^${entry.replaceAll(".", "\\.")}$`, "m"));
+}
 
 // The Tina build runs before Astro and Pages packaging copies public/ into dist/.
 await access(adminHtml);
