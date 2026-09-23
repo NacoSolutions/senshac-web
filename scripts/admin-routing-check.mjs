@@ -22,6 +22,17 @@ for (const assetUrl of assetUrls) {
 await access("dist/admin/bridge.js");
 await access("dist/_worker.js");
 
+// Root brand assets must ship with the Pages artifact; otherwise the deployed
+// site loses its favicon even though the layout still emits the links.
+for (const asset of [
+	"dist/favicon.ico",
+	"dist/favicon-32x32.png",
+	"dist/favicon-192x192.png",
+	"dist/apple-touch-icon.png",
+]) {
+	await access(asset);
+}
+
 // The generated SPA must not ship Vite's Node-module browser stub. It is
 // harmless during bundling but throws when Tina's client reaches util.inspect.
 async function assertNoBrowserExternalization(directory) {
