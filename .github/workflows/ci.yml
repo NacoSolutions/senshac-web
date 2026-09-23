@@ -37,6 +37,11 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE"
           bun run quality
+      - name: Run browser smoke checks
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          bunx playwright install chromium
+          bun run test:e2e
       - name: Validate repository contract
         shell: bash
         run: |
