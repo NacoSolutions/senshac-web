@@ -23,7 +23,7 @@
     "test:workflow:media": "bash scripts/act-media",
     "test:workflow:ci": "bash scripts/act-ci",
     "preview": "astro preview",
-    "check": "astro check",
+    "check": "NODE_OPTIONS=--max-old-space-size=4096 astro check",
     "astro": "astro",
     "lint": "node scripts/lint.mjs",
     "lint:fix": "biome check --write .",
