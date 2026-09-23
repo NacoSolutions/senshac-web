@@ -1,0 +1,5 @@
+{
+	"_comment": "Per-file line-count budgets. New files default to `threshold`. Listed files are grandfathered at their current line count and may not grow beyond it. Refactor + lower budgets over time; ratchet only goes down.",
+	"threshold": 500,
+	"budgets": {}
+}
