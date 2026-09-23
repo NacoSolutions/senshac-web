@@ -28,4 +28,10 @@ if (!siteData) {
 	siteData = siteRes.data.siteConfig;
 }
 ---
-<Header lang={lang} headerStyle={headerStyle} translations={data!} siteData={siteData!} />
+<Header
+  lang={lang}
+  headerStyle={headerStyle}
+  translations={data!}
+  siteData={siteData!}
+  chrome={(siteData as any)?.chrome}
+/>

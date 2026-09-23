@@ -70,20 +70,11 @@ export function pageRelativePath(lang: string | undefined, filename: string) {
 	return `${lang || "es"}/${filename}`;
 }
 
-const requestCache = new Map<string, Promise<any>>();
-
 export function getHome(relativePath: string, env?: TinaRuntimeEnv) {
-	const key = `home-${relativePath}`;
-	if (!requestCache.has(key)) {
-		requestCache.set(
-			key,
-			requestWithMetadata<HomeQuery>(
-				getClient(env).queries.home({ relativePath }),
-				{ priority: "primary" },
-			),
-		);
-	}
-	return requestCache.get(key)!;
+	return requestWithMetadata<HomeQuery>(
+		getClient(env).queries.home({ relativePath }),
+		{ priority: "primary" },
+	);
 }
 
 export function getAbout(relativePath: string, env?: TinaRuntimeEnv) {
@@ -108,21 +99,9 @@ export function getProject(relativePath: string, env?: TinaRuntimeEnv) {
 }
 
 export function getTranslations(relativePath: string, env?: TinaRuntimeEnv) {
-	const key = `translations-${relativePath}`;
-	if (!requestCache.has(key)) {
-		requestCache.set(
-			key,
-			requestWithMetadata<TranslationsQuery>(
-				getClient(env).queries.translations({ relativePath }),
-				{ priority: "primary" },
-			),
-		);
-	}
-	const cached = requestCache.get(key);
-	if (!cached) {
-		throw new Error(`Missing Tina request cache entry: ${key}`);
-	}
-	return cached;
+	return requestWithMetadata<TranslationsQuery>(
+		getClient(env).queries.translations({ relativePath }),
+	);
 }
 
 export function getContact(relativePath: string, env?: TinaRuntimeEnv) {
@@ -140,19 +119,7 @@ export function getLegal(relativePath: string, env?: TinaRuntimeEnv) {
 }
 
 export function getSiteConfigTina(relativePath: string, env?: TinaRuntimeEnv) {
-	const key = `siteconfig-${relativePath}`;
-	if (!requestCache.has(key)) {
-		requestCache.set(
-			key,
-			requestWithMetadata<SiteConfigQuery>(
-				getClient(env).queries.siteConfig({ relativePath }),
-				{ priority: "primary" },
-			),
-		);
-	}
-	const cached = requestCache.get(key);
-	if (!cached) {
-		throw new Error(`Missing Tina request cache entry: ${key}`);
-	}
-	return cached;
+	return requestWithMetadata<SiteConfigQuery>(
+		getClient(env).queries.siteConfig({ relativePath }),
+	);
 }
