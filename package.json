@@ -62,7 +62,8 @@
     "check:admin-routing": "node scripts/admin-routing-check.mjs",
     "repository:check": "node scripts/repository-check.mjs",
     "quality": "npm run lint && npm test && npm run check:tina-lock && npm run tina:generate && npm run check:tina-lock && npm run typecheck && npm run build && npm run check:admin-routing && npm run preview:check && npm run repository:check",
-    "check:tina-lock": "node scripts/check-tina-lock.mjs"
+    "check:tina-lock": "node scripts/check-tina-lock.mjs",
+    "check:legacy-parity": "node --test test/legacy-parity.test.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.7.0",
