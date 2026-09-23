@@ -27,4 +27,9 @@ if (!siteData) {
 	siteData = siteRes.data.siteConfig;
 }
 ---
-<Footer lang={lang} translations={data!} siteData={siteData!} />
+<Footer
+  lang={lang}
+  translations={data!}
+  siteData={siteData!}
+  chrome={(siteData as any)?.chrome}
+/>
