@@ -29,7 +29,13 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	writeFileSync,
+} from "node:fs";
 import { resolve } from "node:path";
 
 const REPO_ROOT = resolve(import.meta.dir, "..");
@@ -206,10 +212,12 @@ function runBunTest(emitJUnit: boolean): {
 	combined: string;
 } {
 	mkdirSync(COVERAGE_DIR, { recursive: true });
+	const testFiles = readdirSync(resolve(REPO_ROOT, "test"))
+		.filter((file) => /(?:\.test|_test_|\.spec|_spec_)\.(?:mjs|js|ts)$/.test(file))
+		.map((file) => resolve(REPO_ROOT, "test", file));
 	const args = [
 		"test",
-		"src/",
-		"scripts/",
+		...testFiles,
 		"--coverage",
 		"--coverage-reporter=text",
 		"--coverage-reporter=lcov",
