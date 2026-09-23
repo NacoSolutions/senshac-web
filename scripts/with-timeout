@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$#" -lt 2 ]; then
+	echo "Usage: with-timeout <seconds> <command> [args...]" >&2
+	exit 2
+fi
+
+seconds="$1"
+shift
+
+exec perl -e '
+	use POSIX ":sys_wait_h";
+	my $seconds = shift @ARGV;
+	my @cmd = @ARGV;
+	my $pid = fork();
+	die "fork failed: $!\n" unless defined $pid;
+	if ($pid == 0) {
+		exec @cmd;
+		die "exec failed: $!\n";
+	}
+	$SIG{ALRM} = sub {
+		kill "TERM", $pid;
+		sleep 1;
+		kill "KILL", $pid;
+		print STDERR "Command timed out after $seconds seconds: @cmd\n";
+		exit 124;
+	};
+	alarm $seconds;
+	waitpid($pid, 0);
+	my $status = $?;
+	alarm 0;
+	exit($status >> 8) if WIFEXITED($status);
+	exit(128 + WTERMSIG($status)) if WIFSIGNALED($status);
+	exit 1;
+' "$seconds" "$@"
