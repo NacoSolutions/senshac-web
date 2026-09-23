@@ -1,4 +1,5 @@
 // tina/config.ts
+import { existsSync } from "node:fs";
 import { defineConfig, type TinaField } from "tinacms";
 
 // ============================================================================
@@ -868,13 +869,15 @@ function localeFromDocument(document: {
 // TinaCloud schema deployment source: senshac-web/tina/config.ts
 // ============================================================================
 
+const localContentPath = process.env.TINA_LOCAL_CONTENT_PATH || "../../../senshac-content/main";
+
 export default defineConfig({
 	branch: process.env.TINA_BRANCH || process.env.CF_PAGES_BRANCH || "main",
 	clientId: process.env.TINA_CLIENT_ID || "",
 	token: process.env.TINA_TOKEN || "",
 	// Resolved relative to tina/. TinaCloud uses the configured content repo;
 	// local dev and CI use the sibling checkout when it is available.
-	localContentPath: process.env.TINA_LOCAL_CONTENT_PATH || "../../../senshac-content/main",
+	...(existsSync(localContentPath) ? { localContentPath } : {}),
 
 	build: {
 		outputFolder: "admin",
