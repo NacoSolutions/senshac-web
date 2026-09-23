@@ -12,6 +12,14 @@ const registry = await readFile(
 	new URL("../src/lib/tina-islands.ts", import.meta.url),
 	"utf8",
 );
+const layout = await readFile(
+	new URL("../src/layouts/Base.astro", import.meta.url),
+	"utf8",
+);
+const data = await readFile(
+	new URL("../src/lib/tina-data.ts", import.meta.url),
+	"utf8",
+);
 
 test("Tina island route delegates to the experimental authenticated handler", () => {
 	assert.match(route, /experimental_createIslandRoute/);
@@ -49,6 +57,19 @@ test("the island route uses Tina's authenticated preview request contract", asyn
 		})).status,
 		404,
 	);
+});
+
+test("the layout makes global chrome live-editable without taking primary form ownership", () => {
+	assert.match(layout, /<TinaIsland[\s\S]*name="header"[\s\S]*relativePath: `\$\{lang\}\.json`/);
+	assert.match(layout, /<TinaIsland[\s\S]*name="footer"[\s\S]*relativePath: `\$\{lang\}\.json`/);
+	assert.doesNotMatch(layout, /name="header"[\s\S]*primary/);
+	assert.doesNotMatch(layout, /name="footer"[\s\S]*primary/);
+});
+
+test("Tina requests identify one primary form and avoid stale process-wide data", () => {
+	assert.equal((data.match(/priority: "primary"/g) ?? []).length, 6);
+	assert.doesNotMatch(data, /priority: "secondary"/);
+	assert.doesNotMatch(data, /requestCache/);
 });
 
 test("the island registry retains page and global chrome islands", () => {

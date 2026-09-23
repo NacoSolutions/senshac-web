@@ -2,6 +2,7 @@
 import Cursor from "../components/Cursor.astro";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
+import TinaIsland from "@tinacms/astro/TinaIsland.astro";
 // src/layouts/Base.astro
 import SEO from "../components/SEO.astro";
 import "virtual:uno.css";
@@ -115,11 +116,23 @@ const deferredFontScript = `window.addEventListener('load',()=>{const style=docu
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-black focus:text-white focus:px-4 focus:py-2">
       Skip to content
     </a>
-    <Header lang={lang} headerStyle={headerStyle} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
+    <TinaIsland
+      name="header"
+      wrapper={{ tag: "div", className: "relative z-50" }}
+      params={{ relativePath: `${lang}.json`, lang, headerStyle }}
+    >
+      <Header lang={lang} headerStyle={headerStyle} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
+    </TinaIsland>
 
     <slot />
 
-    <Footer lang={lang} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
+    <TinaIsland
+      name="footer"
+      wrapper={{ tag: "div" }}
+      params={{ relativePath: `${lang}.json`, lang }}
+    >
+      <Footer lang={lang} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
+    </TinaIsland>
 
     <Cursor />
 
