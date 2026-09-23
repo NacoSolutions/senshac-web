@@ -1,3 +1,4 @@
+/// <reference types="bun-types" />
 import { existsSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 
