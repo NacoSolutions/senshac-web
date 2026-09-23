@@ -1,0 +1,19 @@
+{
+	"_comment": "Bundle-size ratchet for Senshac. Run 'bun run check:bundle-size --update' after a successful build to lock in the initial baseline sizes. Budgets are currently stubbed.",
+	"totals": {
+		"raw": {
+			"js": 9999999,
+			"css": 9999999
+		},
+		"gzip": {
+			"js": 9999999,
+			"css": 9999999
+		}
+	},
+	"largest": {
+		"gzip": {
+			"js": 9999999,
+			"css": 9999999
+		}
+	}
+}
