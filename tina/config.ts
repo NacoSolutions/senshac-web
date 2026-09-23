@@ -865,6 +865,7 @@ function localeFromDocument(document: {
 
 // ============================================================================
 // TINA CONFIG
+// TinaCloud schema deployment source: senshac-web/tina/config.ts
 // ============================================================================
 
 export default defineConfig({
