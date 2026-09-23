@@ -7,6 +7,7 @@ import { getEntry } from "astro:content";
 import BlocksRenderer from "../../components/BlocksRenderer.astro";
 // src/pages/[lang]/index.astro
 import Base from "../../layouts/Base.astro";
+import TinaIsland from "@tinacms/astro/TinaIsland.astro";
 import { getSiteConfig } from "../../utils/site-config";
 import { getTranslations as getPublicTranslations } from "../../utils/translations";
 
@@ -39,9 +40,16 @@ const site = await getSiteConfig();
   siteData={site}
   aot
 >
-  <main id="main">
-    {blocks && blocks.map((block: any, index: number) => (
-      <BlocksRenderer block={block} index={index} parentData={page.data} />
-    ))}
-  </main>
+  <TinaIsland
+    name="home"
+    wrapper={{ tag: "main" }}
+    params={{ relativePath: `${lang}/home.json` }}
+    primary
+  >
+    <main id="main">
+      {blocks && blocks.map((block: any, index: number) => (
+        <BlocksRenderer block={block} index={index} parentData={page.data} />
+      ))}
+    </main>
+  </TinaIsland>
 </Base>

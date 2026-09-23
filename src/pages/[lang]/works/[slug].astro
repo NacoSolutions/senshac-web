@@ -6,6 +6,7 @@ import { getEntry } from "astro:content";
 import BlocksRenderer from "../../../components/BlocksRenderer.astro";
 // src/pages/[lang]/works/[slug].astro
 import Base from "../../../layouts/Base.astro";
+import TinaIsland from "@tinacms/astro/TinaIsland.astro";
 
 const { lang, slug } = Astro.params;
 
@@ -32,9 +33,11 @@ const breadcrumbs = [
   publishDate={data.publishDate}
   aot
 >
-  <main id="main" class="min-h-screen pt-24 pb-16">
+  <TinaIsland name="project" wrapper={{ tag: "main" }} params={{ relativePath: `${lang}/${slug}.json` }} primary>
+<main id="main" class="min-h-screen pt-24 pb-16">
     {data.blocks && data.blocks.map((block: any, index: number) => (
       <BlocksRenderer block={block} index={index} parentData={data} />
     ))}
   </main>
+  </TinaIsland>
 </Base>
