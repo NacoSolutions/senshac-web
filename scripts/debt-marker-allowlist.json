@@ -1,0 +1,4 @@
+{
+	"_comment": "Debt-marker allowlist. Tracks the EXACT list of allowed debt markers across the codebase.",
+	"allowlist": []
+}
