@@ -15,10 +15,18 @@ Keep the `container.image` value in `.github/workflows/ci.yml` as the exact
 `@sha256:` reference from a successful producer publication. Do not replace it
 with `latest`, a `sha-<commit>` tag, or another mutable reference.
 
-The pinned runner intentionally contains only the shared Bun/Actions tool
-closure; it has no apt or other distribution package manager. Browser smoke
-checks use the repository's `flake.nix`: CI bootstraps Nix with
-`cachix/install-nix-action`, then `nix develop` supplies the lean Chromium and
-explicit `glib` runtime (including `libglib-2.0.so.0`). Playwright is pointed
-at that Nix Chromium through `PLAYWRIGHT_CHROMIUM_PATH`; no browser dependency
-is installed inside GitHub Actions with an ad-hoc package command.
+The pinned runner is the runtime boundary for CI. The web workflow invokes
+`flox activate` for dependency installation, quality checks, and browser smoke
+checks; it does not install Bun, Chromium, or system browser packages in the
+job. `PLAYWRIGHT_CHROMIUM_PATH` points Playwright at the `chromium` executable
+exported by that activated environment.
+
+The checked-in consumer manifest currently contains Bun and shared quality
+tools, but not Chromium. This repository does not own the `senshac-runner`
+producer, so the bounded follow-up there is to add
+`chromium.pkg-path = "chromium"` to the producer's `.flox/env/manifest.toml`,
+rebuild and publish the image with its existing Flox/Nix build path, verify
+`flox activate -- command -v chromium` in the image, and then update this
+workflow to the newly published immutable digest. Until that producer handoff
+is published, the browser smoke step correctly fails rather than downloading
+or installing a browser in the consumer workflow.
