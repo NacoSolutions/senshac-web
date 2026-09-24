@@ -15,18 +15,15 @@ Keep the `container.image` value in `.github/workflows/ci.yml` as the exact
 `@sha256:` reference from a successful producer publication. Do not replace it
 with `latest`, a `sha-<commit>` tag, or another mutable reference.
 
-The pinned runner is the runtime boundary for CI. The web workflow invokes
-`flox activate` for dependency installation, quality checks, and browser smoke
-checks; it does not install Bun, Chromium, or system browser packages in the
-job. `PLAYWRIGHT_CHROMIUM_PATH` points Playwright at the `chromium` executable
-exported by that activated environment.
+The pinned runner is the runtime boundary for CI. Its image entrypoint
+activates the Flox environment before job steps run, so the web workflow uses
+the inherited `PATH` and invokes `bun` directly. It does not require a `flox`
+binary or install Bun, Chromium, or system browser packages in the job.
 
 The checked-in consumer manifest currently contains Bun and shared quality
-tools, but not Chromium. This repository does not own the `senshac-runner`
-producer, so the bounded follow-up there is to add
-`chromium.pkg-path = "chromium"` to the producer's `.flox/env/manifest.toml`,
-rebuild and publish the image with its existing Flox/Nix build path, verify
-`flox activate -- command -v chromium` in the image, and then update this
-workflow to the newly published immutable digest. Until that producer handoff
-is published, the browser smoke step correctly fails rather than downloading
-or installing a browser in the consumer workflow.
+tools, but not Chromium. The browser smoke step verifies that the pinned
+producer image exposes `chromium` and sets `PLAYWRIGHT_CHROMIUM_PATH` to that
+executable. If Chromium is missing, the step fails with an explicit producer
+image contract error. Do not download a browser in this consumer workflow;
+update the workflow to a newly published immutable producer digest only after
+the producer includes and verifies Chromium.
