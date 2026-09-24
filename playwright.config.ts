@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.BASE_URL || process.env.PLAYWRIGHT_BASE_URL;
+const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
 
 export default defineConfig({
 	testDir: "./e2e",
@@ -12,6 +13,7 @@ export default defineConfig({
 		baseURL: baseURL || "http://127.0.0.1:4321",
 		trace: "retain-on-failure",
 		...devices["Desktop Chrome"],
+		...(chromiumPath ? { launchOptions: { executablePath: chromiumPath } } : {}),
 	},
 	webServer: baseURL
 		? undefined

@@ -13,5 +13,12 @@ ghcr.io/nacosolutions/senshac-runner@sha256:a950ccba03d922b18bd4f69f456fda39e338
 
 Keep the `container.image` value in `.github/workflows/ci.yml` as the exact
 `@sha256:` reference from a successful producer publication. Do not replace it
-with `latest`, a `sha-<commit>` tag, or another mutable reference. The existing
-npm quality and repository-contract gates remain unchanged.
+with `latest`, a `sha-<commit>` tag, or another mutable reference.
+
+The pinned runner intentionally contains only the shared Bun/Actions tool
+closure; it has no apt or other distribution package manager. Browser smoke
+checks use the repository's `flake.nix`: CI bootstraps Nix with
+`cachix/install-nix-action`, then `nix develop` supplies the lean Chromium and
+explicit `glib` runtime (including `libglib-2.0.so.0`). Playwright is pointed
+at that Nix Chromium through `PLAYWRIGHT_CHROMIUM_PATH`; no browser dependency
+is installed inside GitHub Actions with an ad-hoc package command.

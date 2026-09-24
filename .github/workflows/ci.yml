@@ -37,15 +37,20 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE"
           bun run quality
-      - name: Install Chromium runtime dependency
-        run: |
-          apt-get update
-          apt-get install --yes --no-install-recommends libglib2.0-0
+      # senshac-runner is intentionally a small Nix/Flox tool image and has no
+      # distribution package manager. Keep the browser closure reproducible
+      # instead of mutating the container at job time.
+      - name: Install Nix runtime
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-24.11
       - name: Run browser smoke checks
         run: |
           cd "$GITHUB_WORKSPACE"
-          bunx playwright install chromium
-          bun run test:e2e
+          nix develop --accept-flake-config --command bash -euc '
+            export PLAYWRIGHT_CHROMIUM_PATH="$(command -v chromium)"
+            bun run test:e2e
+          '
       - name: Validate repository contract
         shell: bash
         run: |
