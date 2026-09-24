@@ -25,29 +25,16 @@ jobs:
       image: ghcr.io/nacosolutions/senshac-runner@sha256:a950ccba03d922b18bd4f69f456fda39e3389760b539c96904b7f671d12c7055
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.13'
+      # The pinned senshac-runner image owns the Bun/Flox toolchain. Activate
+      # its environment instead of installing tools or browser packages here.
       - name: Install dependencies
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          bun install --frozen-lockfile
+        run: flox activate -- bash -euc 'cd "$GITHUB_WORKSPACE" && bun install --frozen-lockfile'
       - name: Run deterministic quality gates
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          bun run quality
-      # senshac-runner is intentionally a small Nix/Flox tool image and has no
-      # distribution package manager. Keep the browser closure reproducible
-      # instead of mutating the container at job time.
-      - name: Install Nix runtime
-        uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-24.11
+        run: flox activate -- bash -euc 'cd "$GITHUB_WORKSPACE" && bun run quality'
       - name: Run browser smoke checks
         run: |
-          cd "$GITHUB_WORKSPACE"
-          nix develop --accept-flake-config --command bash -euc '
+          flox activate -- bash -euc '
+            cd "$GITHUB_WORKSPACE"
             export PLAYWRIGHT_CHROMIUM_PATH="$(command -v chromium)"
             bun run test:e2e
           '
