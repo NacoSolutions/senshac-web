@@ -25,19 +25,31 @@ jobs:
       image: ghcr.io/nacosolutions/senshac-runner@sha256:a950ccba03d922b18bd4f69f456fda39e3389760b539c96904b7f671d12c7055
     steps:
       - uses: actions/checkout@v4
-      # The pinned senshac-runner image owns the Bun/Flox toolchain. Activate
-      # its environment instead of installing tools or browser packages here.
+      # The image entrypoint activates its Flox environment before job steps.
+      # Consume the inherited PATH directly; the consumer must not require the
+      # flox binary or install additional tools and browser packages here.
+      - name: Verify inherited runner toolchain
+        run: |
+          set -euo pipefail
+          command -v bun >/dev/null || {
+            echo '::error::The pinned senshac-runner image did not expose bun on its inherited PATH.' >&2
+            exit 1
+          }
+          echo "Inherited PATH: $PATH"
+          bun --version
       - name: Install dependencies
-        run: flox activate -- bash -euc 'cd "$GITHUB_WORKSPACE" && bun install --frozen-lockfile'
+        run: bun install --frozen-lockfile
       - name: Run deterministic quality gates
-        run: flox activate -- bash -euc 'cd "$GITHUB_WORKSPACE" && bun run quality'
+        run: bun run quality
       - name: Run browser smoke checks
         run: |
-          flox activate -- bash -euc '
-            cd "$GITHUB_WORKSPACE"
-            export PLAYWRIGHT_CHROMIUM_PATH="$(command -v chromium)"
-            bun run test:e2e
-          '
+          set -euo pipefail
+          if ! command -v chromium >/dev/null 2>&1; then
+            echo '::error::The pinned senshac-runner image does not provide chromium; update the producer image digest before enabling browser smoke.' >&2
+            exit 1
+          fi
+          export PLAYWRIGHT_CHROMIUM_PATH="$(command -v chromium)"
+          bun run test:e2e
       - name: Validate repository contract
         shell: bash
         run: |
