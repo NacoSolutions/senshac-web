@@ -12,6 +12,24 @@ This repository contains only the bounded, non-production preview slice: one
 Astro route, deterministic quality gates, and a non-secret Tina content
 contract. It is not a production deployment.
 
+## Local development
+
+The repository provides a `devenv.nix` environment for the Bun, Node.js, and
+quality-tool binaries used by local checks. Enter it with `devenv shell` (or
+use the same commands from an already provisioned environment), then install
+the locked application dependencies:
+
+```sh
+devenv shell
+bun install --frozen-lockfile
+bun run quality
+```
+
+Tina remains local and non-secret by default. `bun run tina:generate` uses the
+local Tina schema unless `TINA_CLIENT_ID` and `TINA_TOKEN` are supplied through
+the process environment; never commit those values. Schema changes continue to
+follow the Tina lockfile workflow in `AGENTS.md`.
+
 ## Web cutover contract
 
 When cutover is approved:
