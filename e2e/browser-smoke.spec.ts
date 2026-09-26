@@ -2,18 +2,23 @@ import { expect, test, type Page } from "@playwright/test";
 
 const languages = ["es", "ca", "en"];
 const representativeRoutes = [
-	"about",
-	"services",
-	"contact",
-	"legal-notice",
-	"privacy-policy",
+	{ path: "about", landmark: "main" },
+	{ path: "services", landmark: "main" },
+	{ path: "contact", landmark: "main" },
+	// Legal MDX pages render their stable content landmark as an article, not main.
+	{ path: "legal-notice", landmark: "article", requiresContent: true },
+	{ path: "privacy-policy", landmark: "article", requiresContent: true },
 ];
 
-async function expectPage(page: Page, path: string) {
+async function expectPage(page: Page, path: string, landmark = "main", requiresContent = false) {
 	const response = await page.goto(path, { waitUntil: "domcontentloaded" });
 	expect(response, `${path} did not return a response`).not.toBeNull();
 	expect(response?.status(), path).toBe(200);
-	expect(await page.locator("main").count(), `${path} has no main content`).toBeGreaterThan(0);
+	const content = page.locator(landmark);
+	expect(await content.count(), `${path} has no ${landmark} content`).toBeGreaterThan(0);
+	if (requiresContent) {
+		expect(await content.first().innerText(), `${path} has no rendered content`).not.toBe("");
+	}
 }
 
 test.describe("Senshac browser smoke contract", () => {
@@ -25,7 +30,7 @@ test.describe("Senshac browser smoke contract", () => {
 		}
 
 		for (const route of representativeRoutes) {
-			await expectPage(page, `/en/${route}`);
+			await expectPage(page, `/en/${route.path}`, route.landmark, route.requiresContent);
 		}
 	});
 
