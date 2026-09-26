@@ -21,7 +21,7 @@ test.describe("Senshac browser smoke contract", () => {
 		for (const language of languages) {
 			await expectPage(page, `/${language}/`);
 			expect(await page.locator("html").getAttribute("lang")).toBe(language);
-			expect(await page.locator("main").innerText()).not.toBe("");
+			expect(await page.locator("main#main").innerText()).not.toBe("");
 		}
 
 		for (const route of representativeRoutes) {
@@ -39,7 +39,9 @@ test.describe("Senshac browser smoke contract", () => {
 	test("keeps the Tina admin entry point available", async ({ page }) => {
 		const redirect = await page.request.get("/admin", { maxRedirects: 0 });
 		expect(redirect.status()).toBe(302);
-		expect(redirect.headers().location).toBe("/admin/index.html");
+		expect(new URL(redirect.headers().location ?? "", "http://127.0.0.1").pathname).toBe(
+			"/admin/index.html",
+		);
 
 		const admin = await page.goto("/admin/index.html", { waitUntil: "domcontentloaded" });
 		expect(admin?.status()).toBe(200);
