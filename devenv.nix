@@ -12,7 +12,6 @@
     gh
     biome
     betterleaks
-    nodePackages.knip
   ];
 
   env.NODE_ENV = "development";
@@ -20,4 +19,4 @@
   enterShell = ''
     echo "senshac-web devenv: $(bun --version)"
   '';
-};
+}
