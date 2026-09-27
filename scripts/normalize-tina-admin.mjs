@@ -38,7 +38,7 @@ async function assertNoBrokenReferences(directory) {
 		// node:util). Its throwing getter crashes when util.inspect reads .custom;
 		// the browser-safe value is simply absent, as intended by the fallback.
 		const repaired = source.replace(
-			/throw Error\(`Module "" has been externalized for browser compatibility\.[\s\S]*?more details\.`\)/g,
+			/throw (?:new )?Error\(`Module "" has been externalized for browser compatibility\.[\s\S]*?more details\.`\)/g,
 			"return",
 		);
 		if (repaired !== source) {
