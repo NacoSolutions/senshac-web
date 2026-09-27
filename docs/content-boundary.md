@@ -32,21 +32,18 @@ content repository has no `tina/` directory and no Tina schema.
 With the sibling checkout available and `TINA_CLIENT_ID` and `TINA_TOKEN`
 unset, run `bun run tina:generate` to index content and verify local Tina admin
 generation. The `dev:cms`, `tina:generate`, and `build` scripts pass the sibling
-path automatically. To regenerate the tracked lock directly, run
-`TINA_LOCAL_CONTENT_PATH=../../senshac-content/main ./node_modules/.bin/tinacms dev --no-server --noWatch`.
+path automatically. The Tina CLI runs from its isolated `tools/tina` dependency tree; the wrapper installs that lockfile and verifies it resolves Vite 6 before invoking the CLI from the repository root. To regenerate the tracked lock directly, run
+`TINA_LOCAL_CONTENT_PATH=../../senshac-content/main node scripts/tina-cli.mjs dev --no-server --noWatch`.
 The lock must retain the eight web-owned collections: `siteConfig`, `home`,
 `about`, `services`, `contact`, `legal`, `projects`, and `translations`. Tina's
 local indexing and generated schema do not need TinaCloud credentials.
 
-The Tina CLI 3.0 toolchain declares Vite 6 and its matching esbuild range. Keep
-its Vite/esbuild dependencies separate from the Astro toolchain instead of
-forcing project-wide Vite 8/esbuild 0.28 overrides. Tina's generated TypeScript
-currently repeats GraphQL input-filter aliases such as `StringFilter`; the
-GraphQL schema itself contains each input declaration once. The incompatible
-Vite 8/Rolldown dependency scan reports duplicate identifier parse errors, but
-Tina treats that scan failure as non-fatal and continues to report build
-completion. The compatible Tina Vite 6 dependency tree avoids that scan error;
-this does not change the schema or content model.
+Astro/Cloudflare uses the root Vite 8 toolchain and its lockfile overrides;
+that produces the `dist/_worker.js/index.js` entry required by Pages. Tina CLI 3.0
+runs from the separate `tools/tina` package/lockfile, where its Vite 6 dependency
+is not rewritten by the root overrides. This avoids Tina's non-fatal duplicate
+GraphQL filter scan errors without changing the schema or content model, while
+preserving the Astro worker output used by Pages.
 
 ## TinaCloud owner checks
 

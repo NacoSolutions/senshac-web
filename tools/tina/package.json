@@ -1,0 +1,12 @@
+{
+  "name": "senshac-tina-cli",
+  "private": true,
+  "packageManager": "bun@1.3.13",
+  "dependencies": {
+    "@tinacms/cli": "3.0.0",
+    "tinacms": "3.14.0"
+  },
+  "overrides": {
+    "tinacms": "3.14.0"
+  }
+}
