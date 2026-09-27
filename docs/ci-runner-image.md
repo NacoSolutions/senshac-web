@@ -13,10 +13,11 @@ ghcr.io/nacosolutions/senshac-runner@sha256:69906cef37c3d9eb53638aca5af1024bbb46
 ```
 
 The job grants `packages: read` and authenticates the private GHCR pull with
-`GITHUB_TOKEN`. GitHub starts the job as the image's non-root UID/GID 1000;
-the image provides Bun and Chromium directly on `PATH`, so the workflow no
-longer installs a host toolchain or downloads a browser. Before the browser
-smoke suite, CI verifies Chromium and exports `command -v chromium` as
+`GITHUB_TOKEN`. It runs as UID/GID 1001:122 so the container can write to the
+hosted runner's mounted workspace, and sets `HOME=/tmp`. The image provides
+Bun and Chromium directly on `PATH`, so the workflow no longer installs a
+host toolchain or downloads a browser. Before the browser smoke suite, CI
+verifies Chromium and exports `command -v chromium` as
 `PLAYWRIGHT_CHROMIUM_PATH` for Playwright's explicit executable path.
 
 Keep this digest synchronized with the producer handoff artifact. Never
