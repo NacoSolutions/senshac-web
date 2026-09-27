@@ -2,14 +2,14 @@
 
 `senshac-runner` is the producer of the CI container; `senshac-web` is the
 consumer. The verified producer handoff is successful workflow run
-[36323875728](https://github.com/NacoSolutions/senshac-runner/actions/runs/36323875728),
+[36331516568](https://github.com/NacoSolutions/senshac-runner/actions/runs/36331516568),
 which exports the image reference as the `image_digest` job output and as the
 `senshac-runner-image-digest/runner-image-digest.txt` artifact.
 
 The web contract actively consumes that immutable reference:
 
 ```text
-ghcr.io/nacosolutions/senshac-runner@sha256:ee7d648ca019f01cca3ddafccf8cef0ac525aa5948f7cbd8ecfa04590dcf4fb6
+ghcr.io/nacosolutions/senshac-runner@sha256:69906cef37c3d9eb53638aca5af1024bbb46785f49569155d6b28c2fe3d6bb57
 ```
 
 The job grants `packages: read` and authenticates the private GHCR pull with
