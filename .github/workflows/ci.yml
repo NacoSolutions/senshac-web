@@ -22,8 +22,10 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-      options: --user 1000:1000
+      # ubuntu-latest's workspace is owned by its runner user (UID 1001, GID 122).
+      options: --user 1001:122
     env:
+      HOME: ${{ runner.temp }}
       TINA_CLIENT_ID: ${{ secrets.TINA_CLIENT_ID }}
       TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
     steps:
