@@ -17,7 +17,7 @@ permissions:
 jobs:
   contract:
     container:
-      image: ghcr.io/nacosolutions/senshac-runner@sha256:ee7d648ca019f01cca3ddafccf8cef0ac525aa5948f7cbd8ecfa04590dcf4fb6
+      image: ghcr.io/nacosolutions/senshac-runner@sha256:681eb70b649ad6af34cc70b5abc1944276db015f17c73625423b3cbbc07421ab
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}

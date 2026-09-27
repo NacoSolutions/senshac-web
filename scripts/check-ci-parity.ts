@@ -33,7 +33,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 const REPO_ROOT = resolve(import.meta.dir, "..");
 const WORKFLOWS_DIR = resolve(REPO_ROOT, ".github/workflows");
@@ -70,6 +70,9 @@ const CI_ONLY: ReadonlySet<string> = new Set<string>([
 	// inside every local quality invocation.
 	"build",
 	"acceptance",
+	// Browser smoke is an explicit CI gate after Chromium provisioning; the
+	// local verify:ci graph cannot provide the hosted browser environment.
+	"test:e2e",
 	// Unit tests are an explicit CI gate after the production build.
 	// Bare `bun test` is still rejected; this must invoke the scoped
 	// package script so Playwright specs remain isolated.
