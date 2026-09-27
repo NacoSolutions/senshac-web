@@ -17,7 +17,7 @@ async function expectPage(page: Page, path: string, landmark = "main", requiresC
 	const content = page.locator(landmark);
 	expect(await content.count(), `${path} has no ${landmark} content`).toBeGreaterThan(0);
 	if (requiresContent) {
-		expect(await content.first().innerText(), `${path} has no rendered content`).not.toBe("");
+		await expect(content.first(), `${path} has no rendered content`).toContainText(/\S/);
 	}
 }
 
