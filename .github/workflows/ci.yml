@@ -17,18 +17,30 @@ permissions:
 jobs:
   contract:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/nacosolutions/senshac-runner@sha256:69906cef37c3d9eb53638aca5af1024bbb46785f49569155d6b28c2fe3d6bb57
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      # ubuntu-latest's workspace is owned by its runner user (UID 1001, GID 122).
+      options: --user 1001:122
     env:
+      HOME: /tmp
       TINA_CLIENT_ID: ${{ secrets.TINA_CLIENT_ID }}
       TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      # main now owns a devenv.nix rather than the producer's .flox project
-      # lock, so the Flox runner image cannot activate this checkout. Use the
-      # hosted toolchain explicitly instead of relying on an empty PATH.
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.13'
+      - name: Check out workflow revision
+        env:
+          CHECKOUT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$CHECKOUT_TOKEN" | base64 -w0)"
+          git init "$GITHUB_WORKSPACE"
+          git -C "$GITHUB_WORKSPACE" remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          git -C "$GITHUB_WORKSPACE" \
+            -c "http.extraheader=AUTHORIZATION: basic ${auth_header}" \
+            fetch --no-tags --depth=1 origin "$GITHUB_REF"
+          git -C "$GITHUB_WORKSPACE" checkout --detach FETCH_HEAD
       - name: Verify web toolchain
         run: |
           set -euo pipefail
@@ -38,8 +50,11 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Run deterministic quality gates
         run: bun run quality
-      - name: Install Chromium for browser smoke
-        run: bunx playwright install --with-deps chromium
+      - name: Verify runner Chromium
+        run: |
+          set -euo pipefail
+          chromium --version
+          echo "PLAYWRIGHT_CHROMIUM_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
       - name: Run browser smoke checks
         run: bun run test:e2e
       - name: Validate repository contract
