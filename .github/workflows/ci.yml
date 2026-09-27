@@ -1,4 +1,4 @@
-name: Web contract
+name: Placeholder contract
 
 on:
   # Pull requests are the validation boundary; protected main consumes the
@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   contract:
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/nacosolutions/senshac-runner@sha256:ee7d648ca019f01cca3ddafccf8cef0ac525aa5948f7cbd8ecfa04590dcf4fb6
       credentials:
