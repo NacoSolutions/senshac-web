@@ -25,7 +25,7 @@ jobs:
       # ubuntu-latest's workspace is owned by its runner user (UID 1001, GID 122).
       options: --user 1001:122
     env:
-      HOME: ${{ runner.temp }}
+      HOME: /tmp
       TINA_CLIENT_ID: ${{ secrets.TINA_CLIENT_ID }}
       TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
     steps:
