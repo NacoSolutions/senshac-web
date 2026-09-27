@@ -26,7 +26,7 @@ test.describe("Senshac browser smoke contract", () => {
 		for (const language of languages) {
 			await expectPage(page, `/${language}/`);
 			expect(await page.locator("html").getAttribute("lang")).toBe(language);
-			expect(await page.locator("main#main").innerText()).not.toBe("");
+			await expect(page.locator("main#main")).toContainText(/\S/);
 		}
 
 		for (const route of representativeRoutes) {
