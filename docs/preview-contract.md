@@ -38,12 +38,11 @@ repository. Without those variables, local `bun run build` uses Tina's
 local/offline generator so the route and admin assets can still be verified;
 that fallback is not a Cloud preview and must not be used for Pages.
 
-The representative `/` route reads the pinned
-`content/senshac-content-export.json` export from the separate
-`senshac-content` repository. `src/content/adapter.mjs` validates its
-`contractVersion`, immutable `sourceRevision`, and nested content before the
-static route is rendered. The validated values are passed to
-`src/components/HomePreview.astro`. The legacy `content/tina-fixture.json` and
-`content/tina-schema.json` are safe test inputs only; they are not a Tina
-deployment or an editorial store. See `docs/content-boundary.md` for the
-refresh and review procedure.
+The localized home page reads Tina-generated Astro content collections. The
+pinned `content/senshac-content-export.json` export is consumed by the project
+listing and detail routes at `/projects/` and `/projects/[slug]`. Before those
+static routes render, `src/content/adapter.mjs` validates the export's
+`contractVersion`, immutable `sourceRevision`, and nested home/project data.
+The legacy `content/tina-fixture.json` and `content/tina-schema.json` are safe
+test inputs only; they are not a Tina deployment or an editorial store. See
+`docs/content-boundary.md` for the refresh and review procedure.
