@@ -21,10 +21,13 @@ into Astro's generated `src/content` tree. Its reviewed default revision is
 `SENSHAC_CONTENT_REVISION` to override that pin for local verification. The
 copied editorial files are ignored by Git.
 
-Content updates should trigger a Pages deploy through a TinaCloud webhook (or
-an equivalent Pages deploy hook). The build pin must be updated when the
-deployed content revision changes; this keeps builds reproducible while the
-webhook supplies the refresh trigger.
+TinaCloud writes editorial commits to `senshac-content`. Its
+`update-web-content-revision` workflow watches relevant content paths on
+`main` and opens or refreshes a focused PR here with the exact source SHA in
+`scripts/sync-editorial-content.mjs`. Merge that PR after the web checks pass;
+Cloudflare Pages then builds the pinned revision from the resulting `main`
+commit. A bare deploy-hook rebuild is not used for this flow because the
+revision must advance along with the build trigger.
 
 The Tina schema and generated Tina artifacts remain in `senshac-web`. The
 content repository has no `tina/` directory and no Tina schema.
