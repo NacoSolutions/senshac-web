@@ -5,7 +5,7 @@ import { promisify } from "node:util";
 
 const exec = promisify(execFile);
 const revision = process.env.SENSHAC_CONTENT_REVISION ??
-	"d854eba5f48bcf8d778ec10e426eaf8030c4401c";
+	"862e2089cf1c80ee1fdc9ec7df6fc8ecef19e005";
 const targetRoot = resolve("src/content");
 const siblingRoot = resolve("../../senshac-content/main");
 const temporaryRoot = await mkdtemp("/tmp/senshac-content-");
