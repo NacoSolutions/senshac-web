@@ -16,8 +16,10 @@ checkout exists. Set `TINA_LOCAL_CONTENT_PATH` to another path relative to
 The Cloudflare Pages build also runs `scripts/sync-editorial-content.mjs`: it
 loads the reviewed immutable content revision from a sibling checkout when
 available, otherwise from the public GitHub archive, and copies the content
-into Astro's generated `src/content` tree. The copied editorial files are
-ignored by Git.
+into Astro's generated `src/content` tree. Its reviewed default revision is
+`862e2089cf1c80ee1fdc9ec7df6fc8ecef19e005`; set
+`SENSHAC_CONTENT_REVISION` to override that pin for local verification. The
+copied editorial files are ignored by Git.
 
 Content updates should trigger a Pages deploy through a TinaCloud webhook (or
 an equivalent Pages deploy hook). The build pin must be updated when the
