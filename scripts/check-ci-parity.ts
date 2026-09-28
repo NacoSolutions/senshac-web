@@ -65,11 +65,8 @@ const ALIASES: Record<string, string> = {
  * the :build variants embed them).
  */
 const CI_ONLY: ReadonlySet<string> = new Set<string>([
-	// Production-shaped build and Pages runtime acceptance are CI
-	// orchestration gates. They wrap check:all rather than running
-	// inside every local quality invocation.
+	// Production-shaped builds are part of the local quality gate.
 	"build",
-	"acceptance",
 	// Unit tests are an explicit CI gate after the production build.
 	// Bare `bun test` is still rejected; this must invoke the scoped
 	// package script so Playwright specs remain isolated.
