@@ -96,8 +96,22 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         working-directory: ${{ runner.temp }}
-        run: >-
-          bunx --bun wrangler@4.129.0 pages deploy "$GITHUB_WORKSPACE/dist"
-          --project-name senshac-web
-          --branch main
-          --skip-caching
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          artifact="$GITHUB_WORKSPACE/dist"
+          env -u GITHUB_ACTIONS -u GITHUB_SHA -u GITHUB_REF -u GITHUB_REF_NAME \
+            -u GITHUB_HEAD_REF -u GITHUB_BASE_REF -u GITHUB_REPOSITORY -u CI \
+            bunx --bun wrangler@4.129.0 pages deploy "$artifact" \
+              --project-name senshac-web --branch main --skip-caching
+
+          project=$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/senshac-web")
+          jq -e '
+            .result.canonical_deployment as $d |
+            $d.is_skipped == false and
+            $d.deployment_trigger.type == "ad_hoc" and
+            $d.latest_stage.status == "success"
+          ' <<< "$project" >/dev/null
+          jq -r '"Verified active Pages deployment: " + .result.canonical_deployment.short_id' <<< "$project"
