@@ -1,8 +1,8 @@
 name: Deploy Pages content revision
 
 on:
-  push:
-    branches: [main]
+  # Cloudflare Pages owns source-push deployments. Keep this workflow for
+  # immutable content-repo publish events and deliberate manual deployments.
   repository_dispatch:
     types: [senshac-content-published]
   workflow_dispatch:
