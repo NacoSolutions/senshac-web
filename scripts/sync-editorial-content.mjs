@@ -4,26 +4,60 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 const exec = promisify(execFile);
-const revision = process.env.SENSHAC_CONTENT_REVISION ??
-	"155c7c70c1c793d54d3fef7ae8f6c8867349bcd2";
+const requestedRevision = process.env.SENSHAC_CONTENT_REVISION;
 const targetRoot = resolve("src/content");
-const siblingRoot = resolve("../../senshac-content/main");
+const siblingRoot = resolve(
+	process.env.SENSHAC_CONTENT_PATH ?? "../../senshac-content/main",
+);
 const temporaryRoot = await mkdtemp("/tmp/senshac-content-");
 
 try {
-	let sourceRoot = siblingRoot;
+	let revision = requestedRevision;
+	if (!revision) {
+		try {
+			const result = await exec("git", ["-C", siblingRoot, "rev-parse", "HEAD"]);
+			revision = result.stdout.trim();
+		} catch {
+			const response = await fetch(
+				"https://api.github.com/repos/NacoSolutions/senshac-content/commits/main",
+				{ headers: { accept: "application/vnd.github+json" } },
+			);
+			if (!response.ok) {
+				throw new Error(`Unable to resolve senshac-content main: ${response.status}`);
+			}
+			const result = await response.json();
+			revision = result.sha;
+		}
+	}
+	if (!/^[0-9a-f]{40}$/.test(revision)) {
+		throw new Error(`Invalid senshac-content revision: ${revision}`);
+	}
+
+	const sourceRoot = join(temporaryRoot, "source");
+	let hasLocalRevision = true;
 	try {
 		await exec("git", ["-C", siblingRoot, "cat-file", "-e", `${revision}^{commit}`]);
 	} catch {
-		sourceRoot = join(temporaryRoot, "source");
-		await exec("mkdir", ["-p", sourceRoot]);
-		const archive = join(temporaryRoot, "content.tar.gz");
+		hasLocalRevision = false;
+	}
+	await exec("mkdir", ["-p", sourceRoot]);
+	if (hasLocalRevision) {
+		const archive = await exec("git", ["-C", siblingRoot, "archive", "--format=tar", revision], {
+			encoding: "buffer",
+		});
+		const archivePath = join(temporaryRoot, "content.tar");
+		await writeFile(archivePath, archive.stdout);
+		await exec("tar", ["-xf", archivePath, "-C", sourceRoot]);
+	} else {
+		const archivePath = join(temporaryRoot, "content.tar.gz");
 		const response = await fetch(
 			`https://github.com/NacoSolutions/senshac-content/archive/${revision}.tar.gz`,
 		);
-		if (!response.ok) throw new Error(`Unable to fetch senshac-content: ${response.status}`);
-		await writeFile(archive, Buffer.from(await response.arrayBuffer()));
-		await exec("tar", ["-xzf", archive, "--strip-components=1", "-C", sourceRoot]);
+		if (!response.ok) {
+			throw new Error(`Unable to fetch senshac-content@${revision}: ${response.status}`);
+		}
+		await writeFile(archivePath, Buffer.from(await response.arrayBuffer()));
+		await exec("tar", ["-xzf", archivePath, "--strip-components=1", "-C", sourceRoot]);
 	}
 
 	for (const directory of ["config", "pages", "legal", "projects", "translations"]) {
@@ -34,7 +68,7 @@ try {
 		await writeFile(join(target, ".gitkeep"), "");
 	}
 
-	console.log(`Editorial content synced from senshac-content ${revision}`);
+	console.log(`Editorial content synced from senshac-content@${revision}`);
 } finally {
 	await rm(temporaryRoot, { recursive: true, force: true });
 }
