@@ -41,7 +41,7 @@ const legacyBlocks = [
 ];
 
 const legacyMarkers = [
-  "parentData.blocks, index",
+  "block",
   "site.attribution, 'design'",
   "site.attribution, 'development'",
   "site.branding, 'logo'",
