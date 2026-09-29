@@ -1,4 +1,5 @@
 ---
+import { tinaField } from "@tinacms/astro/tina-field";
 import { getCollection } from "astro:content";
 import R2Picture from "../../R2Picture.astro";
 import MediaPlaceholder from "./MediaPlaceholder.astro";
@@ -21,6 +22,7 @@ interface Props {
 	imageAlt?: string;
 	placeholderLabel?: string;
 	items?: Item[] | null;
+	tinaData?: any;
 }
 
 const {
@@ -33,6 +35,7 @@ const {
 	imageAlt,
 	placeholderLabel,
 	items: itemList,
+	tinaData,
 } = Astro.props;
 const items = itemList ?? [];
 
@@ -80,8 +83,8 @@ const carouselId = `showcase-${Math.random().toString(36).substring(2, 9)}`;
 
 <section class="editorial-section">
   <div class="editorial-shell">
-    {eyebrow && <p class="editorial-eyebrow">{eyebrow}</p>}
-    {title && <h2 class="editorial-heading editorial-heading--compact" x-reveal>{title}</h2>}
+    {eyebrow && <p data-tina-field={tinaField(tinaData, 'eyebrow')} class="editorial-eyebrow">{eyebrow}</p>}
+    {title && <h2 data-tina-field={tinaField(tinaData, 'title')} class="editorial-heading editorial-heading--compact" x-reveal>{title}</h2>}
 
     {showProjectCarousel ? (
       <!-- Project carousel -->
@@ -144,16 +147,17 @@ const carouselId = `showcase-${Math.random().toString(36).substring(2, 9)}`;
       </div>
     ) : items.length > 0 ? (
       <div class="grid gap-8 grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]">
-        {items.map((item) => (
-          <a href={item.link || '#'} class="flex flex-col gap-4 decoration-none text-inherit">
+          {items.map((item, index) => (
+          <a data-tina-field={tinaField(tinaData.items[index], 'link')} href={item.link || '#'} class="flex flex-col gap-4 decoration-none text-inherit">
 			<MediaPlaceholder
               mediaId={item.mediaId}
               alt={item.imageAlt}
               label={item.placeholderLabel}
 				aspect="landscape"
 				mediaSlot="grid"
+				fieldMarker={tinaField(tinaData.items[index], 'mediaId')}
             />
-            <span class="text-[1.15rem] font-medium uppercase">{item.title}</span>
+            <span data-tina-field={tinaField(tinaData.items[index], 'title')} class="text-[1.15rem] font-medium uppercase">{item.title}</span>
           </a>
         ))}
       </div>
@@ -165,9 +169,10 @@ const carouselId = `showcase-${Math.random().toString(36).substring(2, 9)}`;
         label={placeholderLabel}
         aspect="wide"
         mediaSlot="full"
+        fieldMarker={tinaField(tinaData, 'mediaId')}
       />
     )}
 
-    {ctaText && ctaLink && <a class="editorial-link mt-[clamp(2rem,5vw,4rem)]" href={ctaLink}>{ctaText}</a>}
+    {ctaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link mt-[clamp(2rem,5vw,4rem)]" href={ctaLink}><span data-tina-field={tinaField(tinaData, 'ctaText')}>{ctaText}</span></a>}
   </div>
 </section>

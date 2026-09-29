@@ -12,6 +12,7 @@ interface Props {
 	eager?: boolean;
 	variant?: "default" | "banner";
 	mediaSlot?: "full" | "content" | "grid" | "logo";
+	fieldMarker?: string;
 }
 
 const {
@@ -24,6 +25,7 @@ const {
 	eager = false,
 	variant = "default",
 	mediaSlot = variant === "banner" ? "full" : "content",
+	fieldMarker,
 } = Astro.props;
 
 const hasR2Media = Boolean(mediaId);
@@ -40,7 +42,7 @@ const aspectClass =
 const fitClass = objectFit === "contain" ? "object-contain" : "object-cover";
 ---
 
-<div class:list={['w-full overflow-hidden', variant === 'banner' ? 'bg-[#050505]' : 'bg-[#dedede]', aspectClass]}>
+<div data-tina-field={fieldMarker} class:list={['w-full overflow-hidden', variant === 'banner' ? 'bg-[#050505]' : 'bg-[#dedede]', aspectClass]}>
   {hasR2Media && kind === 'image' ? (
     <R2Picture
       id={mediaId!}
