@@ -7,7 +7,9 @@ import { getEntry } from "astro:content";
 import BlocksRenderer from "../../components/BlocksRenderer.astro";
 // src/pages/[lang]/index.astro
 import Base from "../../layouts/Base.astro";
+import { requestWithMetadata } from "@tinacms/astro";
 import TinaIsland from "@tinacms/astro/TinaIsland.astro";
+import { HomeDocument } from "../../../tina/__generated__/types";
 import { getSiteConfig } from "../../utils/site-config";
 import { getTranslations as getPublicTranslations } from "../../utils/translations";
 
@@ -19,7 +21,13 @@ if (!page) {
 	return Astro.redirect("/404");
 }
 
-const { title, description, headerStyle, blocks } = page.data as {
+const homeResult = await requestWithMetadata({
+	data: { home: page.data },
+	query: HomeDocument,
+	variables: { relativePath: `${lang}/home.json` },
+}, { priority: "primary" });
+const home = homeResult.data.home;
+const { title, description, headerStyle, blocks } = home as {
 	title: string;
 	description: string;
 	headerStyle: "default" | "transparent";
@@ -48,7 +56,7 @@ const site = await getSiteConfig();
   >
     <main id="main">
       {blocks && blocks.map((block: any, index: number) => (
-        <BlocksRenderer block={block} index={index} parentData={page.data} />
+        <BlocksRenderer block={block} index={index} parentData={home} />
       ))}
     </main>
   </TinaIsland>
