@@ -13,21 +13,27 @@ checkout at `../senshac-content/main` from the web repository root. The
 checkout exists. Set `TINA_LOCAL_CONTENT_PATH` to another path relative to
 `tina/` when a workspace uses a different layout.
 
-The Cloudflare Pages build also runs `scripts/sync-editorial-content.mjs`: it
-loads the reviewed immutable content revision from a sibling checkout when
-available, otherwise from the public GitHub archive, and copies the content
-into Astro's generated `src/content` tree. Its reviewed default revision is
-`862e2089cf1c80ee1fdc9ec7df6fc8ecef19e005`; set
-`SENSHAC_CONTENT_REVISION` to override that pin for local verification. The
-copied editorial files are ignored by Git.
+Every build runs `scripts/sync-editorial-content.mjs` and copies editorial
+files into Astro's generated `src/content` tree. A local sibling checkout
+supplies its `HEAD`; Cloudflare Pages builds resolve `senshac-content` `main`
+through the GitHub API, then download that immutable commit archive. The script
+logs the resolved 40-character SHA. Set `SENSHAC_CONTENT_REVISION` to build an
+explicit revision for reproducibility or rollback. The copied editorial
+files are ignored by Git.
 
 TinaCloud writes editorial commits to `senshac-content`. Its
-`update-web-content-revision` workflow watches relevant content paths on
-`main` and opens or refreshes a focused PR here with the exact source SHA in
-`scripts/sync-editorial-content.mjs`. Merge that PR after the web checks pass;
-Cloudflare Pages then builds the pinned revision from the resulting `main`
-commit. A bare deploy-hook rebuild is not used for this flow because the
-revision must advance along with the build trigger.
+`dispatch-web-content-deploy` workflow watches editorial paths on `main`,
+validates that exact SHA, then sends a `repository_dispatch` to
+`senshac-web`. The web repository's `deploy-pages-content` workflow checks out
+web `main`, builds with the supplied content SHA, and uploads the Pages
+artifact with Wrangler. Content updates create no commits or pull requests in
+this repository. Store `CLOUDFLARE_API_TOKEN` as a GitHub Actions secret and
+`CLOUDFLARE_ACCOUNT_ID` as a repository variable in `senshac-web`.
+
+Web source pushes continue through Cloudflare Pages Git integration; these
+builds resolve the latest content `main` and log the immutable SHA they use.
+Content-triggered builds use the dispatched SHA, so the deployment workflow
+and run summary preserve exact source provenance.
 
 The Tina schema and generated Tina artifacts remain in `senshac-web`. The
 content repository has no `tina/` directory and no Tina schema.

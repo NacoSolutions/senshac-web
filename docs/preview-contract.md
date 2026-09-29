@@ -45,4 +45,4 @@ static routes render, `src/content/adapter.mjs` validates the export's
 `contractVersion`, immutable `sourceRevision`, and nested home/project data.
 The legacy `content/tina-fixture.json` and `content/tina-schema.json` are safe
 test inputs only; they are not a Tina deployment or an editorial store. See
-`docs/content-boundary.md` for the refresh and review procedure.
+`docs/content-boundary.md` for the content-triggered Pages build flow.
