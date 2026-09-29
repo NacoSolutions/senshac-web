@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { tinaField } from "@tinacms/astro/tina-field";
 
 const componentFields = {
 	Banner: ["tinaField(tinaData, 'title')", "tinaField(tinaData, 'subtitle')"],
@@ -73,6 +74,17 @@ test("homepage editorial sections receive the Tina source object", () => {
 			`${component} must receive its Tina source metadata`,
 		);
 	}
+});
+
+test("block wrapper targets its metadata-bearing block object", () => {
+	assert.match(renderer, /data-tina-field=\{tinaField\(block\)\}/);
+	assert.doesNotMatch(renderer, /tinaField\(parentData\.blocks,\s*index\)/);
+	assert.equal(
+		tinaField({
+			_content_source: { queryId: "home-query", path: ["home", "blocks", 0] },
+		}),
+		"home-query---home.blocks.0",
+	);
 });
 
 test("homepage editorial text and media fields expose click-to-edit markers", () => {
