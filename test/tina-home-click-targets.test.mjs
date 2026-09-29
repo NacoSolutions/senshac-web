@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { requestWithMetadata } from "@tinacms/astro";
 import { tinaField } from "@tinacms/astro/tina-field";
 
 const componentFields = {
@@ -63,6 +64,10 @@ const renderer = await readFile(
 	new URL("../src/components/BlocksRenderer.astro", import.meta.url),
 	"utf8",
 );
+const homeRoute = await readFile(
+	new URL("../src/pages/[lang]/index.astro", import.meta.url),
+	"utf8",
+);
 
 test("homepage editorial sections receive the Tina source object", () => {
 	for (const component of Object.keys(componentFields)) {
@@ -84,6 +89,23 @@ test("block wrapper targets its metadata-bearing block object", () => {
 			_content_source: { queryId: "home-query", path: ["home", "blocks", 0] },
 		}),
 		"home-query---home.blocks.0",
+	);
+});
+
+test("static home route stamps Tina metadata onto content blocks", async () => {
+	assert.match(homeRoute, /requestWithMetadata\(/);
+	assert.match(homeRoute, /query:\s*HomeDocument/);
+	assert.match(homeRoute, /data:\s*\{\s*home:\s*page\.data\s*\}/);
+	assert.match(homeRoute, /parentData=\{home\}/);
+	const { data } = await requestWithMetadata({
+		data: { home: { blocks: [{ title: "Example" }] } },
+		query: "query home($relativePath: String!) { home(relativePath: $relativePath) { blocks { title } } }",
+		variables: { relativePath: "es/home.json" },
+	});
+	assert.match(tinaField(data.home.blocks[0]), /---home\.blocks\.0$/);
+	assert.match(
+		tinaField(data.home.blocks[0], "title"),
+		/---home\.blocks\.0\.title$/,
 	);
 });
 
