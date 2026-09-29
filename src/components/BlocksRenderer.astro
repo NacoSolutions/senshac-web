@@ -51,21 +51,22 @@ function mediaId(value?: string | null) {
 ---
 
 <div data-tina-field={tinaField(parentData.blocks, index)}>
-  {template === 'editorialBanner' && <EditorialBanner {...block} eager={index === 0} />}
-  {template === 'editorialHero' && <EditorialHero {...block} eager={index === 0} />}
-  {template === 'editorialCopy' && <EditorialCopy {...block} />}
-  {template === 'editorialAccordion' && <EditorialAccordion {...block} />}
-  {template === 'editorialRows' && <EditorialRows {...block} />}
-  {template === 'editorialCta' && <EditorialCta {...block} />}
+  {template === 'editorialBanner' && <EditorialBanner {...block} tinaData={block} eager={index === 0} />}
+  {template === 'editorialHero' && <EditorialHero {...block} tinaData={block} eager={index === 0} />}
+  {template === 'editorialCopy' && <EditorialCopy {...block} tinaData={block} />}
+  {template === 'editorialAccordion' && <EditorialAccordion {...block} tinaData={block} />}
+  {template === 'editorialRows' && <EditorialRows {...block} tinaData={block} />}
+  {template === 'editorialCta' && <EditorialCta {...block} tinaData={block} />}
   {template === 'editorialShowcase' && (
     <EditorialShowcase
       {...block}
       items={block.items}
+      tinaData={block}
     />
   )}
   {template === 'editorialMission' && <EditorialMission {...block} />}
   {template === 'editorialCarousel' && <EditorialCarousel {...block} eagerFirst={index === 0} />}
-  {template === 'editorialInstagram' && <EditorialInstagram {...block} />}
+  {template === 'editorialInstagram' && <EditorialInstagram {...block} tinaData={block} />}
   {template === 'editorialGallery' && block.images && (
     <section class="max-w-7xl mx-auto px-4 my-16">
       <div class={`grid gap-4 grid-cols-1 md:grid-cols-${block.cols || 2}`}>

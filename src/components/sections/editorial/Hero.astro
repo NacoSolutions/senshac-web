@@ -1,4 +1,5 @@
 ---
+import { tinaField } from "@tinacms/astro/tina-field";
 import MediaPlaceholder from "./MediaPlaceholder.astro";
 import RichText from "./RichText.astro";
 
@@ -13,6 +14,7 @@ interface Props {
 	placeholderLabel?: string;
 	objectFit?: "cover" | "contain";
 	eager?: boolean;
+	tinaData?: any;
 }
 
 const {
@@ -26,6 +28,7 @@ const {
 	placeholderLabel,
 	objectFit = "cover",
 	eager = false,
+	tinaData,
 } = Astro.props;
 ---
 
@@ -40,15 +43,16 @@ const {
       objectFit={objectFit}
       eager={eager}
       mediaSlot="full"
+      fieldMarker={tinaField(tinaData, 'mediaId')}
     />
     <div class="flex flex-col justify-between">
-      <h2 class="editorial-display">{title}</h2>
+      <h2 data-tina-field={tinaField(tinaData, 'title')} class="editorial-display">{title}</h2>
       {intro && (
-        <div class="editorial-lede my-auto" x-reveal>
+        <div data-tina-field={tinaField(tinaData, 'intro')} class="editorial-lede my-auto" x-reveal>
           <RichText content={intro} />
         </div>
       )}
-      {ctaText && ctaLink && <a class="editorial-link mt-0" href={ctaLink}>{ctaText}</a>}
+      {ctaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link mt-0" href={ctaLink}><span data-tina-field={tinaField(tinaData, 'ctaText')}>{ctaText}</span></a>}
     </div>
   </div>
 </section>
