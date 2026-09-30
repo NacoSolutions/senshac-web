@@ -18,7 +18,7 @@ jobs:
   contract:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/nacosolutions/senshac-runner@sha256:067f97ea8fc90a80259a5e144e8e072b08d3157d0f447b6856937f884d5b37eb
+      image: ghcr.io/nacosolutions/senshac-runner@sha256:b3d9afd406e541486225a9034d76d04e3c87cbfbc2d4b4ff471da8b130cce626
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -63,7 +63,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          DEBUG=pw:browser bun run test:e2e
+          bun run test:e2e
           result=$?
           if [ "$result" -ne 0 ]; then
             echo '--- Playwright test contexts ---'
