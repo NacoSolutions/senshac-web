@@ -331,6 +331,7 @@ const editorialRowsBlock: TinaField = {
 				{ name: "title", label: "Title", type: "string" },
 				{ name: "text", label: "Text", type: "rich-text" },
 				{ name: "href", label: "Optional Link", type: "string" },
+				{ name: "ctaText", label: "Action Text", type: "string" },
 			],
 		},
 	],

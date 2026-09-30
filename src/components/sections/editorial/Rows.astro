@@ -6,6 +6,7 @@ interface Item {
 	title?: string;
 	text?: any;
 	href?: string;
+	ctaText?: string;
 }
 
 interface Props {
@@ -36,7 +37,12 @@ const itemHeadingLevel = title ? "h3" : "h2";
           ) : (
             <h2 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class="underline-offset-4 hover:underline">{item.title} <span aria-hidden="true">↗</span></a> : item.title}</h2>
           )}
-          <div data-tina-field={tinaField(tinaData.items[index], 'text')} class="[&>p]:m-0 [&>p]:text-base [&>p]:leading-[1.45]"><RichText content={item.text} /></div>
+          <div>
+            <div data-tina-field={tinaField(tinaData.items[index], 'text')} class="[&>p]:m-0 [&>p]:text-base [&>p]:leading-[1.45]"><RichText content={item.text} /></div>
+            {item.ctaText && item.href && (
+              <a data-tina-field={tinaField(tinaData.items[index], 'ctaText')} href={item.href} class="editorial-link mt-6 inline-flex">{item.ctaText}</a>
+            )}
+          </div>
         </article>
       ))}
     </div>

@@ -120,7 +120,7 @@ const contentBlock = z
 			for (const [index, item] of block.items.entries()) {
 				if (item && typeof item === "object") {
 					for (const key of Object.keys(item)) {
-						if (!["title", "text", "href"].includes(key)) {
+						if (!["title", "text", "href", "ctaText"].includes(key)) {
 							context.addIssue({
 								code: "custom",
 								path: ["items", index, key],
