@@ -148,6 +148,56 @@ const contentBlock = z
 				}
 			}
 		}
+		if (block._template === "showcase" && Array.isArray(block.items)) {
+			for (const [index, item] of block.items.entries()) {
+				if (!item || typeof item !== "object" || Array.isArray(item)) {
+					context.addIssue({
+						code: "custom",
+						path: ["items", index],
+						message: "showcase items must be objects",
+					});
+					continue;
+				}
+				for (const key of Object.keys(item)) {
+					if (
+						!["title", "link", "mediaId", "imageAlt", "placeholderLabel", "ctaText"].includes(key)
+					) {
+						context.addIssue({
+							code: "custom",
+							path: ["items", index, key],
+							message: `unsupported showcase item field ${key}`,
+						});
+					}
+				}
+				if (
+					"link" in item &&
+					typeof item.link === "string" &&
+					!/^\/(?!\/)|^https:\/\/\S+$/.test(item.link)
+				) {
+					context.addIssue({
+						code: "custom",
+						path: ["items", index, "link"],
+						message: "showcase links must be local paths or HTTPS URLs",
+					});
+				}
+				if (
+					item.ctaText !== undefined &&
+					(typeof item.ctaText !== "string" || !item.ctaText.trim())
+				) {
+					context.addIssue({
+						code: "custom",
+						path: ["items", index, "ctaText"],
+						message: "showcase item ctaText must be a non-empty string",
+					});
+				} else if (item.ctaText !== undefined && item.link === undefined) {
+					context.addIssue({
+						code: "custom",
+						path: ["items", index, "ctaText"],
+						message: "showcase item ctaText requires link",
+					});
+				}
+			}
+		}
 		const variants: readonly string[] | undefined =
 			block._template === "media"
 				? ["banner", "full"]
