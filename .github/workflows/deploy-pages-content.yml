@@ -116,6 +116,7 @@ jobs:
           artifact="$GITHUB_WORKSPACE/dist"
           env -u GITHUB_ACTIONS -u GITHUB_SHA -u GITHUB_REF -u GITHUB_REF_NAME \
             -u GITHUB_HEAD_REF -u GITHUB_BASE_REF -u GITHUB_REPOSITORY -u CI \
+            WRANGLER_LOG=debug WRANGLER_LOG_SANITIZE=true \
             bunx --bun wrangler@4.129.0 pages deploy "$artifact" \
               --project-name senshac-web --branch main --skip-caching
 
