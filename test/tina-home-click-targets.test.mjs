@@ -35,6 +35,7 @@ const componentFields = {
 		"tinaField(tinaData, 'title')",
 		"tinaField(tinaData, 'mediaId')",
 		"tinaField(tinaData.items[index], 'title')",
+		"tinaField(tinaData.items[index], 'ctaText')",
 		"tinaField(tinaData, 'ctaText')",
 	],
 	Instagram: [
@@ -148,5 +149,21 @@ test("list action labels are editable links admitted by the strict schema", asyn
 		contentSchema,
 		/\["title",\s*"text",\s*"href",\s*"ctaText"\]\.includes\(key\)/,
 	);
+	assert.match(tinaSchema, /name: "ctaText", label: "Action Text"/);
+});
+
+test("showcase item action labels are editable and strictly admitted", async () => {
+	const showcase = sources.Showcase.source;
+	const contentSchema = await readFile(
+		new URL("../src/content.config.ts", import.meta.url),
+		"utf8",
+	);
+	const tinaSchema = await readFile(
+		new URL("../tina/config.ts", import.meta.url),
+		"utf8",
+	);
+
+	assert.match(showcase, /item\.ctaText/);
+	assert.match(contentSchema, /showcase.*ctaText/s);
 	assert.match(tinaSchema, /name: "ctaText", label: "Action Text"/);
 });

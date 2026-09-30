@@ -379,6 +379,7 @@ const editorialShowcaseBlock: TinaField = {
 			fields: [
 				{ name: "title", label: "Title", type: "string" },
 				{ name: "link", label: "URL", type: "string" },
+				{ name: "ctaText", label: "Action Text", type: "string" },
 				{ name: "mediaId", label: "R2 Media Identifier", type: "image" },
 				{ name: "imageAlt", label: "Image Alt Text", type: "string" },
 				{

@@ -7,6 +7,7 @@ import MediaPlaceholder from "./MediaPlaceholder.astro";
 interface Item {
 	title?: string;
 	link?: string;
+	ctaText?: string;
 	mediaId?: string;
 	imageAlt?: string;
 	placeholderLabel?: string;
@@ -163,6 +164,9 @@ const carouselId = `showcase-${Math.random().toString(36).substring(2, 9)}`;
 				fieldMarker={tinaField(tinaData.items[index], 'mediaId')}
             />
             <span data-tina-field={tinaField(tinaData.items[index], 'title')} class="text-[1.15rem] font-medium uppercase">{item.title}</span>
+            {item.ctaText && item.link && (
+              <span data-tina-field={tinaField(tinaData.items[index], 'ctaText')} class="editorial-link">{item.ctaText}</span>
+            )}
           </a>
         ))}
       </div>
