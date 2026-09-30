@@ -116,10 +116,18 @@ jobs:
           artifact="$RUNNER_TEMP/pages-artifact"
           rm -rf "$artifact"
           cp -a "$GITHUB_WORKSPACE/dist" "$artifact"
-          env -u GITHUB_ACTIONS -u GITHUB_SHA -u GITHUB_REF -u GITHUB_REF_NAME \
+          wrangler_log="$RUNNER_TEMP/wrangler.log"
+          rm -f "$wrangler_log"
+          if ! env -u GITHUB_ACTIONS -u GITHUB_SHA -u GITHUB_REF -u GITHUB_REF_NAME \
             -u GITHUB_HEAD_REF -u GITHUB_BASE_REF -u GITHUB_REPOSITORY -u CI \
+            WRANGLER_LOG=debug WRANGLER_LOG_SANITIZE=true \
+            WRANGLER_LOG_PATH="$wrangler_log" \
             bunx --bun wrangler@4.129.0 pages deploy "$artifact" \
-              --project-name senshac-web --branch main --skip-caching
+              --project-name senshac-web --branch main --skip-caching; then
+            echo 'Sanitized Wrangler log tail:' >&2
+            if [[ -f "$wrangler_log" ]]; then tail -n 120 "$wrangler_log" >&2; fi
+            exit 1
+          fi
 
           project=$(curl --fail-with-body --silent --show-error \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
