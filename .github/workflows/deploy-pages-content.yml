@@ -104,7 +104,7 @@ jobs:
         run: bun run build
 
       - name: Deploy production Pages artifact
-        # Run outside the source checkout so Wrangler cannot attach Git commit metadata.
+        # Stage the artifact outside the checkout; Wrangler derives Git metadata from its input path.
         # Cloudflare skips Git production deploys while production_deployments_enabled is false.
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -113,19 +113,13 @@ jobs:
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
-          artifact="$GITHUB_WORKSPACE/dist"
-          wrangler_log="$RUNNER_TEMP/wrangler.log"
-          rm -f "$wrangler_log"
-          if ! env -u GITHUB_ACTIONS -u GITHUB_SHA -u GITHUB_REF -u GITHUB_REF_NAME \
+          artifact="$RUNNER_TEMP/pages-artifact"
+          rm -rf "$artifact"
+          cp -a "$GITHUB_WORKSPACE/dist" "$artifact"
+          env -u GITHUB_ACTIONS -u GITHUB_SHA -u GITHUB_REF -u GITHUB_REF_NAME \
             -u GITHUB_HEAD_REF -u GITHUB_BASE_REF -u GITHUB_REPOSITORY -u CI \
-            WRANGLER_LOG=debug WRANGLER_LOG_SANITIZE=true \
-            WRANGLER_LOG_PATH="$wrangler_log" \
             bunx --bun wrangler@4.129.0 pages deploy "$artifact" \
-              --project-name senshac-web --branch main --skip-caching; then
-            echo 'Sanitized Wrangler log tail:' >&2
-            if [[ -f "$wrangler_log" ]]; then tail -n 120 "$wrangler_log" >&2; fi
-            exit 1
-          fi
+              --project-name senshac-web --branch main --skip-caching
 
           project=$(curl --fail-with-body --silent --show-error \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
