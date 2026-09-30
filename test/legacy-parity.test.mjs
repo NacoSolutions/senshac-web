@@ -13,31 +13,14 @@ const markerSources = (
     "islands/HomePage.astro",
     "islands/ProjectPage.astro",
     "islands/ServicesPage.astro",
+    "sections/editorial/Banner.astro",
   ].map((file) => readFile(new URL(`../src/components/${file}`, import.meta.url), "utf8")))
 ).join("\\n");
 
-// Frozen against the archived senshac baseline b46b933. Keep this list explicit so
-// a block can only disappear after a deliberate parity review.
-const legacyBlocks = [
-  "contactForm",
-  "editorialAccordion",
-  "editorialBanner",
-  "editorialCarousel",
-  "editorialCopy",
-  "editorialCta",
-  "editorialGallery",
-  "editorialHero",
-  "editorialInstagram",
-  "editorialMission",
-  "editorialRows",
-  "editorialShowcase",
-  "projectBanner",
-  "projectBrief",
-  "projectCollaborators",
-  "projectConcept",
-  "projectDetails",
-  "projectFinalImage",
-  "projectStrategy",
+const genericBlocks = [
+  "accordion", "banner", "callout", "carousel", "credits", "details",
+  "feed", "form", "gallery", "hero", "list", "media", "showcase",
+  "statement", "text",
 ];
 
 const legacyMarkers = [
@@ -70,10 +53,14 @@ const legacyMarkers = [
   "f.serviceTypes, index",
 ];
 
-test("legacy block templates remain represented in Tina and renderer", () => {
-  for (const block of legacyBlocks) {
-    assert.match(tinaConfig, new RegExp(`name: [\\"']${block}[\\"']`), `Tina schema lost ${block}`);
-    assert.match(renderer, new RegExp(`template === [\\"']${block}[\\"']`), `renderer lost ${block}`);
+test("Tina and renderer expose only generic block templates", () => {
+  for (const block of genericBlocks) {
+    assert.match(tinaConfig, new RegExp(`name: [\"']${block}[\"']`), `Tina schema lost ${block}`);
+    assert.match(renderer, new RegExp(`[\"']${block}[\"']`), `renderer lost ${block}`);
+  }
+  for (const legacy of ["editorialBanner", "projectBanner", "projectBrief"]) {
+    assert.doesNotMatch(tinaConfig, new RegExp(`name: [\"']${legacy}[\"']`));
+    assert.doesNotMatch(renderer, new RegExp(`template === [\"']${legacy}[\"']`));
   }
 });
 
@@ -83,4 +70,11 @@ test("legacy Tina metadata markers remain present", () => {
     assert.ok(source.includes(`tinaField(${marker})`), `metadata marker lost: tinaField(${marker})`);
   }
   assert.equal((renderer.match(/data-tina-field=/g) ?? []).length, 1, "block wrapper marker should remain singular");
+});
+
+
+test("banner text and nested slogan lines have selectable Tina markers", () => {
+  assert.ok(markerSources.includes("tinaField(topRight.lines, index)"));
+  assert.ok(markerSources.includes("tinaField(Astro.props, 'title')"));
+  assert.ok(markerSources.includes("tinaField(Astro.props, 'subtitle')"));
 });

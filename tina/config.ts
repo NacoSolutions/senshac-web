@@ -1,4 +1,5 @@
 // tina/config.ts
+import { existsSync } from "node:fs";
 import { defineConfig, type TinaField } from "tinacms";
 
 // ============================================================================
@@ -166,8 +167,8 @@ const siteConfigFields: TinaField[] = [
 // ============================================================================
 
 const contactFormBlock: TinaField = {
-	name: "contactForm",
-	label: "Contact Form Layout",
+	name: "form",
+	label: "Form",
 	type: "object",
 	fields: [
 		{ type: "image", name: "mediaId", label: "R2 Media Identifier" },
@@ -177,8 +178,8 @@ const contactFormBlock: TinaField = {
 };
 
 const editorialHeroBlock: TinaField = {
-	name: "editorialHero",
-	label: "Editorial Hero",
+	name: "hero",
+	label: "Hero",
 	type: "object",
 	fields: [
 		{
@@ -209,8 +210,8 @@ const editorialHeroBlock: TinaField = {
 };
 
 const editorialBannerBlock: TinaField = {
-	name: "editorialBanner",
-	label: "Editorial Banner",
+	name: "banner",
+	label: "Banner",
 	type: "object",
 	fields: [
 		{
@@ -239,8 +240,8 @@ const editorialBannerBlock: TinaField = {
 };
 
 const editorialCopyBlock: TinaField = {
-	name: "editorialCopy",
-	label: "Editorial Copy",
+	name: "text",
+	label: "Text",
 	type: "object",
 	fields: [
 		{ name: "eyebrow", label: "Eyebrow", type: "string" },
@@ -256,14 +257,20 @@ const editorialCopyBlock: TinaField = {
 			type: "string",
 			options: ["h1", "h2"],
 		},
+		{
+			name: "variant",
+			label: "Layout",
+			type: "string",
+			options: ["brief", "concept", "strategy"],
+		},
 		{ name: "body", label: "Body", type: "rich-text" },
 		{ name: "showStar", label: "Show Star Graphic", type: "boolean" },
 	],
 };
 
 const editorialAccordionBlock: TinaField = {
-	name: "editorialAccordion",
-	label: "Editorial Accordion",
+	name: "accordion",
+	label: "Accordion",
 	type: "object",
 	fields: [
 		{ name: "intro", label: "Introduction", type: "rich-text" },
@@ -304,8 +311,8 @@ const editorialAccordionBlock: TinaField = {
 };
 
 const editorialRowsBlock: TinaField = {
-	name: "editorialRows",
-	label: "Editorial Rows",
+	name: "list",
+	label: "List",
 	type: "object",
 	fields: [
 		{
@@ -330,8 +337,8 @@ const editorialRowsBlock: TinaField = {
 };
 
 const editorialCtaBlock: TinaField = {
-	name: "editorialCta",
-	label: "Editorial Call to Action",
+	name: "callout",
+	label: "Callout",
 	type: "object",
 	fields: [
 		{ name: "text", label: "Text", type: "string" },
@@ -340,8 +347,8 @@ const editorialCtaBlock: TinaField = {
 };
 
 const editorialShowcaseBlock: TinaField = {
-	name: "editorialShowcase",
-	label: "Editorial Media / Work Showcase",
+	name: "showcase",
+	label: "Showcase",
 	type: "object",
 	fields: [
 		{ name: "eyebrow", label: "Eyebrow", type: "string" },
@@ -384,8 +391,8 @@ const editorialShowcaseBlock: TinaField = {
 };
 
 const editorialMissionBlock: TinaField = {
-	name: "editorialMission",
-	label: "Studio Mission",
+	name: "statement",
+	label: "Statement",
 	type: "object",
 	fields: [
 		{ name: "label", label: "Label", type: "string" },
@@ -403,7 +410,7 @@ const editorialMissionBlock: TinaField = {
 };
 
 const editorialCarouselBlock: TinaField = {
-	name: "editorialCarousel",
+	name: "carousel",
 	label: "Carousel",
 	type: "object",
 	fields: [
@@ -422,7 +429,7 @@ const editorialCarouselBlock: TinaField = {
 };
 
 const editorialInstagramBlock: TinaField = {
-	name: "editorialInstagram",
+	name: "feed",
 	label: "Instagram",
 	type: "object",
 	fields: [
@@ -451,24 +458,29 @@ const editorialInstagramBlock: TinaField = {
 };
 
 const editorialGalleryBlock: TinaField = {
-	name: "editorialGallery",
+	name: "gallery",
 	label: "Gallery",
 	type: "object",
 	fields: galleryFields,
 };
-const projectBannerBlock: TinaField = {
-	name: "projectBanner",
-	label: "Project Banner",
+const mediaBlock: TinaField = {
+	name: "media",
+	label: "Media",
 	type: "object",
 	fields: [
-		{ type: "image", name: "mediaId", label: "R2 Media Identifier" },
-		{ type: "string", name: "alt", label: "Alt Text" },
+		{
+			type: "string",
+			name: "variant",
+			label: "Layout",
+			options: ["banner", "full"],
+		},
+		...imageFields,
 	],
 };
 
 const projectDetailsBlock: TinaField = {
-	name: "projectDetails",
-	label: "Project Details",
+	name: "details",
+	label: "Details",
 	type: "object",
 	fields: [
 		{ type: "string", name: "title", label: "Title" },
@@ -485,39 +497,16 @@ const projectDetailsBlock: TinaField = {
 	],
 };
 
-const projectBriefBlock: TinaField = {
-	name: "projectBrief",
-	label: "Project Brief",
-	type: "object",
-	fields: [
-		{ type: "string", name: "title", label: "Section Title" },
-		{ type: "rich-text", name: "text", label: "Text" },
-	],
-};
-
-const projectConceptBlock: TinaField = {
-	name: "projectConcept",
-	label: "Project Concept",
-	type: "object",
-	fields: [
-		{ type: "string", name: "title", label: "Section Title" },
-		{ type: "rich-text", name: "text", label: "Text" },
-	],
-};
-
-const projectStrategyBlock: TinaField = {
-	name: "projectStrategy",
-	label: "Project Strategy",
-	type: "object",
-	fields: [
-		{ type: "string", name: "title", label: "Section Title" },
-		{ type: "rich-text", name: "text", label: "Text" },
-	],
+const projectTextBlock: TinaField = {
+	...editorialCopyBlock,
+	fields: (editorialCopyBlock.fields as TinaField[]).filter(
+		(field) => field.name !== "showStar",
+	),
 };
 
 const projectCollaboratorsBlock: TinaField = {
-	name: "projectCollaborators",
-	label: "Project Collaborators",
+	name: "credits",
+	label: "Credits",
 	type: "object",
 	fields: [
 		{ type: "string", name: "title", label: "Section Title" },
@@ -532,13 +521,6 @@ const projectCollaboratorsBlock: TinaField = {
 			],
 		},
 	],
-};
-
-const projectFinalImageBlock: TinaField = {
-	name: "projectFinalImage",
-	label: "Project Final Image",
-	type: "object",
-	fields: imageFields,
 };
 
 const pageBlocksField: TinaField = {
@@ -568,13 +550,10 @@ const projectBlocksField: TinaField = {
 	label: "Project Blocks",
 	list: true,
 	templates: [
-		projectBannerBlock,
+		mediaBlock,
 		projectDetailsBlock,
-		projectBriefBlock,
-		projectConceptBlock,
-		projectStrategyBlock,
+		projectTextBlock,
 		projectCollaboratorsBlock,
-		projectFinalImageBlock,
 		editorialGalleryBlock,
 		editorialCarouselBlock,
 		editorialInstagramBlock,
@@ -868,7 +847,8 @@ function localeFromDocument(document: {
 // TinaCloud schema deployment source: senshac-web/tina/config.ts
 // ============================================================================
 
-const localContentPath = process.env.TINA_LOCAL_CONTENT_PATH;
+const localContentPath =
+	process.env.TINA_LOCAL_CONTENT_PATH || "../../../senshac-content/main";
 
 export default defineConfig({
 	branch: process.env.TINA_BRANCH || process.env.CF_PAGES_BRANCH || "main",
@@ -876,7 +856,7 @@ export default defineConfig({
 	token: process.env.TINA_TOKEN || "",
 	// Resolved relative to tina/. TinaCloud uses the configured content repo;
 	// local dev and CI use the sibling checkout when it is available.
-	...(localContentPath ? { localContentPath } : {}),
+	...(existsSync(localContentPath) ? { localContentPath } : {}),
 
 	build: {
 		outputFolder: "admin",
@@ -995,17 +975,27 @@ export default defineConfig({
 						featured: false,
 						draft: true,
 						blocks: [
-							{ _template: "projectBanner" },
-							{ _template: "projectDetails", title: "New Project" },
-							{ _template: "projectBrief", title: "BRIEF", text: "" },
-							{ _template: "projectConcept", title: "CONCEPTO", text: "" },
-							{ _template: "projectStrategy", title: "ESTRATEGIA", text: "" },
+							{ _template: "media", variant: "banner" },
+							{ _template: "details", title: "New Project" },
+							{ _template: "text", variant: "brief", title: "BRIEF", body: "" },
 							{
-								_template: "projectCollaborators",
+								_template: "text",
+								variant: "concept",
+								title: "CONCEPTO",
+								text: "",
+							},
+							{
+								_template: "text",
+								variant: "strategy",
+								title: "ESTRATEGIA",
+								text: "",
+							},
+							{
+								_template: "credits",
 								title: "COLABORADORES",
 								list: [],
 							},
-							{ _template: "projectFinalImage" },
+							{ _template: "media", variant: "full" },
 						],
 					};
 				},

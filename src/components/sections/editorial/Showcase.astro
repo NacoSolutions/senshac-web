@@ -59,7 +59,7 @@ if (items.length === 0 && !mediaId) {
 	});
 	projectSlides = sorted.map((project) => {
 		const bannerBlock = project.data.blocks?.find(
-			(b: any) => b._template === "projectBanner",
+			(b: any) => b._template === "media" && b.variant === "banner",
 		);
 		return {
 			title: project.data.title,

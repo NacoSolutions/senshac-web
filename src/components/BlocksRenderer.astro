@@ -28,14 +28,29 @@ interface Props {
 }
 
 const { block, index, parentData } = Astro.props;
-let template = block._template;
+const template = block._template;
+const supportedTemplates = new Set([
+	"accordion",
+	"banner",
+	"callout",
+	"carousel",
+	"credits",
+	"details",
+	"feed",
+	"form",
+	"gallery",
+	"hero",
+	"list",
+	"media",
+	"showcase",
+	"statement",
+	"text",
+]);
 
-if (!template && block.__typename) {
-	const match = block.__typename.match(/Blocks(.*)$/);
-	if (match) {
-		const pascal = match[1];
-		template = pascal.charAt(0).toLowerCase() + pascal.slice(1);
-	}
+if (typeof template !== "string" || !supportedTemplates.has(template)) {
+	throw new Error(
+		`Unsupported content block template at index ${index}: ${String(template)}`,
+	);
 }
 
 function mediaId(value?: string | null) {
@@ -50,24 +65,23 @@ function mediaId(value?: string | null) {
 }
 ---
 
-<div data-tina-field={tinaField(block)}>
-  {template === 'editorialBanner' && <EditorialBanner {...block} tinaData={block} eager={index === 0} />}
-  {template === 'editorialHero' && <EditorialHero {...block} tinaData={block} eager={index === 0} />}
-  {template === 'editorialCopy' && <EditorialCopy {...block} tinaData={block} />}
-  {template === 'editorialAccordion' && <EditorialAccordion {...block} tinaData={block} />}
-  {template === 'editorialRows' && <EditorialRows {...block} tinaData={block} />}
-  {template === 'editorialCta' && <EditorialCta {...block} tinaData={block} />}
-  {template === 'editorialShowcase' && (
+<div data-tina-field={tinaField(parentData.blocks, index)}>
+  {template === 'banner' && <EditorialBanner {...block} eager={index === 0} />}
+  {template === 'hero' && <EditorialHero {...block} eager={index === 0} />}
+  {template === 'text' && !['brief', 'concept', 'strategy'].includes(block.variant) && <EditorialCopy {...block} />}
+  {template === 'accordion' && <EditorialAccordion {...block} />}
+  {template === 'list' && <EditorialRows {...block} />}
+  {template === 'callout' && <EditorialCta {...block} />}
+  {template === 'showcase' && (
     <EditorialShowcase
       {...block}
       items={block.items}
-      tinaData={block}
     />
   )}
-  {template === 'editorialMission' && <EditorialMission {...block} />}
-  {template === 'editorialCarousel' && <EditorialCarousel {...block} eagerFirst={index === 0} />}
-  {template === 'editorialInstagram' && <EditorialInstagram {...block} tinaData={block} />}
-  {template === 'editorialGallery' && block.images && (
+  {template === 'statement' && <EditorialMission {...block} />}
+  {template === 'carousel' && <EditorialCarousel {...block} eagerFirst={index === 0} />}
+  {template === 'feed' && <EditorialInstagram {...block} />}
+  {template === 'gallery' && block.images && (
     <section class="max-w-7xl mx-auto px-4 my-16">
       <div class={`grid gap-4 grid-cols-1 md:grid-cols-${block.cols || 2}`}>
         {block.images.map((img: any, imageIndex: number) => (
@@ -77,7 +91,7 @@ function mediaId(value?: string | null) {
     </section>
   )}
 
-  {template === 'projectBanner' && (
+  {template === 'media' && block.variant === 'banner' && (
     <div class="w-full aspect-video overflow-hidden">
       <R2Picture
         id={mediaId(block.mediaId)}
@@ -88,34 +102,18 @@ function mediaId(value?: string | null) {
       />
     </div>
   )}
-  {template === 'contactForm' && <ContactFormBlock {...block} />}
-  {template === 'projectDetails' && <ProjectDetails {...block} eager={index === 0} />}
-  {template === 'projectBrief' && (
+  {template === 'form' && <ContactFormBlock {...block} />}
+  {template === 'details' && <ProjectDetails {...block} eager={index === 0} />}
+  {template === 'text' && ['brief', 'concept', 'strategy'].includes(block.variant) && (
     <section class="py-16 md:py-24 max-w-7xl mx-auto px-4">
       <h2 class="text-3xl font-bold mb-6">{block.title}</h2>
       <div class="text-lg text-gray-600 mb-12 [[prose-p:my-2_p]:my-2_p]:my-2">
-        <RichText content={block.text} />
+        <RichText content={block.body} />
       </div>
     </section>
   )}
-  {template === 'projectConcept' && (
-    <section class="py-16 md:py-24 max-w-7xl mx-auto px-4 bg-gray-50">
-      <h2 class="text-3xl font-bold mb-6">{block.title}</h2>
-      <div class="text-lg text-gray-600 mb-12 [[prose-p:my-2_p]:my-2_p]:my-2">
-        <RichText content={block.text} />
-      </div>
-    </section>
-  )}
-  {template === 'projectStrategy' && (
-    <section class="py-16 md:py-24 max-w-7xl mx-auto px-4">
-      <h2 class="text-3xl font-bold mb-6">{block.title}</h2>
-      <div class="text-lg text-gray-600 mb-12 [[prose-p:my-2_p]:my-2_p]:my-2">
-        <RichText content={block.text} />
-      </div>
-    </section>
-  )}
-  {template === 'projectCollaborators' && <ProjectCollaborators list={block.list} />}
-  {template === 'projectFinalImage' && (
+  {template === 'credits' && <ProjectCollaborators list={block.list} />}
+  {template === 'media' && block.variant === 'full' && (
     <div class="w-full mt-16">
       <R2Picture id={mediaId(block.mediaId)} alt={block.alt} class="w-full h-auto" mediaSlot="full" />
     </div>

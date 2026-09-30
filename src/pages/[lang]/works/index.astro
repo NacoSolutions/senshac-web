@@ -36,7 +36,7 @@ const layouts = [
 
 const works = sortedProjects.map((project, index) => {
 	const bannerBlock = project.data.blocks?.find(
-		(b: any) => b._template === "projectBanner",
+		(b: any) => b._template === "media" && b.variant === "banner",
 	);
 
 	return {

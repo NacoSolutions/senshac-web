@@ -17,13 +17,146 @@ const chromePart = z.object({
 	scrolling: appearancePreset,
 });
 
+const blockNames = [
+	"accordion",
+	"banner",
+	"callout",
+	"carousel",
+	"credits",
+	"details",
+	"feed",
+	"form",
+	"gallery",
+	"hero",
+	"list",
+	"media",
+	"showcase",
+	"statement",
+	"text",
+] as const;
+const blockFields: Record<(typeof blockNames)[number], readonly string[]> = {
+	accordion: ["intro", "items"],
+	banner: [
+		"title",
+		"subtitle",
+		"topRight",
+		"mediaId",
+		"imageAlt",
+		"placeholderLabel",
+		"objectFit",
+	],
+	callout: ["text", "link"],
+	carousel: ["items"],
+	credits: ["title", "list"],
+	details: [
+		"title",
+		"subtitle",
+		"mediaId",
+		"services",
+		"servicesLabel",
+		"category",
+		"categoryLabel",
+		"area",
+		"areaLabel",
+		"location",
+		"locationLabel",
+	],
+	feed: ["title", "description", "tag", "limit", "maxVisible"],
+	form: ["heading", "subheading", "mediaId"],
+	gallery: ["cols", "images"],
+	hero: [
+		"title",
+		"intro",
+		"ctaText",
+		"ctaLink",
+		"mediaType",
+		"mediaId",
+		"imageAlt",
+		"placeholderLabel",
+		"objectFit",
+	],
+	list: ["title", "intro", "items"],
+	media: ["variant", "mediaId", "alt"],
+	showcase: [
+		"eyebrow",
+		"title",
+		"mediaType",
+		"mediaId",
+		"imageAlt",
+		"placeholderLabel",
+		"ctaText",
+		"ctaLink",
+		"items",
+	],
+	statement: [
+		"label",
+		"content",
+		"statement",
+		"mediaId",
+		"imageAlt",
+		"placeholderLabel",
+	],
+	text: ["eyebrow", "title", "headingLevel", "variant", "body", "showStar"],
+};
+
+const contentBlock = z
+	.object({ _template: z.enum(blockNames), variant: z.string().optional() })
+	.passthrough()
+	.superRefine((block, context) => {
+		const allowedFields = new Set([
+			"_template",
+			...blockFields[block._template],
+		]);
+		for (const field of Object.keys(block)) {
+			if (!allowedFields.has(field)) {
+				context.addIssue({
+					code: "custom",
+					path: [field],
+					message: `unsupported ${block._template} field ${field}`,
+				});
+			}
+		}
+		const variants: readonly string[] | undefined =
+			block._template === "media"
+				? ["banner", "full"]
+				: block._template === "text"
+					? ["brief", "concept", "strategy"]
+					: undefined;
+		if (
+			block._template === "media" &&
+			!variants?.includes(block.variant ?? "")
+		) {
+			context.addIssue({
+				code: "custom",
+				path: ["variant"],
+				message: "media requires variant banner or full",
+			});
+		}
+		if (
+			block._template === "text" &&
+			block.variant &&
+			!variants?.includes(block.variant)
+		) {
+			context.addIssue({
+				code: "custom",
+				path: ["variant"],
+				message: "text variant must be brief, concept, or strategy",
+			});
+		}
+		if (!variants && block.variant) {
+			context.addIssue({
+				code: "custom",
+				path: ["variant"],
+				message: `${block._template} does not support a variant`,
+			});
+		}
+	});
+
 // Site configuration (global business info)
 const siteConfig = defineCollection({
 	loader: glob({ pattern: "site.json", base: "src/content/config" }),
 	schema: z.object({
-		chrome: z
-			.object({ header: chromePart, footer: chromePart })
-			.optional(),
+		chrome: z.object({ header: chromePart, footer: chromePart }).optional(),
 		siteUrl: z.string(),
 		locales: z.array(z.string()),
 		defaultLocale: z.string(),
@@ -78,7 +211,7 @@ const homePageSchema = z.object({
 	title: z.string(),
 	description: z.string(),
 	headerStyle: z.enum(["default", "transparent"]).default("transparent"),
-	blocks: z.array(z.any()).optional(),
+	blocks: z.array(contentBlock),
 });
 
 // About page content
@@ -86,14 +219,14 @@ const aboutPageSchema = z.object({
 	title: z.string(),
 	description: z.string(),
 	heroImage: z.string().optional(),
-	blocks: z.array(z.any()).optional(),
+	blocks: z.array(contentBlock),
 });
 
 // Services page content
 const servicesPageSchema = z.object({
 	title: z.string(),
 	description: z.string(),
-	blocks: z.array(z.any()).optional(),
+	blocks: z.array(contentBlock),
 });
 
 // Contact page content
@@ -153,7 +286,7 @@ const projectSchema = z.object({
 	showTags: z.boolean().default(false),
 	featured: z.boolean().default(false),
 	draft: z.boolean().default(false),
-	blocks: z.array(z.any()).optional(),
+	blocks: z.array(contentBlock),
 });
 
 const projects = defineCollection({
