@@ -105,7 +105,7 @@ function mediaId(value?: string | null) {
   {template === 'form' && <ContactFormBlock {...block} />}
   {template === 'details' && <ProjectDetails {...block} eager={index === 0} />}
   {template === 'text' && ['brief', 'concept', 'strategy'].includes(block.variant) && (
-    <section class="py-16 md:py-24 max-w-7xl mx-auto px-4">
+    <section class:list={['py-16 md:py-24 max-w-7xl mx-auto px-4', { 'bg-gray-50': block.variant === 'concept' }]}>
       <h2 class="text-3xl font-bold mb-6">{block.title}</h2>
       <div class="text-lg text-gray-600 mb-12 [[prose-p:my-2_p]:my-2_p]:my-2">
         <RichText content={block.body} />

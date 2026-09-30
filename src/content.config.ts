@@ -235,6 +235,7 @@ const contactPageSchema = z.object({
 	description: z.string(),
 	heading: z.string(),
 	subheading: z.string(),
+	blocks: z.array(contentBlock),
 });
 
 // JSON pages collection (home, about, services, contact)
