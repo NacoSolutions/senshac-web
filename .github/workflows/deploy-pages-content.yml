@@ -137,7 +137,7 @@ jobs:
             -u GITHUB_HEAD_REF -u GITHUB_BASE_REF -u GITHUB_REPOSITORY -u CI \
             WRANGLER_LOG=debug WRANGLER_LOG_SANITIZE=true \
             WRANGLER_LOG_PATH="$wrangler_log" \
-            bunx --bun wrangler@4.129.0 pages deploy "$artifact" \
+            npx --yes wrangler@4.129.0 pages deploy "$artifact" \
               --project-name senshac-web --branch main --skip-caching; then
             echo 'Sanitized Wrangler log tail:' >&2
             if [[ -f "$wrangler_log" ]]; then tail -n 120 "$wrangler_log" >&2; fi
