@@ -88,6 +88,21 @@ jobs:
           fi
           echo "Cloudflare Pages credential preflight passed for senshac-web."
 
+          upload_token_response=$(mktemp)
+          upload_token_http_status=$(curl --silent --show-error \
+            --output "$upload_token_response" --write-out '%{http_code}' \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/senshac-web/upload-token")
+          if [[ "$upload_token_http_status" != 200 ]] || ! jq -e \
+            '.success == true and (.result.jwt | type == "string" and length > 0)' \
+            "$upload_token_response" >/dev/null; then
+            echo "Cloudflare Pages Write preflight failed for senshac-web (HTTP $upload_token_http_status). Grant Pages Write to CLOUDFLARE_API_TOKEN for this account/project." >&2
+            jq '{errors: [.errors[]? | {code, message}], messages: [.messages[]?.message]}' \
+              "$upload_token_response" >&2 || true
+            exit 1
+          fi
+          echo "Cloudflare Pages Write preflight passed for senshac-web."
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
