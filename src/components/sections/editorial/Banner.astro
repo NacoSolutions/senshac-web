@@ -13,6 +13,7 @@ interface Props {
 	placeholderLabel?: string;
 	objectFit?: "cover" | "contain";
 	eager?: boolean;
+	tinaData?: Record<string, unknown>;
 }
 
 const {
@@ -24,6 +25,7 @@ const {
 	placeholderLabel,
 	objectFit = "cover",
 	eager = false,
+	tinaData = Astro.props as Record<string, unknown>,
 } = Astro.props;
 ---
 
@@ -48,7 +50,7 @@ const {
           const label = hasRegistrationMark ? line.slice(0, -2) : line;
 
           return (
-            <span data-tina-field={tinaField(topRight.lines, index)} class:list={['block', { 'pl-20': index % 2 === 1 }]}>
+            <span data-tina-field={tinaField(tinaData.topRight as Record<string, unknown>, 'lines', index)} class:list={['block', { 'pl-20': index % 2 === 1 }]}>
               {label}
               {hasRegistrationMark && <span class="inline-block -m-2 py-0.5 px-2 border border-current rounded-full text-base leading-none">R</span>}
             </span>
@@ -58,7 +60,7 @@ const {
     )}
     <div class="absolute right-0 bottom-[calc(10%+1rem)] left-0 md:bottom-[calc(15%+2rem)]">
       {title && (
-        <h1 data-tina-field={tinaField(Astro.props, 'title')} class="m-0 font-sans text-[clamp(3rem,8vw,6rem)] font-normal leading-[1.1] md:leading-[7.25rem] whitespace-pre-line tracking-tight" aria-label={title.replaceAll('\n', ' ')}>
+        <h1 data-tina-field={tinaField(tinaData, 'title')} class="m-0 font-sans text-[clamp(3rem,8vw,6rem)] font-normal leading-[1.1] md:leading-[7.25rem] whitespace-pre-line tracking-tight" aria-label={title.replaceAll('\n', ' ')}>
           {title.split('\n').map((line, index) => (
             <span class:list={['block', { 'pl-[1em]': index === 1 }]}>
               {line}
@@ -66,7 +68,7 @@ const {
           ))}
         </h1>
       )}
-      {subtitle && <p data-tina-field={tinaField(Astro.props, 'subtitle')} class="mt-[0.45rem] mb-0 font-jozsika text-[clamp(1.25rem,3vw,2rem)] font-light leading-normal">{subtitle}</p>}
+      {subtitle && <p data-tina-field={tinaField(tinaData, 'subtitle')} class="mt-[0.45rem] mb-0 font-jozsika text-[clamp(1.25rem,3vw,2rem)] font-light leading-normal">{subtitle}</p>}
     </div>
   </div>
 </section>

@@ -9,6 +9,7 @@ const packageJson = JSON.parse(
 const tinaToolchain = JSON.parse(
 	readFileSync(new URL("../tools/tina/package.json", import.meta.url), "utf8"),
 );
+const tinaConfig = readFileSync(new URL("../tina/config.ts", import.meta.url), "utf8");
 
 test("Tina scripts resolve the sibling checkout from tina/", () => {
 	const siblingPath = "../../senshac-content/main";
@@ -32,4 +33,10 @@ test("Astro and Tina CLI use independent Vite toolchains", () => {
 	assert.equal(tinaToolchain.dependencies["@tinacms/cli"], "3.0.0");
 	assert.equal(tinaToolchain.dependencies.tinacms, packageJson.devDependencies.tinacms);
 	assert.equal(tinaToolchain.overrides.tinacms, packageJson.devDependencies.tinacms);
+});
+
+test("Tina config only exposes an explicitly configured local content checkout", () => {
+	assert.match(tinaConfig, /const localContentPath = process\.env\.TINA_LOCAL_CONTENT_PATH/);
+	assert.match(tinaConfig, /\.\.\.\(localContentPath \? \{ localContentPath \} : \{\}\)/);
+	assert.doesNotMatch(tinaConfig, /node:fs|existsSync/);
 });

@@ -1,5 +1,4 @@
 // tina/config.ts
-import { existsSync } from "node:fs";
 import { defineConfig, type TinaField } from "tinacms";
 
 // ============================================================================
@@ -331,6 +330,7 @@ const editorialRowsBlock: TinaField = {
 			fields: [
 				{ name: "title", label: "Title", type: "string" },
 				{ name: "text", label: "Text", type: "rich-text" },
+				{ name: "href", label: "Optional Link", type: "string" },
 			],
 		},
 	],
@@ -757,6 +757,86 @@ const translationFields: TinaField[] = [
 		name: "contactForm",
 		label: "Contact Form",
 		fields: [
+			{
+				name: "inquiryPaths",
+				label: "Inquiry Paths",
+				type: "object",
+				fields: [
+					{ name: "heading", label: "Heading", type: "string" },
+					{ name: "chooseLabel", label: "Path Selector Label", type: "string" },
+					{
+						name: "paths",
+						label: "Paths",
+						type: "object",
+						list: true,
+						ui: { itemProps: (item) => ({ label: item?.title }) },
+						fields: [
+							{
+								name: "value",
+								label: "Stable ID",
+								type: "string",
+								required: true,
+							},
+							{ name: "title", label: "Title", type: "string", required: true },
+							{
+								name: "description",
+								label: "Description",
+								type: "string",
+								required: true,
+							},
+							{
+								name: "fields",
+								label: "Questions",
+								type: "object",
+								list: true,
+								ui: { itemProps: (item) => ({ label: item?.label }) },
+								fields: [
+									{
+										name: "name",
+										label: "Stable field name",
+										type: "string",
+										required: true,
+									},
+									{
+										name: "kind",
+										label: "Input kind",
+										type: "string",
+										required: true,
+									},
+									{
+										name: "label",
+										label: "Label",
+										type: "string",
+										required: true,
+									},
+									{ name: "required", label: "Required", type: "boolean" },
+									{
+										name: "options",
+										label: "Options",
+										type: "object",
+										list: true,
+										ui: { itemProps: (item) => ({ label: item?.label }) },
+										fields: [
+											{
+												name: "value",
+												label: "Stable value",
+												type: "string",
+												required: true,
+											},
+											{
+												name: "label",
+												label: "Label",
+												type: "string",
+												required: true,
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			},
 			{ name: "name", label: "Name Field", type: "string" },
 			{ name: "company", label: "Company Field", type: "string" },
 			{ name: "email", label: "Email Field", type: "string" },
@@ -802,6 +882,7 @@ const translationFields: TinaField[] = [
 				label: "Missing Fields Message",
 				type: "string",
 			},
+			{ name: "invalidFile", label: "Invalid File Message", type: "string" },
 		],
 	},
 	{
@@ -847,16 +928,14 @@ function localeFromDocument(document: {
 // TinaCloud schema deployment source: senshac-web/tina/config.ts
 // ============================================================================
 
-const localContentPath =
-	process.env.TINA_LOCAL_CONTENT_PATH || "../../../senshac-content/main";
+const localContentPath = process.env.TINA_LOCAL_CONTENT_PATH;
 
 export default defineConfig({
 	branch: process.env.TINA_BRANCH || process.env.CF_PAGES_BRANCH || "main",
 	clientId: process.env.TINA_CLIENT_ID || "",
 	token: process.env.TINA_TOKEN || "",
-	// Resolved relative to tina/. TinaCloud uses the configured content repo;
-	// local dev and CI use the sibling checkout when it is available.
-	...(existsSync(localContentPath) ? { localContentPath } : {}),
+	// Set only for local/CI runs with an explicit sibling content checkout.
+	...(localContentPath ? { localContentPath } : {}),
 
 	build: {
 		outputFolder: "admin",

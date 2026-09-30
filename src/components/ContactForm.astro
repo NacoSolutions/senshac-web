@@ -2,7 +2,6 @@
 import { getEntry } from "astro:content";
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { TranslationsQuery } from "../../tina/__generated__/types";
-// src/components/ContactForm.astro
 import { mergeContactFormTranslations } from "../utils/contact-form-translations";
 
 interface Props {
@@ -11,245 +10,120 @@ interface Props {
 }
 
 const { lang, translations: propTranslations } = Astro.props;
-
 const localTranslations = await getEntry("translations", lang);
 const t = propTranslations ?? localTranslations?.data;
 const f: any = mergeContactFormTranslations(
 	t?.contactForm as any,
 	localTranslations?.data.contactForm,
 );
-
-// Turnstile site key - use test key for development
-const TURNSTILE_SITE_KEY =
+const paths = f.inquiryPaths.paths;
+const requestedPath = Astro.url.searchParams.get("path");
+const selectedPath = paths.some((path: any) => path.value === requestedPath)
+	? requestedPath
+	: paths[0].value;
+const inquiryError = Astro.url.searchParams.get("contact_error");
+const feedback = inquiryError ? f[inquiryError] || f.error : null;
+const siteKey =
 	import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"; // gitleaks:allow
-
-const success = Astro.url.searchParams.get("contact_success");
-const error = Astro.url.searchParams.get("contact_error");
 ---
 
-{success === "1" ? (
-  <div class="p-6 bg-green-50 border border-green-200 text-green-800 rounded text-center" id="contact-form">
-    <svg class="w-12 h-12 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-    </svg>
+{Astro.url.searchParams.get("contact_success") === "1" ? (
+  <div class="p-6 border border-green-300 text-green-900" id="contact-form">
     <p class="text-lg font-medium">{f.success}</p>
   </div>
 ) : (
-<div id="contact-form-container">
-  <div id="form-feedback">
-    {error && (
-      <div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded">
-        {f[error] || f.error}
+  <div id="contact-form-container">
+    {feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert">{feedback}</p>}
+    <h2 class="mb-4 text-2xl font-semibold">{f.inquiryPaths.heading}</h2>
+    <div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
+    <form id="contact-form" class="mt-6 space-y-8" action={`/${lang}/api/contact`} method="POST" enctype="multipart/form-data">
+      <div>
+        <label for="inquiry-path" class="mb-2 block text-sm font-medium">{f.inquiryPaths.chooseLabel}</label>
+        <select id="inquiry-path" name="inquiryPath" required class="w-full border-b border-gray-400 bg-transparent px-2 py-3">
+          {paths.map((path: any) => <option value={path.value} selected={path.value === selectedPath}>{path.title}</option>)}
+        </select>
       </div>
-    )}
+
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <label class="block text-sm" data-tina-field={tinaField(f, 'name')}>{f.name} *<input name="name" required maxlength="200" autocomplete="name" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
+        <label class="block text-sm" data-tina-field={tinaField(f, 'company')}>{f.company}<input name="company" maxlength="200" autocomplete="organization" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
+        <label class="block text-sm" data-tina-field={tinaField(f, 'email')}>{f.email} *<input type="email" name="email" required maxlength="254" autocomplete="email" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
+        <label class="block text-sm" data-tina-field={tinaField(f, 'phone')}>{f.phone}<input type="tel" name="phone" maxlength="80" autocomplete="tel" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
+      </div>
+
+      {paths.map((path: any, pathIndex: number) => (
+        <fieldset data-inquiry-path={path.value} hidden={path.value !== selectedPath} disabled={path.value !== selectedPath} class="space-y-6">
+          <legend class="mb-2 text-xl font-semibold" data-tina-field={tinaField(paths, pathIndex)}>{path.title}</legend>
+          <p class="text-gray-600">{path.description}</p>
+          {path.fields.map((field: any, fieldIndex: number) => (
+            <label class="block text-sm font-medium" for={`inquiry-${path.value}-${field.name}`} data-tina-field={tinaField(path.fields, fieldIndex)}>
+              {field.label}{field.required ? " *" : ""}
+              {field.kind === "select" ? (
+                <select id={`inquiry-${path.value}-${field.name}`} name={field.name} required={field.required} class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
+                  <option value="">—</option>
+                  {field.options.map((option: any, optionIndex: number) => <option value={option.value} data-tina-field={tinaField(field.options, optionIndex)}>{option.label}</option>)}
+                </select>
+              ) : field.kind === "textarea" ? (
+                <textarea id={`inquiry-${path.value}-${field.name}`} name={field.name} required={field.required} maxlength="4000" rows="4" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3"></textarea>
+              ) : field.kind === "file" ? (
+                <input id={`inquiry-${path.value}-${field.name}`} type="file" name={field.name} multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" required={field.required} class="mt-2 block w-full border-b border-gray-400 bg-transparent px-2 py-3" />
+              ) : (
+                <input id={`inquiry-${path.value}-${field.name}`} type="text" name={field.name} required={field.required} maxlength="4000" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" />
+              )}
+            </label>
+          ))}
+        </fieldset>
+      ))}
+
+      <label class="flex items-start gap-3 text-sm text-gray-700">
+        <input type="checkbox" name="privacy" value="accepted" required class="mt-1 h-4 w-4" />
+        <span data-tina-field={tinaField(f, 'privacy')}>{f.privacy}</span>
+      </label>
+      <input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response" />
+      <button type="submit" class="bg-black px-8 py-4 text-sm tracking-wider text-white hover:bg-gray-800" data-tina-field={tinaField(f, 'submit')}>{f.submit}</button>
+    </form>
   </div>
-
-  <div
-    class="cf-turnstile"
-    data-sitekey={TURNSTILE_SITE_KEY}
-    data-size="invisible"
-    data-callback="onTurnstileSuccess"
-    data-error-callback="onTurnstileError"
-  ></div>
-
-  <form
-    id="contact-form"
-    class="space-y-6 mt-6"
-    action={`/${lang}/api/contact`}
-    method="POST"
-    hx-post={`/${lang}/api/contact`}
-    hx-target="#form-feedback"
-    hx-swap="innerHTML"
-    hx-indicator="#form-indicator"
-  >
-  <!-- Name + Company row -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div>
-      <input
-        type="text"
-        name="name"
-        placeholder={`${f.name}*`}
-        required
-        class="w-full px-4 py-3 border-b border-gray-300 focus:outline-none focus:border-black transition-colors bg-transparent"
-        data-tina-field={tinaField(f, 'name')}
-      />
-    </div>
-    <div>
-      <input
-        type="text"
-        name="company"
-        placeholder={f.company}
-        class="w-full px-4 py-3 border-b border-gray-300 focus:outline-none focus:border-black transition-colors bg-transparent"
-        data-tina-field={tinaField(f, 'company')}
-      />
-    </div>
-  </div>
-
-  <!-- Email + Phone row -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div>
-      <input
-        type="email"
-        name="email"
-        placeholder={`${f.email}*`}
-        required
-        class="w-full px-4 py-3 border-b border-gray-300 focus:outline-none focus:border-black transition-colors bg-transparent"
-        data-tina-field={tinaField(f, 'email')}
-      />
-    </div>
-    <div>
-      <input
-        type="tel"
-        name="phone"
-        placeholder={f.phone}
-        class="w-full px-4 py-3 border-b border-gray-300 focus:outline-none focus:border-black transition-colors bg-transparent"
-        data-tina-field={tinaField(f, 'phone')}
-      />
-    </div>
-  </div>
-
-  <!-- Project Type -->
-  <div>
-      <select
-        name="projectType"
-        required
-        class="w-full px-4 py-3 border-b border-gray-300 focus:outline-none focus:border-black transition-colors bg-transparent text-gray-500"
-        data-tina-field={tinaField(f, 'projectType')}
-      >
-        <option value="">{f.projectType}*</option>
-        {f.projectTypes?.map((pt: any, index: number) => (
-          <option value={pt.value} data-tina-field={tinaField(f.projectTypes, index)}>{pt.label}</option>
-        ))}
-      </select>
-  </div>
-
-  <!-- Service Type -->
-  <div>
-      <select
-        name="serviceType"
-        required
-        class="w-full px-4 py-3 border-b border-gray-300 focus:outline-none focus:border-black transition-colors bg-transparent text-gray-500"
-        data-tina-field={tinaField(f, 'serviceType')}
-      >
-        <option value="">{f.serviceType}*</option>
-        {f.serviceTypes?.map((st: any, index: number) => (
-          <option value={st.value} data-tina-field={tinaField(f.serviceTypes, index)}>{st.label}</option>
-        ))}
-      </select>
-  </div>
-
-  <!-- Message -->
-  <div>
-    <textarea
-      name="message"
-      rows="4"
-      placeholder={f.message}
-      class="w-full px-4 py-3 border-b border-gray-300 focus:outline-none focus:border-black transition-colors bg-transparent resize-none"
-      data-tina-field={tinaField(f, 'message')}
-    ></textarea>
-  </div>
-
-  <!-- Privacy -->
-  <div class="flex items-start gap-3">
-    <input
-      type="checkbox"
-      name="privacy"
-      id="privacy"
-      required
-      class="mt-1 w-4 h-4 border-gray-300 rounded focus:ring-black"
-    />
-    <label for="privacy" class="text-sm text-gray-600" data-tina-field={tinaField(f, 'privacy')}>
-      {f.privacy}
-    </label>
-  </div>
-
-  <!-- Turnstile hidden input -->
-  <input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response" />
-
-  <!-- Submit -->
-  <div>
-    <button
-      type="button"
-      onclick="executeTurnstile()"
-      class="px-8 py-4 bg-black text-white tracking-wider text-sm hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      data-tina-field={tinaField(f, 'submit')}
-    >
-      <span class="htmx-indicator-hide">{f.submit}</span>
-      <span id="form-indicator" class="htmx-indicator" data-tina-field={tinaField(f, 'sending')}>{f.sending}</span>
-    </button>
-  </div>
-</form>
-</div>
 )}
-
-<style>
-  .htmx-indicator {
-    display: none;
-  }
-  .htmx-request .htmx-indicator {
-    display: inline;
-  }
-  .htmx-request .htmx-indicator-hide {
-    display: none;
-  }
-</style>
 
 <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <script is:inline>
-  let turnstileWidgetId = null;
-
-  function executeTurnstile() {
+  (() => {
     const form = document.getElementById('contact-form');
-    if (form && !form.reportValidity()) return;
+    if (!form) return;
+    const selector = document.getElementById('inquiry-path');
+    const updatePath = () => {
+      for (const fieldset of form.querySelectorAll('[data-inquiry-path]')) {
+        const active = fieldset.dataset.inquiryPath === selector.value;
+        fieldset.hidden = !active;
+        fieldset.disabled = !active;
+      }
+    };
+    selector.addEventListener('change', updatePath);
+    updatePath();
 
-    const container = document.querySelector('.cf-turnstile');
-    if (!container) return;
-
-    // Disable button and show sending state
-    const btn = document.querySelector('#contact-form button');
-    if (btn) btn.disabled = true;
-
-    if (!turnstileWidgetId) {
-      turnstileWidgetId = window.turnstile.render(container, {
-        sitekey: container.getAttribute('data-sitekey'),
-        size: 'invisible',
-        callback: 'onTurnstileSuccess',
-        'error-callback': 'onTurnstileError'
-      });
-      container.setAttribute('data-turnstile-id', turnstileWidgetId);
-    }
-
-    window.turnstile.execute(turnstileWidgetId);
-  }
-
-  window.onTurnstileSuccess = function(token) {
-    const responseInput = document.getElementById('cf-turnstile-response');
-    if (responseInput) responseInput.value = token;
-
-    // Trigger HTMX submission programmatically
-    const form = document.getElementById('contact-form');
-    if (window.htmx && form) {
-      window.htmx.trigger(form, 'submit');
-    } else if (form) {
-      form.submit();
-    }
-  };
-
-  window.onTurnstileError = function() {
-    console.error('Turnstile verification failed.');
-    const feedback = document.getElementById('form-feedback');
-    if (feedback) {
-      feedback.innerHTML = '<div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded">Verificación de seguridad fallida. Por favor, inténtalo de nuevo.</div>';
-    }
-    const btn = document.querySelector('#contact-form button');
-    if (btn) btn.disabled = false;
-  };
-</script>
-
-<script>
-  // Load HTMX only where the form is used
-  import htmx from 'htmx.org';
-  window.htmx = htmx;
-  // Initialize HTMX explicitly because this script is bundled and deferred
-  htmx.process(document.body);
+    let widgetId;
+    form.addEventListener('submit', (event) => {
+      const token = document.getElementById('cf-turnstile-response');
+      if (token.value) return;
+      const container = document.querySelector('.cf-turnstile');
+      if (!window.turnstile || !container) return;
+      event.preventDefault();
+      if (widgetId === undefined) {
+        widgetId = window.turnstile.render(container, {
+          sitekey: container.dataset.sitekey,
+          size: 'invisible',
+          callback: (response) => {
+            token.value = response;
+            form.requestSubmit();
+          },
+          'error-callback': () => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('contact_error', 'turnstileFailed');
+            window.location.assign(url);
+          },
+        });
+      }
+      window.turnstile.execute(widgetId);
+    });
+  })();
 </script>

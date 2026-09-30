@@ -46,7 +46,7 @@ const genericBlocks = [
 ];
 
 const legacyMarkers = [
-	"parentData.blocks, index",
+	"block",
 	"site.attribution, 'design'",
 	"site.attribution, 'development'",
 	"site.branding, 'logo'",
@@ -65,14 +65,8 @@ const legacyMarkers = [
 	"f, 'name'",
 	"f, 'email'",
 	"f, 'phone'",
-	"f, 'projectType'",
-	"f, 'serviceType'",
-	"f, 'message'",
 	"f, 'privacy'",
 	"f, 'submit'",
-	"f, 'sending'",
-	"f.projectTypes, index",
-	"f.serviceTypes, index",
 ];
 
 test("Tina and renderer expose only generic block templates", () => {
@@ -113,7 +107,22 @@ test("legacy Tina metadata markers remain present", () => {
 });
 
 test("banner text and nested slogan lines have selectable Tina markers", () => {
-	assert.ok(markerSources.includes("tinaField(topRight.lines, index)"));
-	assert.ok(markerSources.includes("tinaField(Astro.props, 'title')"));
-	assert.ok(markerSources.includes("tinaField(Astro.props, 'subtitle')"));
+	assert.ok(
+		markerSources.includes(
+			"tinaField(tinaData.topRight as Record<string, unknown>, 'lines', index)",
+		),
+	);
+	assert.ok(
+		markerSources.includes("tinaField(tinaData, 'title')"),
+	);
+	assert.ok(
+		markerSources.includes("tinaField(tinaData, 'subtitle')"),
+	);
+});
+
+test("inquiry path questions and options remain selectable in Tina", () => {
+	assert.ok(markerSources.includes("tinaField(paths, pathIndex)"));
+	assert.ok(markerSources.includes("tinaField(path.fields, fieldIndex)"));
+	assert.ok(markerSources.includes('name="inquiryPath"'));
+	assert.ok(markerSources.includes('type="file"'));
 });
