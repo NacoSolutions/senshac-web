@@ -59,12 +59,14 @@ if (items.length === 0 && !mediaId) {
 	});
 	projectSlides = sorted.map((project) => {
 		const bannerBlock = project.data.blocks?.find(
-			(b: any) => b._template === "projectBanner",
+			(b: any) => b._template === "media" && b.variant === "banner",
 		);
+		const sourceMediaId =
+			typeof bannerBlock?.mediaId === "string" ? bannerBlock.mediaId : "";
 		return {
 			title: project.data.title,
 			href: `/${lang}/works/${project.data.slug}`,
-			mediaId: (bannerBlock?.mediaId || "")
+			mediaId: sourceMediaId
 				.replace(/^https:\/\/media\.senshac\.com\/images\//, "")
 				.replace(/^\/?images\//, "")
 				.replace(
@@ -72,7 +74,10 @@ if (items.length === 0 && !mediaId) {
 					"",
 				)
 				.replace(/\.[^.]+$/, ""),
-			alt: bannerBlock?.alt || project.data.title,
+			alt:
+				typeof bannerBlock?.alt === "string"
+					? bannerBlock.alt
+					: project.data.title,
 		};
 	});
 }

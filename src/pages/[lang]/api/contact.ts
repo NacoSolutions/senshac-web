@@ -1,238 +1,197 @@
-// src/pages/[lang]/api/contact.ts
 export const prerender = false;
 
 import { getEntry } from "astro:content";
 import type { APIRoute } from "astro";
+import {
+	parseBoundedFormData,
+	validateInquiryPayload,
+} from "../../../utils/inquiry-contract.mjs";
 
-// Verify Turnstile token with Cloudflare
+const MAX_REQUEST_BYTES = 12 * 1024 * 1024;
+
 async function verifyTurnstile(
 	token: string,
 	ip: string | null,
 ): Promise<boolean> {
 	const secretKey = import.meta.env.TURNSTILE_SECRET_KEY;
-
-	// Fail closed if production secret is absent
-	if (!secretKey) {
-		if (import.meta.env.PROD) {
-			console.error(
-				"Turnstile: Missing secret key in production. Failing closed.",
-			);
-			return false;
-		}
-		console.log(
-			"Turnstile: No secret key configured in dev, skipping verification",
-		);
-		return true;
-	}
+	if (!secretKey) return !import.meta.env.PROD;
 
 	try {
-		const formData = new FormData();
-		formData.append("secret", secretKey);
-		formData.append("response", token);
-		if (ip) formData.append("remoteip", ip);
-
-		const res = await fetch(
+		const body = new FormData();
+		body.append("secret", secretKey);
+		body.append("response", token);
+		if (ip) body.append("remoteip", ip);
+		const response = await fetch(
 			"https://challenges.cloudflare.com/turnstile/v0/siteverify",
 			{
 				method: "POST",
-				body: formData,
+				body,
 			},
 		);
-
-		const data = (await res.json()) as {
-			success: boolean;
-			"error-codes"?: string[];
-		};
-
-		if (!data.success) {
-			console.error("Turnstile verification failed:", data["error-codes"]);
-		}
-
-		return data.success;
-	} catch (error) {
-		console.error("Turnstile verification error:", error);
+		if (!response.ok) return false;
+		const result = (await response.json()) as { success: boolean };
+		return result.success;
+	} catch {
 		return false;
 	}
 }
 
-// Simple email validation
-function isValidEmail(email: string): boolean {
-	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+function encodeBase64(bytes: Uint8Array): string {
+	let binary = "";
+	for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+		binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+	}
+	return btoa(binary);
+}
+
+function safeReturnUrl(request: Request, lang: string): URL {
+	const fallback = new URL(`/${lang}/contact`, request.url);
+	const referer = request.headers.get("Referer");
+	if (!referer) return fallback;
+	try {
+		const candidate = new URL(referer);
+		return candidate.origin === new URL(request.url).origin &&
+			candidate.pathname === `/${lang}/contact`
+			? candidate
+			: fallback;
+	} catch {
+		return fallback;
+	}
 }
 
 export const POST: APIRoute = async ({ request, params }) => {
 	const lang = params.lang || "es";
-
-	// Get translations from content collection
 	const translations = await getEntry("translations", lang);
-	if (!translations) {
+	if (!translations)
 		return new Response("Translations not found", { status: 500 });
-	}
 	const t = translations.data.contactForm;
-
-	const isHtmx = request.headers.get("HX-Request") === "true";
-	const referer = request.headers.get("Referer") || `/${lang}/contact`;
-
-	// Helper to send either HTMX fragment or redirect for progressive enhancement
-	const sendResponse = (
-		fragment: string,
-		_status: number,
-		errorKey?: string,
-		isSuccess = false,
-	) => {
-		if (isHtmx) {
-			return new Response(fragment, {
-				status: 200, // Always 200 for HTMX to ensure it swaps the feedback
-				headers: { "Content-Type": "text/html" },
-			});
+	const returnUrl = safeReturnUrl(request, lang);
+	const redirect = (error?: string, success = false, inquiryPath?: string) => {
+		returnUrl.searchParams.delete("contact_error");
+		returnUrl.searchParams.delete("contact_success");
+		if (error) returnUrl.searchParams.set("contact_error", error);
+		if (success) returnUrl.searchParams.set("contact_success", "1");
+		if (
+			inquiryPath &&
+			["first-space", "existing-space", "growth"].includes(inquiryPath)
+		) {
+			returnUrl.searchParams.set("path", inquiryPath);
 		}
-
-		// For ordinary non-HTMX requests, redirect back with state in URL
-		const url = new URL(referer, request.url);
-		if (isSuccess) {
-			url.searchParams.set("contact_success", "1");
-		} else if (errorKey) {
-			url.searchParams.set("contact_error", errorKey);
-		}
-		return Response.redirect(url.toString(), 303);
+		return Response.redirect(returnUrl.toString(), 303);
 	};
 
+	const length = Number(request.headers.get("content-length") ?? 0);
+	if (length > MAX_REQUEST_BYTES) return redirect("invalidFile");
+
 	try {
-		const formData = await request.formData();
-
-		const name = formData.get("name")?.toString().trim() || "";
-		const company = formData.get("company")?.toString().trim() || "";
-		const email = formData.get("email")?.toString().trim() || "";
-		const phone = formData.get("phone")?.toString().trim() || "";
-		const projectType = formData.get("projectType")?.toString() || "";
-		const serviceType = formData.get("serviceType")?.toString() || "";
-		const message = formData.get("message")?.toString().trim() || "";
-		const privacy = formData.get("privacy");
-		const turnstileToken =
-			formData.get("cf-turnstile-response")?.toString() || "";
-
-		// Verify Turnstile token
-		const clientIp = request.headers.get("CF-Connecting-IP");
-		const turnstileValid = await verifyTurnstile(turnstileToken, clientIp);
-		if (!turnstileValid) {
-			return sendResponse(
-				`<div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded">${t.turnstileFailed}</div>`,
-				400,
-				"turnstileFailed",
+		const parsedBody = await parseBoundedFormData(request, MAX_REQUEST_BYTES);
+		if (!parsedBody.ok) {
+			return redirect(
+				parsedBody.error === "body-too-large" ? "invalidFile" : "error",
 			);
 		}
-
-		// Validate required fields
-		if (!name || !email || !projectType || !serviceType || !privacy) {
-			return sendResponse(
-				`<div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded">${t.missingFields}</div>`,
-				400,
-				"missingFields",
-			);
+		const formData = parsedBody.formData;
+		const name = String(formData.get("name") ?? "").trim();
+		const company = String(formData.get("company") ?? "").trim();
+		const email = String(formData.get("email") ?? "").trim();
+		const phone = String(formData.get("phone") ?? "").trim();
+		const privacyAccepted = formData.get("privacy") === "accepted";
+		const inquiryPath = String(formData.get("inquiryPath") ?? "");
+		if (
+			!name ||
+			name.length > 200 ||
+			!email ||
+			email.length > 254 ||
+			!privacyAccepted ||
+			company.length > 200 ||
+			phone.length > 80
+		) {
+			return redirect("missingFields", false, inquiryPath);
 		}
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+			return redirect("invalidEmail", false, inquiryPath);
 
-		// Validate email
-		if (!isValidEmail(email)) {
-			return sendResponse(
-				`<div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded">${t.invalidEmail}</div>`,
-				400,
-				"invalidEmail",
-			);
-		}
-
-		// Send email via Resend (if configured) or log for now
-		const RESEND_API_KEY = import.meta.env.RESEND_API_KEY;
-		const CONTACT_EMAIL = import.meta.env.CONTACT_EMAIL || "info@senshac.com";
-
-		if (RESEND_API_KEY) {
-			const emailBody = `
-Nuevo mensaje de contacto desde senshac.com
-
-Nombre: ${name}
-Empresa: ${company || "No especificada"}
-Email: ${email}
-Teléfono: ${phone || "No especificado"}
-Tipo de proyecto: ${projectType}
-Tipo de servicio: ${serviceType}
-Mensaje: ${message || "Sin mensaje adicional"}
-Idioma: ${lang}
-      `.trim();
-
-			const res = await fetch("https://api.resend.com/emails", {
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${RESEND_API_KEY}`,
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					from: "Senshac Web <noreply@senshac.com>",
-					to: CONTACT_EMAIL,
-					reply_to: email,
-					subject: `Nuevo contacto: ${name} - ${projectType}`,
-					text: emailBody,
-				}),
-			});
-
-			if (!res.ok) {
-				const errorText = await res.text();
-				console.error("Resend API error:", errorText);
-				console.error("Failed submission data:", {
-					name,
-					company,
-					email,
-					phone,
-					projectType,
-					serviceType,
-					message,
-					lang,
-				});
-				return sendResponse(
-					`<div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded">${t.error}</div>`,
-					500,
-					"error",
-				);
-			}
-		} else {
-			// Log to console if no email service configured
-			console.warn(
-				"Contact form received but EMAIL WAS NOT SENT because RESEND_API_KEY is missing. (Did you add it to the Preview environment variables in Cloudflare?)",
-			);
-			console.log("Contact form submission payload:", {
-				name,
-				company,
-				email,
-				phone,
-				projectType,
-				serviceType,
-				message,
-				lang,
-			});
-		}
-
-		// Return success HTML that HTMX will swap into feedback, and remove the form
-		return sendResponse(
-			`<div class="p-6 bg-green-50 border border-green-200 text-green-800 rounded text-center">
-        <svg class="w-12 h-12 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        <p class="text-lg font-medium">${t.success}</p>
-      </div>
-      <form id="contact-form" hx-swap-oob="outerHTML"></form>`,
-			200,
-			undefined,
-			true,
+		const validated = await validateInquiryPayload(
+			t.inquiryPaths.paths,
+			formData,
 		);
+		if (!validated.ok) {
+			const error =
+				validated.error === "invalid-file" ? "invalidFile" : "missingFields";
+			return redirect(error, false, inquiryPath);
+		}
+		const token = String(formData.get("cf-turnstile-response") ?? "");
+		if (
+			!(await verifyTurnstile(token, request.headers.get("CF-Connecting-IP")))
+		) {
+			return redirect("turnstileFailed", false, inquiryPath);
+		}
+
+		const selected = t.inquiryPaths.paths.find(
+			(path) => path.value === validated.path,
+		);
+		if (!selected) {
+			console.error("Validated inquiry path is missing from translations.");
+			return new Response("Inquiry configuration unavailable", { status: 500 });
+		}
+		const answerLines = selected.fields
+			.map((field) => {
+				const answer = validated.values[field.name];
+				if (!answer) return null;
+				const option = field.options?.find((item) => item.value === answer);
+				return `${field.label}: ${option?.label ?? answer}`;
+			})
+			.filter(Boolean);
+		const text = [
+			"New inquiry from senshac.com",
+			`Path: ${selected.title}`,
+			`Name: ${name}`,
+			`Company: ${company || "Not provided"}`,
+			`Email: ${email}`,
+			`Phone: ${phone || "Not provided"}`,
+			...answerLines,
+			`Language: ${lang}`,
+		].join("\n");
+		const apiKey = import.meta.env.RESEND_API_KEY;
+		if (!apiKey) {
+			console.error("Contact email is not configured; inquiry rejected.");
+			return new Response("Contact delivery unavailable", { status: 503 });
+		}
+
+		const attachments = validated.files.map((file) => ({
+			filename: file.name,
+			content: encodeBase64(file.bytes),
+		}));
+		const response = await fetch("https://api.resend.com/emails", {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${apiKey}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				from: "Senshac Web <noreply@senshac.com>",
+				to: import.meta.env.CONTACT_EMAIL || "info@senshac.com",
+				reply_to: email,
+				subject: `New inquiry: ${selected.title}`,
+				text,
+				...(attachments.length ? { attachments } : {}),
+			}),
+		});
+		if (!response.ok) {
+			console.error("Contact email provider rejected inquiry", {
+				status: response.status,
+			});
+			return redirect("error", false, inquiryPath);
+		}
+		return redirect(undefined, true, inquiryPath);
 	} catch (error) {
-		console.error("Contact form error:", error);
-		return sendResponse(
-			`<div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded">${t.error}</div>`,
-			500,
-			"error",
+		console.error(
+			"Contact submission processing failed",
+			error instanceof Error ? error.name : "unknown",
 		);
+		return redirect("error");
 	}
 };
 
-// Reject other methods
-export const ALL: APIRoute = () => {
-	return new Response("Method not allowed", { status: 405 });
-};
+export const ALL: APIRoute = () =>
+	new Response("Method not allowed", { status: 405 });

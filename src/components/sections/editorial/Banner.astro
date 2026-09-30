@@ -13,7 +13,7 @@ interface Props {
 	placeholderLabel?: string;
 	objectFit?: "cover" | "contain";
 	eager?: boolean;
-	tinaData?: any;
+	tinaData?: Record<string, unknown>;
 }
 
 const {
@@ -24,8 +24,8 @@ const {
 	imageAlt,
 	placeholderLabel,
 	objectFit = "cover",
-	tinaData,
 	eager = false,
+	tinaData = Astro.props as Record<string, unknown>,
 } = Astro.props;
 ---
 
@@ -39,7 +39,6 @@ const {
       objectFit={objectFit}
       eager={eager}
       variant="banner"
-      fieldMarker={tinaField(tinaData, 'mediaId')}
     />
   </div>
   <div class="absolute inset-0 bg-black/22" aria-hidden="true"></div>
@@ -51,7 +50,7 @@ const {
           const label = hasRegistrationMark ? line.slice(0, -2) : line;
 
           return (
-            <span data-tina-field={tinaField(tinaData.topRight.lines, index)} class:list={['block', { 'pl-20': index % 2 === 1 }]}>
+            <span data-tina-field={tinaField(tinaData.topRight as Record<string, unknown>, 'lines', index)} class:list={['block', { 'pl-20': index % 2 === 1 }]}>
               {label}
               {hasRegistrationMark && <span class="inline-block -m-2 py-0.5 px-2 border border-current rounded-full text-base leading-none">R</span>}
             </span>

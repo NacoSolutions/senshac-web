@@ -18,15 +18,35 @@ try {
 			const result = await exec("git", ["-C", siblingRoot, "rev-parse", "HEAD"]);
 			revision = result.stdout.trim();
 		} catch {
-			const response = await fetch(
-				"https://api.github.com/repos/NacoSolutions/senshac-content/commits/main",
-				{ headers: { accept: "application/vnd.github+json" } },
-			);
-			if (!response.ok) {
-				throw new Error(`Unable to resolve senshac-content main: ${response.status}`);
+			let apiError;
+			try {
+				const response = await fetch(
+					"https://api.github.com/repos/NacoSolutions/senshac-content/commits/main",
+					{ headers: { accept: "application/vnd.github+json" } },
+				);
+				if (!response.ok) {
+					throw new Error(`GitHub API returned ${response.status}`);
+				}
+				const result = await response.json();
+				revision = result.sha;
+			} catch (error) {
+				apiError = error;
+				try {
+					const result = await exec("git", [
+						"ls-remote",
+						"https://github.com/NacoSolutions/senshac-content.git",
+						"refs/heads/main",
+					]);
+					revision = result.stdout.trim().split(/\s+/)[0];
+					if (!revision) throw new Error("git ls-remote returned no main revision");
+					console.warn(`GitHub API unavailable; resolved senshac-content main via git ls-remote (${apiError.message})`);
+				} catch (gitError) {
+					throw new AggregateError(
+						[apiError, gitError],
+						"Unable to resolve senshac-content main via GitHub API or git ls-remote",
+					);
+				}
 			}
-			const result = await response.json();
-			revision = result.sha;
 		}
 	}
 	if (!/^[0-9a-f]{40}$/.test(revision)) {

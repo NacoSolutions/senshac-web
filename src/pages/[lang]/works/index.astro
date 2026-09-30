@@ -36,7 +36,7 @@ const layouts = [
 
 const works = sortedProjects.map((project, index) => {
 	const bannerBlock = project.data.blocks?.find(
-		(b: any) => b._template === "projectBanner",
+		(b: any) => b._template === "media" && b.variant === "banner",
 	);
 
 	return {
@@ -44,7 +44,10 @@ const works = sortedProjects.map((project, index) => {
 		title: project.data.title,
 		summary: project.data.description,
 		href: `/${lang}/works/${project.data.slug}`,
-		mediaId: bannerBlock?.mediaId,
+		mediaId:
+			typeof bannerBlock?.mediaId === "string"
+				? bannerBlock.mediaId
+				: undefined,
 		alt: bannerBlock?.alt || project.data.title,
 		placeholderLabel: `${project.data.title}: imagen pendiente`,
 		layout: layouts[index % layouts.length],

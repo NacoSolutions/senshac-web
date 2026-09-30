@@ -18,7 +18,7 @@ jobs:
   contract:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/nacosolutions/senshac-runner@sha256:d2dfaecdd3cbd75eeb6e32c1787478f6bf46602dda715cb59cffe605a5941409
+      image: ghcr.io/nacosolutions/senshac-runner@sha256:b3d9afd406e541486225a9034d76d04e3c87cbfbc2d4b4ff471da8b130cce626
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -53,10 +53,27 @@ jobs:
       - name: Verify runner Chromium
         run: |
           set -euo pipefail
+          printf 'FONTCONFIG_FILE=%s\n' "${FONTCONFIG_FILE:-unset}"
+          test -n "${FONTCONFIG_FILE:-}"
+          test -f "$FONTCONFIG_FILE"
+          fc-match sans-serif
           chromium --version
           echo "PLAYWRIGHT_CHROMIUM_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
       - name: Run browser smoke checks
-        run: bun run test:e2e
+        shell: bash
+        run: |
+          set +e
+          bun run test:e2e
+          result=$?
+          if [ "$result" -ne 0 ]; then
+            echo '--- Playwright test contexts ---'
+            find test-results -name error-context.md -type f -exec sh -c 'echo "--- $1"; cat "$1"' _ {} \;
+            echo '--- shared memory ---'
+            df -h /dev/shm || true
+            echo '--- container memory limit/events ---'
+            cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory.events 2>/dev/null || true
+          fi
+          exit "$result"
       - name: Validate repository contract
         shell: bash
         run: |
