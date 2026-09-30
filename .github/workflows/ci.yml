@@ -53,13 +53,17 @@ jobs:
       - name: Verify runner Chromium
         run: |
           set -euo pipefail
+          printf 'FONTCONFIG_FILE=%s\n' "${FONTCONFIG_FILE:-unset}"
+          test -n "${FONTCONFIG_FILE:-}"
+          test -f "$FONTCONFIG_FILE"
+          fc-match sans-serif
           chromium --version
           echo "PLAYWRIGHT_CHROMIUM_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
       - name: Run browser smoke checks
         shell: bash
         run: |
           set +e
-          bun run test:e2e
+          DEBUG=pw:browser bun run test:e2e
           result=$?
           if [ "$result" -ne 0 ]; then
             echo '--- Playwright test contexts ---'
