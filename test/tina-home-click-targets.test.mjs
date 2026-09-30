@@ -27,6 +27,7 @@ const componentFields = {
 		"tinaField(tinaData, 'title')",
 		"tinaField(tinaData, 'intro')",
 		"tinaField(tinaData.items[index], 'text')",
+		"tinaField(tinaData.items[index], 'ctaText')",
 	],
 	Cta: ["tinaField(tinaData, 'text')", "tinaField(tinaData, 'link')"],
 	Showcase: [
@@ -128,4 +129,24 @@ test("homepage editorial text and media fields expose click-to-edit markers", ()
 			);
 		}
 	}
+});
+
+test("list action labels are editable links admitted by the strict schema", async () => {
+	const rows = sources.Rows.source;
+	const contentSchema = await readFile(
+		new URL("../src/content.config.ts", import.meta.url),
+		"utf8",
+	);
+	const tinaSchema = await readFile(
+		new URL("../tina/config.ts", import.meta.url),
+		"utf8",
+	);
+
+	assert.match(rows, /item\.ctaText\s*&&\s*item\.href/);
+	assert.match(rows, /href=\{item\.href\}/);
+	assert.match(
+		contentSchema,
+		/\["title",\s*"text",\s*"href",\s*"ctaText"\]\.includes\(key\)/,
+	);
+	assert.match(tinaSchema, /name: "ctaText", label: "Action Text"/);
 });
