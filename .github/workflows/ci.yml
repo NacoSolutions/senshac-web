@@ -56,15 +56,20 @@ jobs:
           chromium --version
           echo "PLAYWRIGHT_CHROMIUM_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
       - name: Run browser smoke checks
-        run: bun run test:e2e -- --workers=1
-      - name: Upload browser failure traces
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-failure-traces
-          path: test-results/
-          if-no-files-found: ignore
-          retention-days: 7
+        shell: bash
+        run: |
+          set +e
+          DEBUG=pw:browser bun run test:e2e
+          result=$?
+          if [ "$result" -ne 0 ]; then
+            echo '--- Playwright test contexts ---'
+            find test-results -name error-context.md -type f -exec sh -c 'echo "--- $1"; cat "$1"' _ {} \;
+            echo '--- shared memory ---'
+            df -h /dev/shm || true
+            echo '--- container memory limit/events ---'
+            cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory.events 2>/dev/null || true
+          fi
+          exit "$result"
       - name: Validate repository contract
         shell: bash
         run: |
