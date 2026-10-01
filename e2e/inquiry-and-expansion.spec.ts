@@ -5,13 +5,13 @@ test("home inquiry links open the matching qualification path", async ({
 }) => {
 	await page.goto("/es/");
 	await expect(
-		page.getByRole("link", { name: /Voy a abrir un nuevo espacio/ }),
+		page.getByRole("link", { name: /Quiero abrir mi primer espacio/ }),
 	).toHaveAttribute("href", "/es/contact?path=first-space");
 	await expect(
-		page.getByRole("link", { name: /Quiero mejorar mi espacio actual/ }),
+		page.getByRole("link", { name: /Mi local no funciona como debería/ }),
 	).toHaveAttribute("href", "/es/contact?path=existing-space");
 	await expect(
-		page.getByRole("link", { name: /Estoy preparando el crecimiento/ }),
+		page.getByRole("link", { name: /Quiero escalar mi negocio/ }),
 	).toHaveAttribute("href", "/es/contact?path=growth");
 });
 
