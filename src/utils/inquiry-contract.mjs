@@ -1,3 +1,5 @@
+import { SERVICE_PACKAGE_IDS } from "./service-packages.mjs";
+
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const MAX_TOTAL_FILE_BYTES = 10 * 1024 * 1024;
 const MAX_FILES = 3;
@@ -46,7 +48,9 @@ const commonFields = new Set([
 	"privacy",
 	"cf-turnstile-response",
 	"inquiryPath",
+	"servicePackage",
 ]);
+const servicePackages = new Set(SERVICE_PACKAGE_IDS);
 
 export async function parseBoundedFormData(request, maxBytes) {
 	const reader = request.body?.getReader();
@@ -92,6 +96,14 @@ export async function parseBoundedFormData(request, maxBytes) {
 export async function validateInquiryPayload(paths, formData) {
 	if (formData.getAll("inquiryPath").length !== 1)
 		return { ok: false, error: "unknown-path" };
+	if (formData.getAll("servicePackage").length > 1)
+		return { ok: false, error: "duplicate-field" };
+	const packageEntries = formData.getAll("servicePackage");
+	const servicePackage = packageEntries.length ? String(packageEntries[0]).trim() : "";
+	if (servicePackage && !servicePackages.has(servicePackage))
+		return { ok: false, error: "invalid-option" };
+	if (servicePackage && formData.has("serviceScope"))
+		return { ok: false, error: "unknown-field" };
 	for (const name of [
 		"name",
 		"company",
@@ -114,6 +126,7 @@ export async function validateInquiryPayload(paths, formData) {
 	const files = [];
 
 	for (const field of path.fields) {
+		if (servicePackage && field.name === "serviceScope") continue;
 		if (field.kind === "file") {
 			const fieldFiles = [];
 			for (const file of formData.getAll(field.name)) {
@@ -164,5 +177,11 @@ export async function validateInquiryPayload(paths, formData) {
 	) {
 		return { ok: false, error: "invalid-file" };
 	}
-	return { ok: true, path: path.value, values, files };
+	return {
+		ok: true,
+		path: path.value,
+		...(servicePackage ? { servicePackage } : {}),
+		values,
+		files,
+	};
 }
