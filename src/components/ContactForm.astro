@@ -3,6 +3,7 @@ import { getEntry } from "astro:content";
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { TranslationsQuery } from "../../tina/__generated__/types";
 import { mergeContactFormTranslations } from "../utils/contact-form-translations";
+import { findServicePackage, scenarioContactHref } from "../utils/service-packages.mjs";
 
 interface Props {
 	lang: string;
@@ -18,6 +19,13 @@ const f: any = mergeContactFormTranslations(
 );
 const paths = f.inquiryPaths.paths;
 const requestedPath = Astro.url.searchParams.get("path");
+const servicesPage = await getEntry("pages", `${lang}/services`);
+const selectedPackage = findServicePackage(
+	(servicesPage?.data as any)?.blocks,
+	lang,
+	Astro.url.searchParams.get("package"),
+);
+const validPath = paths.some((path: any) => path.value === requestedPath);
 const selectedPath = paths.some((path: any) => path.value === requestedPath)
 	? requestedPath
 	: paths[0].value;
@@ -35,8 +43,23 @@ const siteKey =
   <div id="contact-form-container">
     {feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert">{feedback}</p>}
     <h2 class="mb-4 text-2xl font-semibold">{f.inquiryPaths.heading}</h2>
+    {selectedPackage && <p class="mb-6">{selectedPackage.title}</p>}
+    {selectedPackage && !validPath ? (
+      <section aria-labelledby="scenario-heading" class="space-y-4">
+        <h3 id="scenario-heading" class="text-xl font-semibold">{f.inquiryPaths.chooseLabel}</h3>
+        <ul class="grid gap-4 md:grid-cols-3">
+          {paths.map((path: any) => (
+            <li class="border border-gray-300 p-5">
+              <a class="font-semibold underline" href={scenarioContactHref(lang, path.value, selectedPackage.id)}>{path.title}</a>
+              <p class="mt-2 text-gray-600">{path.description}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ) : (
     <div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
     <form id="contact-form" class="mt-6 space-y-8" action={`/${lang}/api/contact`} method="POST" enctype="multipart/form-data">
+      {selectedPackage && <input type="hidden" name="servicePackage" value={selectedPackage.id} />}
       <div>
         <label for="inquiry-path" class="mb-2 block text-sm font-medium">{f.inquiryPaths.chooseLabel}</label>
         <select id="inquiry-path" name="inquiryPath" required class="w-full border-b border-gray-400 bg-transparent px-2 py-3">
@@ -55,7 +78,7 @@ const siteKey =
         <fieldset data-inquiry-path={path.value} hidden={path.value !== selectedPath} disabled={path.value !== selectedPath} class="space-y-6">
           <legend class="mb-2 text-xl font-semibold" data-tina-field={tinaField(paths, pathIndex)}>{path.title}</legend>
           <p class="text-gray-600">{path.description}</p>
-          {path.fields.map((field: any, fieldIndex: number) => (
+          {path.fields.map((field: any, fieldIndex: number) => field.name === "serviceScope" && selectedPackage ? null : (
             <label class="block text-sm font-medium" for={`inquiry-${path.value}-${field.name}`} data-tina-field={tinaField(path.fields, fieldIndex)}>
               {field.label}{field.required ? " *" : ""}
               {field.kind === "select" ? (
@@ -82,6 +105,7 @@ const siteKey =
       <input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response" />
       <button type="submit" class="bg-black px-8 py-4 text-sm tracking-wider text-white hover:bg-gray-800" data-tina-field={tinaField(f, 'submit')}>{f.submit}</button>
     </form>
+    )}
   </div>
 )}
 

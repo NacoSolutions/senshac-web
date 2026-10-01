@@ -6,6 +6,7 @@ import {
 	parseBoundedFormData,
 	validateInquiryPayload,
 } from "../../../utils/inquiry-contract.mjs";
+import { findServicePackage } from "../../../utils/service-packages.mjs";
 
 const MAX_REQUEST_BYTES = 12 * 1024 * 1024;
 
@@ -134,6 +135,17 @@ export const POST: APIRoute = async ({ request, params }) => {
 			console.error("Validated inquiry path is missing from translations.");
 			return new Response("Inquiry configuration unavailable", { status: 500 });
 		}
+		const servicePackage = validated.servicePackage
+			? findServicePackage(
+					(await getEntry("pages", `${lang}/services`))?.data.blocks,
+					lang,
+					validated.servicePackage,
+				)
+			: null;
+		if (validated.servicePackage && !servicePackage) {
+			console.error("Validated service package is missing from localized methods content.");
+			return new Response("Inquiry configuration unavailable", { status: 500 });
+		}
 		const answerLines = selected.fields
 			.map((field) => {
 				const answer = validated.values[field.name];
@@ -145,6 +157,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 		const text = [
 			"New inquiry from senshac.com",
 			`Path: ${selected.title}`,
+			...(servicePackage ? [`Service package: ${servicePackage.title}`] : []),
 			`Name: ${name}`,
 			`Company: ${company || "Not provided"}`,
 			`Email: ${email}`,

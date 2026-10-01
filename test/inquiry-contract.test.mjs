@@ -189,3 +189,35 @@ test("bounds multipart request bodies before parsing fields", async () => {
 		"body-too-large",
 	);
 });
+
+test("accepts a selected service package and makes the duplicate scope optional", async () => {
+	const packagePaths = [{
+		value: "first-space",
+		fields: [
+			{ name: "businessType", kind: "text", required: true },
+			{ name: "serviceScope", kind: "select", required: true, options: [{ value: "full" }] },
+		],
+	}];
+	assert.deepEqual(await validateInquiryPayload(packagePaths, payload({
+		inquiryPath: "first-space", name: "A", email: "a@example.test", privacy: "accepted",
+		businessType: "cafe", servicePackage: "decorative",
+	})), {
+		ok: true, path: "first-space", servicePackage: "decorative",
+		values: { businessType: "cafe" }, files: [],
+	});
+});
+
+test("rejects invalid or duplicate service packages", async () => {
+	const packagePaths = [{ value: "first-space", fields: [{ name: "serviceScope", kind: "select", required: true, options: [{ value: "full" }] }] }];
+	const invalid = payload({ inquiryPath: "first-space", servicePackage: "invented", serviceScope: "full" });
+	assert.equal((await validateInquiryPayload(packagePaths, invalid)).error, "invalid-option");
+	const duplicate = payload({ inquiryPath: "first-space", servicePackage: "integral", serviceScope: "full" });
+	duplicate.append("servicePackage", "decorative");
+	assert.equal((await validateInquiryPayload(packagePaths, duplicate)).error, "duplicate-field");
+});
+
+test("rejects duplicate scope input when a service package already determines scope", async () => {
+	const packagePaths = [{ value: "first-space", fields: [{ name: "serviceScope", kind: "select", required: true, options: [{ value: "full" }] }] }];
+	const data = payload({ inquiryPath: "first-space", servicePackage: "integral", serviceScope: "full" });
+	assert.equal((await validateInquiryPayload(packagePaths, data)).error, "unknown-field");
+});

@@ -14,6 +14,7 @@ export type InquiryPayloadResult =
 	| {
 			ok: true;
 			path: string;
+			servicePackage?: "consultation" | "decorative" | "integral";
 			values: Record<string, string>;
 			files: Array<{ name: string; type: string; bytes: Uint8Array }>;
 	  }
