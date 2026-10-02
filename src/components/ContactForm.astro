@@ -2,8 +2,6 @@
 import { getEntry } from "astro:content";
 import { tinaField } from "@tinacms/astro/tina-field";
 import type { TranslationsQuery } from "../../tina/__generated__/types";
-import { mergeContactFormTranslations } from "../utils/contact-form-translations";
-import { findServicePackage, scenarioContactHref } from "../utils/service-packages.mjs";
 
 interface Props {
 	lang: string;
@@ -12,142 +10,200 @@ interface Props {
 
 const { lang, translations: propTranslations } = Astro.props;
 const localTranslations = await getEntry("translations", lang);
-const t = propTranslations ?? localTranslations?.data;
-const f: any = mergeContactFormTranslations(
-	t?.contactForm as any,
-	localTranslations?.data.contactForm,
+const contact = propTranslations?.contactForm ?? localTranslations?.data.contactForm;
+if (!contact?.inquiryPaths?.paths?.length) {
+	throw new Error(`Missing inquiry configuration for locale ${lang}.`);
+}
+const f: any = contact;
+const inquiry = f.inquiryPaths;
+const paths = inquiry.paths;
+const serviceCatalog = new Map<string, any>();
+for (const path of paths) {
+	for (const [optionIndex, option] of path.serviceOptions.entries()) {
+		const existing = serviceCatalog.get(option.value);
+		if (existing && existing.label !== option.label) {
+			throw new Error(`Localized service ${option.value} has inconsistent labels.`);
+		}
+		const service = existing ?? {
+			value: option.value,
+			label: option.label,
+			descriptions: {},
+		sourcePath: path,
+		sourceIndex: optionIndex,
+	};
+		service.descriptions[path.value] = option.description;
+		serviceCatalog.set(option.value, service);
+	}
+}
+const services = [...serviceCatalog.values()];
+const requestedSituation = Astro.url.searchParams.get("situation") ?? "";
+const requestedService = Astro.url.searchParams.get("service") ?? "";
+const selectedPath = paths.find((path: any) => path.value === requestedSituation) ?? null;
+const selectedService = services.find((service) => service.value === requestedService) ?? null;
+const selectedServiceOption = selectedPath?.serviceOptions.find(
+	(option: any) => option.value === requestedService,
+) ?? null;
+const selectedServiceOptionIndex = selectedPath?.serviceOptions.findIndex(
+	(option: any) => option.value === requestedService,
 );
-const paths = f.inquiryPaths.paths;
-const requestedPath = Astro.url.searchParams.get("path");
-const servicesPage = await getEntry("pages", `${lang}/services`);
-const selectedPackage = findServicePackage(
-	(servicesPage?.data as any)?.blocks,
-	lang,
-	Astro.url.searchParams.get("package"),
-);
-const validPath = paths.some((path: any) => path.value === requestedPath);
-const selectedPath = paths.some((path: any) => path.value === requestedPath)
-	? requestedPath
-	: paths[0].value;
+const invalidQuery =
+	Astro.url.searchParams.has("path") ||
+	Astro.url.searchParams.has("package") ||
+	Astro.url.searchParams.getAll("situation").length > 1 ||
+	Astro.url.searchParams.getAll("service").length > 1 ||
+	(requestedSituation && !selectedPath) ||
+	(requestedService && !selectedService) ||
+	(Boolean(selectedPath && selectedService && !selectedServiceOption));
+const validSelection = Boolean(selectedPath && selectedServiceOption);
+const questions = requestedService === "other-challenge"
+	? inquiry.alternate
+	: selectedPath;
+const questionFields = validSelection ? questions.fields : [];
 const inquiryError = Astro.url.searchParams.get("contact_error");
-const feedback = inquiryError ? f[inquiryError] || f.error : null;
+const feedback = inquiryError
+	? f[inquiryError] || f.error
+	: invalidQuery
+		? f.invalidSelection
+		: null;
 const siteKey =
 	import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"; // gitleaks:allow
 ---
 
 {Astro.url.searchParams.get("contact_success") === "1" ? (
-  <div class="p-6 border border-green-300 text-green-900" id="contact-form">
-    <p class="text-lg font-medium">{f.success}</p>
-  </div>
+	<div class="border border-green-300 p-6 text-green-900" id="contact-form">
+		<p class="text-lg font-medium">{f.success}</p>
+	</div>
 ) : (
-  <div id="contact-form-container">
-    {feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert">{feedback}</p>}
-    <h2 class="mb-4 text-2xl font-semibold">{f.inquiryPaths.heading}</h2>
-    {selectedPackage && <p class="mb-6">{selectedPackage.title}</p>}
-    {selectedPackage && !validPath ? (
-      <section aria-labelledby="scenario-heading" class="space-y-4">
-        <h3 id="scenario-heading" class="text-xl font-semibold">{f.inquiryPaths.chooseLabel}</h3>
-        <ul class="grid gap-4 md:grid-cols-3">
-          {paths.map((path: any) => (
-            <li class="border border-gray-300 p-5">
-              <a class="font-semibold underline" href={scenarioContactHref(lang, path.value, selectedPackage.id)}>{path.title}</a>
-              <p class="mt-2 text-gray-600">{path.description}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
-    ) : (
-    <div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
-    <form id="contact-form" class="mt-6 space-y-8" action={`/${lang}/api/contact`} method="POST" enctype="multipart/form-data">
-      {selectedPackage && <input type="hidden" name="servicePackage" value={selectedPackage.id} />}
-      <div>
-        <label for="inquiry-path" class="mb-2 block text-sm font-medium">{f.inquiryPaths.chooseLabel}</label>
-        <select id="inquiry-path" name="inquiryPath" required class="w-full border-b border-gray-400 bg-transparent px-2 py-3">
-          {paths.map((path: any) => <option value={path.value} selected={path.value === selectedPath}>{path.title}</option>)}
-        </select>
-      </div>
+	<div id="contact-form-container">
+		{feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert">{feedback}</p>}
+		<h2 class="mb-4 text-2xl font-semibold">{inquiry.heading}</h2>
+		<form id="inquiry-selection" class="mt-6 space-y-6" action={`/${lang}/contact`} method="GET">
+			<label class="block text-sm font-medium" for="business-situation" data-tina-field={tinaField(inquiry, "situationLabel")}>
+				{inquiry.situationLabel}
+				<select id="business-situation" name="situation" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
+					<option value="">{inquiry.selectPlaceholder}</option>
+					{paths.map((path: any, index: number) => (
+						<option value={path.value} selected={path.value === requestedSituation} data-service-ids={JSON.stringify(path.serviceOptions.map((option: any) => option.value))} data-tina-field={tinaField(paths, index)}>{path.title}</option>
+					))}
+				</select>
+			</label>
+			<label class="block text-sm font-medium" for="desired-service" data-tina-field={tinaField(inquiry, "serviceLabel")}>
+				{inquiry.serviceLabel}
+				<select id="desired-service" name="service" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
+					<option value="">{inquiry.selectPlaceholder}</option>
+					{services.map((service) => (
+						<option value={service.value} selected={service.value === requestedService} disabled={Boolean(selectedPath && !selectedPath.serviceOptions.some((option: any) => option.value === service.value))} data-descriptions={JSON.stringify(service.descriptions)} data-tina-field={tinaField(service.sourcePath.serviceOptions, service.sourceIndex)}>{service.label}</option>
+					))}
+				</select>
+				<span id="desired-service-description" class="mt-2 block text-gray-600" aria-live="polite" data-tina-field={selectedServiceOption ? tinaField(selectedPath.serviceOptions, selectedServiceOptionIndex) : undefined}>{selectedServiceOption?.description}</span>
+			</label>
+			<p id="selection-change-feedback" class="text-sm text-red-800" role="status" hidden>{f.invalidSelection}</p>
+			<button type="submit" class="border border-black px-6 py-3 text-sm hover:bg-black hover:text-white">{inquiry.continue}</button>
+		</form>
 
-      <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <label class="block text-sm" data-tina-field={tinaField(f, 'name')}>{f.name} *<input name="name" required maxlength="200" autocomplete="name" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
-        <label class="block text-sm" data-tina-field={tinaField(f, 'company')}>{f.company}<input name="company" maxlength="200" autocomplete="organization" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
-        <label class="block text-sm" data-tina-field={tinaField(f, 'email')}>{f.email} *<input type="email" name="email" required maxlength="254" autocomplete="email" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
-        <label class="block text-sm" data-tina-field={tinaField(f, 'phone')}>{f.phone}<input type="tel" name="phone" maxlength="80" autocomplete="tel" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
-      </div>
+		{validSelection && (
+			<>
+				<p class="mt-8 text-gray-600">{selectedPath.description}</p>
+				<form id="contact-form" class="mt-6 space-y-8" action={`/${lang}/api/contact`} method="POST" enctype="multipart/form-data">
+					<input type="hidden" name="businessSituation" value={selectedPath.value} />
+					<input type="hidden" name="desiredService" value={requestedService} />
+					<div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
+					<div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+						<label class="block text-sm" data-tina-field={tinaField(f, "name")}>{f.name} *<input name="name" required maxlength="200" autocomplete="name" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
+						<label class="block text-sm" data-tina-field={tinaField(f, "company")}>{f.company}<input name="company" maxlength="200" autocomplete="organization" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
+						<label class="block text-sm" data-tina-field={tinaField(f, "email")}>{f.email} *<input type="email" name="email" required maxlength="254" autocomplete="email" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
+						<label class="block text-sm" data-tina-field={tinaField(f, "phone")}>{f.phone}<input type="tel" name="phone" maxlength="80" autocomplete="tel" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
+					</div>
 
-      {paths.map((path: any, pathIndex: number) => (
-        <fieldset data-inquiry-path={path.value} hidden={path.value !== selectedPath} disabled={path.value !== selectedPath} class="space-y-6">
-          <legend class="mb-2 text-xl font-semibold" data-tina-field={tinaField(paths, pathIndex)}>{path.title}</legend>
-          <p class="text-gray-600">{path.description}</p>
-          {path.fields.map((field: any, fieldIndex: number) => field.name === "serviceScope" && selectedPackage ? null : (
-            <label class="block text-sm font-medium" for={`inquiry-${path.value}-${field.name}`} data-tina-field={tinaField(path.fields, fieldIndex)}>
-              {field.label}{field.required ? " *" : ""}
-              {field.kind === "select" ? (
-                <select id={`inquiry-${path.value}-${field.name}`} name={field.name} required={field.required} class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
-                  <option value="">—</option>
-                  {field.options.map((option: any, optionIndex: number) => <option value={option.value} data-tina-field={tinaField(field.options, optionIndex)}>{option.label}</option>)}
-                </select>
-              ) : field.kind === "textarea" ? (
-                <textarea id={`inquiry-${path.value}-${field.name}`} name={field.name} required={field.required} maxlength="4000" rows="4" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3"></textarea>
-              ) : field.kind === "file" ? (
-                <input id={`inquiry-${path.value}-${field.name}`} type="file" name={field.name} multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" required={field.required} class="mt-2 block w-full border-b border-gray-400 bg-transparent px-2 py-3" />
-              ) : (
-                <input id={`inquiry-${path.value}-${field.name}`} type="text" name={field.name} required={field.required} maxlength="4000" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" />
-              )}
-            </label>
-          ))}
-        </fieldset>
-      ))}
+					<fieldset class="space-y-6">
+						<legend class="mb-2 text-xl font-semibold">{requestedService === "other-challenge" ? inquiry.alternate.title : selectedPath.title}</legend>
+						{questionFields.map((field: any, fieldIndex: number) => (
+							<label class="block text-sm font-medium" for={`inquiry-${requestedService}-${field.name}`} data-tina-field={tinaField(questionFields, fieldIndex)}>
+								{field.label}{field.required ? " *" : ""}
+								{field.kind === "select" ? (
+									<select id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
+										<option value="">—</option>
+										{field.options.map((option: any, optionIndex: number) => <option value={option.value} data-tina-field={tinaField(field.options, optionIndex)}>{option.label}</option>)}
+									</select>
+								) : field.kind === "textarea" ? (
+									<textarea id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} maxlength="4000" rows="4" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3"></textarea>
+								) : field.kind === "file" ? (
+									<input id={`inquiry-${requestedService}-${field.name}`} type="file" name={field.name} multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" required={field.required} class="mt-2 block w-full border-b border-gray-400 bg-transparent px-2 py-3" />
+								) : (
+									<input id={`inquiry-${requestedService}-${field.name}`} type="text" name={field.name} required={field.required} maxlength="4000" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" />
+								)}
+							</label>
+						))}
+					</fieldset>
 
-      <label class="flex items-start gap-3 text-sm text-gray-700">
-        <input type="checkbox" name="privacy" value="accepted" required class="mt-1 h-4 w-4" />
-        <span data-tina-field={tinaField(f, 'privacy')}>{f.privacy}</span>
-      </label>
-      <input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response" />
-      <button type="submit" class="bg-black px-8 py-4 text-sm tracking-wider text-white hover:bg-gray-800" data-tina-field={tinaField(f, 'submit')}>{f.submit}</button>
-    </form>
-    )}
-  </div>
+					<label class="flex items-start gap-3 text-sm text-gray-700">
+						<input type="checkbox" name="privacy" value="accepted" required class="mt-1 h-4 w-4" />
+						<span data-tina-field={tinaField(f, "privacy")}>{f.privacy}</span>
+					</label>
+					<input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response" />
+					<button type="submit" class="bg-black px-8 py-4 text-sm tracking-wider text-white hover:bg-gray-800" data-tina-field={tinaField(f, "submit")}>{f.submit}</button>
+				</form>
+			</>
+		)}
+	</div>
 )}
 
 <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <script is:inline>
-  (() => {
-    const form = document.getElementById('contact-form');
-    if (!form) return;
-    const selector = document.getElementById('inquiry-path');
-    const updatePath = () => {
-      for (const fieldset of form.querySelectorAll('[data-inquiry-path]')) {
-        const active = fieldset.dataset.inquiryPath === selector.value;
-        fieldset.hidden = !active;
-        fieldset.disabled = !active;
-      }
-    };
-    selector.addEventListener('change', updatePath);
-    updatePath();
+	(() => {
+		const form = document.getElementById('contact-form');
+		const selection = document.getElementById('inquiry-selection');
+		if (!selection) return;
+		const situation = document.getElementById('business-situation');
+		const service = document.getElementById('desired-service');
+		const description = document.getElementById('desired-service-description');
+		const selectionFeedback = document.getElementById('selection-change-feedback');
+		const updateServiceOptions = () => {
+			const active = Array.from(situation.options).find((option) => option.value === situation.value);
+			const allowed = active ? JSON.parse(active.dataset.serviceIds || '[]') : null;
+			const selected = service.value;
+			for (const option of service.options) {
+				if (!option.value) continue;
+				option.disabled = Boolean(allowed && !allowed.includes(option.value));
+			}
+			if (selected && allowed && !allowed.includes(selected)) {
+				service.value = '';
+				selectionFeedback.hidden = false;
+			} else if (service.value) {
+				selectionFeedback.hidden = true;
+			}
+			const chosen = service.options[service.selectedIndex];
+			const descriptions = JSON.parse(chosen?.dataset.descriptions || '{}');
+			description.textContent = descriptions[situation.value] || '';
+		};
+		situation.addEventListener('change', updateServiceOptions);
+		service.addEventListener('change', updateServiceOptions);
+		updateServiceOptions();
 
-    let widgetId;
-    form.addEventListener('submit', (event) => {
-      const token = document.getElementById('cf-turnstile-response');
-      if (token.value) return;
-      const container = document.querySelector('.cf-turnstile');
-      if (!window.turnstile || !container) return;
-      event.preventDefault();
-      if (widgetId === undefined) {
-        widgetId = window.turnstile.render(container, {
-          sitekey: container.dataset.sitekey,
-          size: 'invisible',
-          callback: (response) => {
-            token.value = response;
-            form.requestSubmit();
-          },
-          'error-callback': () => {
-            const url = new URL(window.location.href);
-            url.searchParams.set('contact_error', 'turnstileFailed');
-            window.location.assign(url);
-          },
-        });
-      }
-      window.turnstile.execute(widgetId);
-    });
-  })();
+		if (!form) return;
+		let widgetId;
+		form.addEventListener('submit', (event) => {
+			const token = document.getElementById('cf-turnstile-response');
+			if (token.value) return;
+			const container = document.querySelector('.cf-turnstile');
+			if (!window.turnstile || !container) return;
+			event.preventDefault();
+			if (widgetId === undefined) {
+				widgetId = window.turnstile.render(container, {
+					sitekey: container.dataset.sitekey,
+					size: 'invisible',
+					callback: (response) => {
+						token.value = response;
+						form.requestSubmit();
+					},
+					'error-callback': () => {
+						const url = new URL(window.location.href);
+						url.searchParams.set('contact_error', 'turnstileFailed');
+						window.location.assign(url);
+					},
+				});
+			}
+			window.turnstile.execute(widgetId);
+		});
+	})();
 </script>

@@ -5,21 +5,62 @@ import {
 	validateInquiryPayload,
 } from "../src/utils/inquiry-contract.mjs";
 
-const paths = [
-	{
-		value: "first-space",
-		fields: [
-			{ name: "businessType", kind: "text", required: true },
-			{
-				name: "scope",
-				kind: "select",
-				required: true,
-				options: [{ value: "full" }, { value: "consult" }],
-			},
-			{ name: "plans", kind: "file", required: false },
-		],
-	},
+const service = (value, label, description = "") => ({
+	value,
+	label,
+	description,
+});
+const sharedServices = [
+	service("integral", "Proyecto Integral"),
+	service("decorative-restyling", "Proyecto Decorativo y Restyling"),
 ];
+const paths = {
+	paths: [
+		{
+			value: "first-space",
+			serviceOptions: [
+				...sharedServices,
+				service(
+					"strategic-consultation",
+					"Consultoría estratégica",
+					"Viabilidad.",
+				),
+			],
+			fields: [
+				{
+					name: "businessType",
+					kind: "select",
+					required: true,
+					options: [{ value: "cafe", label: "Café" }],
+				},
+				{ name: "plans", kind: "file", required: false },
+			],
+		},
+		{
+			value: "existing-space",
+			serviceOptions: [
+				...sharedServices,
+				service(
+					"strategic-consultation",
+					"Consultoría estratégica",
+					"Diagnóstico.",
+				),
+			],
+			fields: [{ name: "challenge", kind: "textarea", required: true }],
+		},
+		{
+			value: "growth",
+			serviceOptions: [
+				...sharedServices,
+				service("other-challenge", "Tengo otra situación"),
+			],
+			fields: [{ name: "growthPlan", kind: "text", required: true }],
+		},
+	],
+	alternate: {
+		fields: [{ name: "challenge", kind: "textarea", required: true }],
+	},
+};
 
 function payload(entries) {
 	const data = new FormData();
@@ -27,55 +68,193 @@ function payload(entries) {
 	return data;
 }
 
-test("accepts valid path-specific fields and optional file", async () => {
+function validEntries(overrides = {}) {
+	return {
+		businessSituation: "first-space",
+		desiredService: "strategic-consultation",
+		businessType: "cafe",
+		...overrides,
+	};
+}
+
+test("accepts an allowed service for the selected business situation", async () => {
 	assert.deepEqual(
-		await validateInquiryPayload(
-			paths,
-			payload({
-				inquiryPath: "first-space",
-				businessType: "cafe",
-				scope: "full",
-			}),
-		),
+		await validateInquiryPayload(paths, payload(validEntries())),
 		{
 			ok: true,
-			path: "first-space",
-			values: { businessType: "cafe", scope: "full" },
+			businessSituation: "first-space",
+			desiredService: "strategic-consultation",
+			serviceLabel: "Consultoría estratégica",
+			serviceDescription: "Viabilidad.",
+			values: { businessType: "cafe" },
 			files: [],
 		},
 	);
 });
 
-test("rejects unknown inquiry paths and missing required fields", async () => {
+test("rejects missing or unknown business situations and services", async () => {
 	assert.equal(
-		(await validateInquiryPayload(paths, payload({ inquiryPath: "old-form" })))
-			.error,
+		(
+			await validateInquiryPayload(
+				paths,
+				payload({
+					desiredService: "integral",
+				}),
+			)
+		).error,
+		"missing-field",
+	);
+	assert.equal(
+		(
+			await validateInquiryPayload(
+				paths,
+				payload(
+					validEntries({
+						businessSituation: "legacy-path",
+					}),
+				),
+			)
+		).error,
 		"unknown-path",
 	);
 	assert.equal(
 		(
 			await validateInquiryPayload(
 				paths,
-				payload({
-					inquiryPath: "first-space",
-					businessType: "",
-					scope: "full",
-				}),
+				payload(
+					validEntries({
+						desiredService: "unknown-service",
+					}),
+				),
 			)
 		).error,
-		"missing-field",
+		"invalid-option",
 	);
 });
 
-test("rejects select values outside the content-defined options", async () => {
+test("rejects a known service when it is unavailable for the selected situation", async () => {
+	assert.equal(
+		(
+			await validateInquiryPayload(
+				paths,
+				payload(
+					validEntries({
+						businessSituation: "growth",
+						desiredService: "strategic-consultation",
+						growthPlan: "replicate",
+					}),
+				),
+			)
+		).error,
+		"invalid-option",
+	);
+});
+
+test("rejects duplicate selector values and legacy field names", async () => {
+	const duplicate = payload(validEntries());
+	duplicate.append("desiredService", "integral");
+	assert.equal(
+		(await validateInquiryPayload(paths, duplicate)).error,
+		"duplicate-field",
+	);
 	assert.equal(
 		(
 			await validateInquiryPayload(
 				paths,
 				payload({
+					...validEntries(),
 					inquiryPath: "first-space",
-					businessType: "cafe",
-					scope: "admin",
+				}),
+			)
+		).error,
+		"unknown-field",
+	);
+	assert.equal(
+		(
+			await validateInquiryPayload(
+				paths,
+				payload({
+					...validEntries(),
+					serviceScope: "integral",
+				}),
+			)
+		).error,
+		"unknown-field",
+	);
+	assert.equal(
+		(
+			await validateInquiryPayload(
+				paths,
+				payload({
+					...validEntries(),
+					servicePackage: "integral",
+				}),
+			)
+		).error,
+		"unknown-field",
+	);
+});
+
+test("validates situation-specific required fields and select options", async () => {
+	assert.equal(
+		(
+			await validateInquiryPayload(
+				paths,
+				payload(
+					validEntries({
+						businessType: "",
+					}),
+				),
+			)
+		).error,
+		"missing-field",
+	);
+	assert.equal(
+		(
+			await validateInquiryPayload(
+				paths,
+				payload(
+					validEntries({
+						businessType: "admin",
+					}),
+				),
+			)
+		).error,
+		"invalid-option",
+	);
+	assert.equal(
+		(
+			await validateInquiryPayload(
+				paths,
+				payload(
+					validEntries({
+						arbitrary: "value",
+					}),
+				),
+			)
+		).error,
+		"unknown-field",
+	);
+});
+
+test("uses alternate-challenge fields only for its allowed growth choice", async () => {
+	const result = await validateInquiryPayload(
+		paths,
+		payload({
+			businessSituation: "growth",
+			desiredService: "other-challenge",
+			challenge: "Pop-up space",
+		}),
+	);
+	assert.deepEqual(result.values, { challenge: "Pop-up space" });
+	assert.equal(
+		(
+			await validateInquiryPayload(
+				paths,
+				payload({
+					businessSituation: "first-space",
+					desiredService: "other-challenge",
+					challenge: "Pop-up space",
 				}),
 			)
 		).error,
@@ -83,75 +262,21 @@ test("rejects select values outside the content-defined options", async () => {
 	);
 });
 
-test("accepts only bounded, approved attachments", async () => {
-	const data = payload({
-		inquiryPath: "first-space",
-		businessType: "cafe",
-		scope: "full",
+test("accepts only bounded attachments with matching type, extension, and signature", async () => {
+	const valid = payload({
+		...validEntries(),
+		plans: new File(["%PDF-1.4"], "plan.pdf", { type: "application/pdf" }),
 	});
-	data.append(
-		"plans",
-		new File(["%PDF-1.4"], "plan.pdf", { type: "application/pdf" }),
-	);
-	assert.equal((await validateInquiryPayload(paths, data)).ok, true);
-	const bad = payload({
-		inquiryPath: "first-space",
-		businessType: "cafe",
-		scope: "full",
+	assert.equal((await validateInquiryPayload(paths, valid)).ok, true);
+	const invalid = payload({
+		...validEntries(),
+		plans: new File(["not a pdf"], "plan.pdf", { type: "application/pdf" }),
 	});
-	bad.append(
-		"plans",
-		new File(["hello"], "plan.exe", { type: "application/octet-stream" }),
-	);
 	assert.equal(
-		(await validateInquiryPayload(paths, bad)).error,
+		(await validateInquiryPayload(paths, invalid)).error,
 		"invalid-file",
 	);
-});
-
-test("rejects unknown and duplicate fields instead of ignoring them", async () => {
-	const unknown = payload({
-		inquiryPath: "first-space",
-		businessType: "cafe",
-		scope: "full",
-		arbitrary: "value",
-	});
-	assert.equal(
-		(await validateInquiryPayload(paths, unknown)).error,
-		"unknown-field",
-	);
-	const duplicate = payload({
-		inquiryPath: "first-space",
-		businessType: "cafe",
-		scope: "full",
-	});
-	duplicate.append("businessType", "restaurant");
-	assert.equal(
-		(await validateInquiryPayload(paths, duplicate)).error,
-		"duplicate-field",
-	);
-});
-
-test("rejects mismatched attachment signatures and more than three files", async () => {
-	const mismatch = payload({
-		inquiryPath: "first-space",
-		businessType: "cafe",
-		scope: "full",
-	});
-	mismatch.append(
-		"plans",
-		new File(["not a pdf"], "plan.pdf", { type: "application/pdf" }),
-	);
-	assert.equal(
-		(await validateInquiryPayload(paths, mismatch)).error,
-		"invalid-file",
-	);
-
-	const many = payload({
-		inquiryPath: "first-space",
-		businessType: "cafe",
-		scope: "full",
-	});
+	const many = payload(validEntries());
 	for (let index = 0; index < 4; index++)
 		many.append(
 			"plans",
@@ -178,46 +303,12 @@ test("bounds multipart request bodies before parsing fields", async () => {
 			duplex: "half",
 		});
 	};
-	const request = requestFor("small");
-	const result = await parseBoundedFormData(request, 1024);
+	const result = await parseBoundedFormData(requestFor("small"), 1024);
 	assert.equal(result.ok, true);
 	assert.equal(result.formData.get("value"), "small");
-
-	const largeRequest = requestFor("x".repeat(2048), false);
 	assert.equal(
-		(await parseBoundedFormData(largeRequest, 1024)).error,
+		(await parseBoundedFormData(requestFor("x".repeat(2048), false), 1024))
+			.error,
 		"body-too-large",
 	);
-});
-
-test("accepts a selected service package and makes the duplicate scope optional", async () => {
-	const packagePaths = [{
-		value: "first-space",
-		fields: [
-			{ name: "businessType", kind: "text", required: true },
-			{ name: "serviceScope", kind: "select", required: true, options: [{ value: "full" }] },
-		],
-	}];
-	assert.deepEqual(await validateInquiryPayload(packagePaths, payload({
-		inquiryPath: "first-space", name: "A", email: "a@example.test", privacy: "accepted",
-		businessType: "cafe", servicePackage: "decorative",
-	})), {
-		ok: true, path: "first-space", servicePackage: "decorative",
-		values: { businessType: "cafe" }, files: [],
-	});
-});
-
-test("rejects invalid or duplicate service packages", async () => {
-	const packagePaths = [{ value: "first-space", fields: [{ name: "serviceScope", kind: "select", required: true, options: [{ value: "full" }] }] }];
-	const invalid = payload({ inquiryPath: "first-space", servicePackage: "invented", serviceScope: "full" });
-	assert.equal((await validateInquiryPayload(packagePaths, invalid)).error, "invalid-option");
-	const duplicate = payload({ inquiryPath: "first-space", servicePackage: "integral", serviceScope: "full" });
-	duplicate.append("servicePackage", "decorative");
-	assert.equal((await validateInquiryPayload(packagePaths, duplicate)).error, "duplicate-field");
-});
-
-test("rejects duplicate scope input when a service package already determines scope", async () => {
-	const packagePaths = [{ value: "first-space", fields: [{ name: "serviceScope", kind: "select", required: true, options: [{ value: "full" }] }] }];
-	const data = payload({ inquiryPath: "first-space", servicePackage: "integral", serviceScope: "full" });
-	assert.equal((await validateInquiryPayload(packagePaths, data)).error, "unknown-field");
 });

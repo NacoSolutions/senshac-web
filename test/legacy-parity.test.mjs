@@ -61,12 +61,12 @@ const legacyMarkers = [
 	"t.nav, 'letsTalk'",
 	"t.footer, 'privacy'",
 	"t.footer, 'legal'",
-	"f, 'company'",
-	"f, 'name'",
-	"f, 'email'",
-	"f, 'phone'",
-	"f, 'privacy'",
-	"f, 'submit'",
+	'f, "company"',
+	'f, "name"',
+	'f, "email"',
+	'f, "phone"',
+	'f, "privacy"',
+	'f, "submit"',
 ];
 
 test("Tina and renderer expose only generic block templates", () => {
@@ -112,17 +112,22 @@ test("banner text and nested slogan lines have selectable Tina markers", () => {
 			"tinaField(tinaData.topRight as Record<string, unknown>, 'lines', index)",
 		),
 	);
-	assert.ok(
-		markerSources.includes("tinaField(tinaData, 'title')"),
-	);
-	assert.ok(
-		markerSources.includes("tinaField(tinaData, 'subtitle')"),
-	);
+	assert.ok(markerSources.includes("tinaField(tinaData, 'title')"));
+	assert.ok(markerSources.includes("tinaField(tinaData, 'subtitle')"));
 });
 
 test("inquiry path questions and options remain selectable in Tina", () => {
-	assert.ok(markerSources.includes("tinaField(paths, pathIndex)"));
-	assert.ok(markerSources.includes("tinaField(path.fields, fieldIndex)"));
-	assert.ok(markerSources.includes('name="inquiryPath"'));
+	assert.ok(markerSources.includes("tinaField(paths, index)"));
+	assert.ok(markerSources.includes("tinaField(questionFields, fieldIndex)"));
+	assert.ok(
+		markerSources.includes(
+			"tinaField(service.sourcePath.serviceOptions, service.sourceIndex)",
+		),
+	);
+	assert.ok(markerSources.includes('name="situation"'));
+	assert.ok(markerSources.includes('name="service"'));
+	assert.ok(markerSources.includes('name="businessSituation"'));
+	assert.ok(markerSources.includes('name="desiredService"'));
 	assert.ok(markerSources.includes('type="file"'));
+	assert.ok(tinaConfig.includes('name: "serviceOptions"'));
 });
