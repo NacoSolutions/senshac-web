@@ -17,14 +17,15 @@ if (!page) {
 	return Astro.redirect("/404");
 }
 
-const { title, description, blocks } = page.data as {
+const { title, description, chrome, blocks } = page.data as {
 	title: string;
 	description: string;
+	chrome?: any;
 	blocks?: any[];
 };
 ---
 
-<Base title={title} description={description} lang={lang} schema="LocalBusiness" aot>
+<Base title={title} description={description} lang={lang} schema="LocalBusiness" pageChrome={chrome} aot>
   <TinaIsland name="about" wrapper={{ tag: "main" }} params={{ relativePath: `${lang}/about.json` }} primary>
 <main id="main">
     <div class="min-h-screen pt-24 pb-16">

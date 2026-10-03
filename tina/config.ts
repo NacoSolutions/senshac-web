@@ -68,6 +68,35 @@ const chromeFields: TinaField = {
 	],
 };
 
+const pageChromeFields: TinaField = {
+	type: "object",
+	name: "chrome",
+	label: "Page Header & Footer",
+	fields: [
+		{
+			type: "object",
+			name: "header",
+			label: "Header",
+			fields: [
+				{ type: "string", name: "style", label: "Layout Style", options: ["default", "transparent"] },
+				{ type: "string", name: "mode", label: "Behavior", options: ["fixed", "scrolling"] },
+				{ type: "string", name: "atFinal", label: "At Final Appearance", options: appearancePresets },
+				{ type: "string", name: "scrolling", label: "Scrolling Appearance", options: appearancePresets },
+			],
+		},
+		...(["footer"] as const).map((name) => ({
+			type: "object" as const,
+			name,
+			label: "Footer",
+			fields: [
+				{ type: "string" as const, name: "mode", label: "Behavior", options: ["fixed", "scrolling"] },
+				{ type: "string" as const, name: "atFinal", label: "At Final Appearance", options: appearancePresets },
+				{ type: "string" as const, name: "scrolling", label: "Scrolling Appearance", options: appearancePresets },
+			],
+		})),
+	],
+};
+
 const siteConfigFields: TinaField[] = [
 	{ type: "string" as const, name: "siteUrl", label: "Site URL" },
 	chromeFields,
@@ -130,15 +159,6 @@ const siteConfigFields: TinaField[] = [
 				description:
 					'UnoCSS icon class, e.g. "i-simple-icons-instagram" or "i-mdi-linkedin"',
 			},
-		],
-	},
-	{
-		type: "object" as const,
-		name: "attribution",
-		label: "Attribution",
-		fields: [
-			{ name: "design", label: "Design By", type: "string" },
-			{ name: "development", label: "Development By", type: "string" },
 		],
 	},
 	{
@@ -576,12 +596,7 @@ const homePageFields: TinaField[] = [
 		label: "Meta Description",
 		ui: { component: "textarea" },
 	},
-	{
-		type: "string" as const,
-		name: "headerStyle",
-		label: "Header Style",
-		options: ["default", "transparent"],
-	},
+	pageChromeFields,
 	pageBlocksField,
 ];
 
@@ -599,6 +614,7 @@ const aboutPageFields: TinaField[] = [
 		label: "Meta Description",
 		ui: { component: "textarea" },
 	},
+	pageChromeFields,
 	pageBlocksField,
 ];
 
@@ -616,6 +632,7 @@ const servicesPageFields: TinaField[] = [
 		label: "Meta Description",
 		ui: { component: "textarea" },
 	},
+	pageChromeFields,
 	pageBlocksField,
 ];
 
@@ -633,6 +650,7 @@ const contactPageFields: TinaField[] = [
 		label: "Meta Description",
 		ui: { component: "textarea" },
 	},
+	pageChromeFields,
 	pageBlocksField,
 ];
 
@@ -671,6 +689,7 @@ const projectFields: TinaField[] = [
 	},
 	{ type: "boolean" as const, name: "featured", label: "Featured" },
 	{ type: "boolean" as const, name: "draft", label: "Draft" },
+	pageChromeFields,
 	projectBlocksField,
 ];
 
@@ -693,6 +712,7 @@ const legalPageFields: TinaField[] = [
 		ui: { component: "textarea" },
 	},
 	{ type: "datetime" as const, name: "lastUpdated", label: "Last Updated" },
+	pageChromeFields,
 	{ type: "rich-text" as const, name: "body", label: "Content", isBody: true },
 ];
 
@@ -750,6 +770,18 @@ const translationFields: TinaField[] = [
 						label: "URL Path (include lang prefix if needed, e.g. /es/studio)",
 						type: "string",
 					},
+				],
+			},
+			{
+				name: "attributions",
+				label: "Attributions",
+				type: "object",
+				list: true,
+				required: true,
+				ui: { itemProps: (item) => ({ label: item?.label || item?.name || "Attribution" }) },
+				fields: [
+					{ name: "label", label: "Attribution", type: "string", required: true },
+					{ name: "name", label: "Attributtee", type: "string", required: true },
 				],
 			},
 		],
@@ -989,6 +1021,7 @@ const translationFields: TinaField[] = [
 			{ name: "title", label: "Page Title", type: "string", required: true },
 			{ name: "description", label: "Meta Description", type: "string" },
 			{ name: "heading", label: "Heading", type: "string" },
+			pageChromeFields,
 		],
 	},
 	{

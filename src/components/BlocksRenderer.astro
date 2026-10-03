@@ -103,7 +103,7 @@ function mediaId(value?: string | null) {
       />
     </div>
   )}
-  {template === 'form' && <ContactFormBlock {...block} />}
+  {template === 'form' && <ContactFormBlock {...block} tinaData={block} />}
   {template === 'details' && <ProjectDetails {...block} eager={index === 0} />}
   {template === 'text' && ['brief', 'concept', 'strategy'].includes(block.variant) && (
     <section class:list={['py-16 md:py-24 max-w-7xl mx-auto px-4', { 'bg-gray-50': block.variant === 'concept' }]}>

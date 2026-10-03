@@ -8,6 +8,7 @@ import SEO from "../components/SEO.astro";
 import "virtual:uno.css";
 import globalStyles from "../styles/global.css?url";
 import { getSiteConfig } from "../utils/site-config";
+import { resolvePageChrome } from "../utils/page-chrome.mjs";
 import { getTranslations as getPublicTranslations } from "../utils/translations";
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
 	description: string;
 	image?: string;
 	lang?: string;
+	pageChrome?: { header?: { style?: "default" | "transparent"; mode?: "fixed" | "scrolling"; atFinal?: string; scrolling?: string }; footer?: { mode?: "fixed" | "scrolling"; atFinal?: string; scrolling?: string } };
 	schema?:
 		| "LocalBusiness"
 		| "Article"
@@ -34,10 +36,11 @@ const {
 	description,
 	image,
 	lang = "es",
+	pageChrome,
 	schema,
 	publishDate,
 	breadcrumbs,
-	headerStyle = "default",
+	headerStyle: defaultHeaderStyle = "default",
 	preloadImage,
 	translationsData: providedTranslationsData,
 	siteData: providedSiteData,
@@ -48,7 +51,8 @@ const [translationsData, siteData] = await Promise.all([
 	providedSiteData ?? getSiteConfig(),
 ]);
 
-const siteChrome = (siteData as any).chrome ?? {
+const headerStyle = pageChrome?.header?.style ?? defaultHeaderStyle;
+const globalChrome = (siteData as any).chrome ?? {
 	header: {
 		mode: "fixed",
 		atFinal: "opaque-light",
@@ -56,6 +60,8 @@ const siteChrome = (siteData as any).chrome ?? {
 	},
 	footer: { mode: "scrolling", atFinal: "opaque-dark", scrolling: "opaque-dark" },
 };
+const siteChrome = resolvePageChrome(globalChrome, pageChrome);
+const pageChromeParam = JSON.stringify(pageChrome ?? {});
 
 const mediaBaseUrl = (
 	import.meta.env.PUBLIC_MEDIA_BASE_URL || "https://media.senshac.com"
@@ -119,7 +125,7 @@ const deferredFontScript = `window.addEventListener('load',()=>{const style=docu
     <TinaIsland
       name="header"
       wrapper={{ tag: "div", className: "relative z-50" }}
-      params={{ relativePath: `${lang}.json`, lang, headerStyle }}
+      params={{ relativePath: `${lang}.json`, lang, headerStyle, pageChrome: pageChromeParam }}
     >
       <Header lang={lang} headerStyle={headerStyle} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
     </TinaIsland>
@@ -129,7 +135,7 @@ const deferredFontScript = `window.addEventListener('load',()=>{const style=docu
     <TinaIsland
       name="footer"
       wrapper={{ tag: "div" }}
-      params={{ relativePath: `${lang}.json`, lang }}
+      params={{ relativePath: `${lang}.json`, lang, pageChrome: pageChromeParam }}
     >
       <Footer lang={lang} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
     </TinaIsland>

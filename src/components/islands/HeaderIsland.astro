@@ -13,10 +13,11 @@ interface Props {
 	siteData?: SiteConfigQuery["siteConfig"];
 	lang: string;
 	headerStyle?: "default" | "transparent";
+	chrome?: Record<string, unknown>;
 	relativePath?: string;
 }
 
-let { data, siteData, lang, headerStyle = "default" } = Astro.props;
+let { data, siteData, lang, headerStyle = "default", chrome } = Astro.props;
 const tinaEnv = getTinaRuntimeEnv(Astro.locals);
 
 if (!data) {
@@ -33,5 +34,5 @@ if (!siteData) {
   headerStyle={headerStyle}
   translations={data!}
   siteData={siteData!}
-  chrome={(siteData as any)?.chrome}
+	chrome={chrome ?? (siteData as any)?.chrome}
 />

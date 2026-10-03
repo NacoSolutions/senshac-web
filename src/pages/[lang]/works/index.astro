@@ -5,6 +5,7 @@ export const prerender = true;
 
 import { getCollection, getEntry } from "astro:content";
 import MediaPlaceholder from "../../../components/sections/editorial/MediaPlaceholder.astro";
+import { tinaField } from "@tinacms/astro/tina-field";
 import Base from "../../../layouts/Base.astro";
 
 const { lang = "es" } = Astro.params;
@@ -56,10 +57,14 @@ const works = sortedProjects.map((project, index) => {
 const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
 ---
 
-<Base title={t.title} description={t.description} lang={lang} schema="BreadcrumbList" breadcrumbs={breadcrumbs}>
+<Base title={t.title} description={t.description} lang={lang} pageChrome={t.chrome} schema="BreadcrumbList" breadcrumbs={breadcrumbs}>
   <main id="main" class="works-index">
     <div class="editorial-shell">
-      <h1 class="works-index__title">PROYECTOS,<br /><em>ENSAYOS</em><br />Y OBJETOS</h1>
+      <h1 class="works-index__title" data-tina-field={tinaField(t, "heading")}>
+        {t.heading.split("\n").map((line: string, index: number) => (
+          <>{index > 0 && <br />}{index === 1 ? <em>{line}</em> : line}</>
+        ))}
+      </h1>
 
       <div class="works-index__list">
         {works.map((work) => {

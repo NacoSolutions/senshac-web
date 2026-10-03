@@ -16,6 +16,7 @@ const markerSources = (
 			"ContactForm.astro",
 			"Footer.astro",
 			"Header.astro",
+			"sections/contact/ContactBlock.astro",
 			"islands/AboutPage.astro",
 			"islands/HomePage.astro",
 			"islands/ProjectPage.astro",
@@ -47,8 +48,6 @@ const genericBlocks = [
 
 const legacyMarkers = [
 	"block",
-	"site.attribution, 'design'",
-	"site.attribution, 'development'",
 	"site.branding, 'logo'",
 	"site.branding, 'logoWhite'",
 	"site.branding, 'symbol'",
@@ -61,6 +60,8 @@ const legacyMarkers = [
 	"t.nav, 'letsTalk'",
 	"t.footer, 'privacy'",
 	"t.footer, 'legal'",
+	'attributions[index], "label"',
+	'attributions[index], "name"',
 	'f, "company"',
 	'f, "name"',
 	'f, "email"',
@@ -117,11 +118,11 @@ test("banner text and nested slogan lines have selectable Tina markers", () => {
 });
 
 test("inquiry path questions and options remain selectable in Tina", () => {
-	assert.ok(markerSources.includes("tinaField(paths, index)"));
+	assert.ok(markerSources.includes('tinaField(path, "title")'));
 	assert.ok(markerSources.includes("tinaField(questionFields, fieldIndex)"));
 	assert.ok(
 		markerSources.includes(
-			"tinaField(service.sourcePath.serviceOptions, service.sourceIndex)",
+			'tinaField(service.sourcePath.serviceOptions[service.sourceIndex], "label")',
 		),
 	);
 	assert.ok(markerSources.includes('name="situation"'));

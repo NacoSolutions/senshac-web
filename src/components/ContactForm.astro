@@ -71,39 +71,39 @@ const siteKey =
 
 {Astro.url.searchParams.get("contact_success") === "1" ? (
 	<div class="border border-green-300 p-6 text-green-900" id="contact-form">
-		<p class="text-lg font-medium">{f.success}</p>
+		<p class="text-lg font-medium" data-tina-field={tinaField(f, "success")}>{f.success}</p>
 	</div>
 ) : (
 	<div id="contact-form-container">
-		{feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert">{feedback}</p>}
-		<h2 class="mb-4 text-2xl font-semibold">{inquiry.heading}</h2>
+		{feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert" data-tina-field={tinaField(f, invalidQuery ? "invalidSelection" : inquiryError ?? "error")}>{feedback}</p>}
+		<h2 class="mb-4 text-2xl font-semibold" data-tina-field={tinaField(inquiry, "heading")}>{inquiry.heading}</h2>
 		<form id="inquiry-selection" class="mt-6 space-y-6" action={`/${lang}/contact`} method="GET">
 			<label class="block text-sm font-medium" for="business-situation" data-tina-field={tinaField(inquiry, "situationLabel")}>
 				{inquiry.situationLabel}
 				<select id="business-situation" name="situation" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
-					<option value="">{inquiry.selectPlaceholder}</option>
+					<option value="" data-tina-field={tinaField(inquiry, "selectPlaceholder")}>{inquiry.selectPlaceholder}</option>
 					{paths.map((path: any, index: number) => (
-						<option value={path.value} selected={path.value === requestedSituation} data-service-ids={JSON.stringify(path.serviceOptions.map((option: any) => option.value))} data-tina-field={tinaField(paths, index)}>{path.title}</option>
+						<option value={path.value} selected={path.value === requestedSituation} data-service-ids={JSON.stringify(path.serviceOptions.map((option: any) => option.value))} data-tina-field={tinaField(path, "title")}>{path.title}</option>
 					))}
 				</select>
 			</label>
 			<label class="block text-sm font-medium" for="desired-service" data-tina-field={tinaField(inquiry, "serviceLabel")}>
 				{inquiry.serviceLabel}
 				<select id="desired-service" name="service" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
-					<option value="">{inquiry.selectPlaceholder}</option>
+					<option value="" data-tina-field={tinaField(inquiry, "selectPlaceholder")}>{inquiry.selectPlaceholder}</option>
 					{services.map((service) => (
-						<option value={service.value} selected={service.value === requestedService} disabled={Boolean(selectedPath && !selectedPath.serviceOptions.some((option: any) => option.value === service.value))} data-descriptions={JSON.stringify(service.descriptions)} data-tina-field={tinaField(service.sourcePath.serviceOptions, service.sourceIndex)}>{service.label}</option>
+						<option value={service.value} selected={service.value === requestedService} disabled={Boolean(selectedPath && !selectedPath.serviceOptions.some((option: any) => option.value === service.value))} data-descriptions={JSON.stringify(service.descriptions)} data-tina-field={tinaField(service.sourcePath.serviceOptions[service.sourceIndex], "label")}>{service.label}</option>
 					))}
 				</select>
 				<span id="desired-service-description" class="mt-2 block text-gray-600" aria-live="polite" data-tina-field={selectedServiceOption ? tinaField(selectedPath.serviceOptions, selectedServiceOptionIndex) : undefined}>{selectedServiceOption?.description}</span>
 			</label>
-			<p id="selection-change-feedback" class="text-sm text-red-800" role="status" hidden>{f.invalidSelection}</p>
-			<button type="submit" class="border border-black px-6 py-3 text-sm hover:bg-black hover:text-white">{inquiry.continue}</button>
+			<p id="selection-change-feedback" class="text-sm text-red-800" role="status" hidden data-tina-field={tinaField(f, "invalidSelection")}>{f.invalidSelection}</p>
+			<button type="submit" class="border border-black px-6 py-3 text-sm hover:bg-black hover:text-white" data-tina-field={tinaField(inquiry, "continue")}>{inquiry.continue}</button>
 		</form>
 
 		{validSelection && (
 			<>
-				<p class="mt-8 text-gray-600">{selectedPath.description}</p>
+				<p class="mt-8 text-gray-600" data-tina-field={tinaField(selectedPath, "description")}>{selectedPath.description}</p>
 				<form id="contact-form" class="mt-6 space-y-8" action={`/${lang}/api/contact`} method="POST" enctype="multipart/form-data">
 					<input type="hidden" name="businessSituation" value={selectedPath.value} />
 					<input type="hidden" name="desiredService" value={requestedService} />
@@ -116,7 +116,7 @@ const siteKey =
 					</div>
 
 					<fieldset class="space-y-6">
-						<legend class="mb-2 text-xl font-semibold">{requestedService === "other-challenge" ? inquiry.alternate.title : selectedPath.title}</legend>
+						<legend class="mb-2 text-xl font-semibold" data-tina-field={requestedService === "other-challenge" ? tinaField(inquiry.alternate, "title") : tinaField(selectedPath, "title")}>{requestedService === "other-challenge" ? inquiry.alternate.title : selectedPath.title}</legend>
 						{questionFields.map((field: any, fieldIndex: number) => (
 							<label class="block text-sm font-medium" for={`inquiry-${requestedService}-${field.name}`} data-tina-field={tinaField(questionFields, fieldIndex)}>
 								{field.label}{field.required ? " *" : ""}
