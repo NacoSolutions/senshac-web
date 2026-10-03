@@ -7,14 +7,32 @@ export interface InquiryField {
 
 export interface InquiryPath {
 	value: string;
+	serviceOptions: InquiryService[];
 	fields: InquiryField[];
+}
+
+export interface InquiryService {
+	value:
+		| "integral"
+		| "decorative-restyling"
+		| "strategic-consultation"
+		| "other-challenge";
+	label: string;
+	description: string;
+}
+
+export interface InquiryConfig {
+	paths: InquiryPath[];
+	alternate: { fields: InquiryField[] };
 }
 
 export type InquiryPayloadResult =
 	| {
 			ok: true;
-			path: string;
-			servicePackage?: "consultation" | "decorative" | "integral";
+			businessSituation: string;
+			desiredService: string;
+			serviceLabel: string;
+			serviceDescription: string;
 			values: Record<string, string>;
 			files: Array<{ name: string; type: string; bytes: Uint8Array }>;
 	  }
@@ -29,6 +47,6 @@ export function parseBoundedFormData(
 >;
 
 export function validateInquiryPayload(
-	paths: InquiryPath[],
+	inquiry: InquiryConfig,
 	formData: FormData,
 ): Promise<InquiryPayloadResult>;

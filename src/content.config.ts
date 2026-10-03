@@ -160,7 +160,14 @@ const contentBlock = z
 				}
 				for (const key of Object.keys(item)) {
 					if (
-						!["title", "link", "mediaId", "imageAlt", "placeholderLabel", "ctaText"].includes(key)
+						![
+							"title",
+							"link",
+							"mediaId",
+							"imageAlt",
+							"placeholderLabel",
+							"ctaText",
+						].includes(key)
 					) {
 						context.addIssue({
 							code: "custom",
@@ -385,6 +392,18 @@ const projects = defineCollection({
 const inquiryOption = z
 	.object({ value: z.string().min(1), label: z.string().min(1) })
 	.strict();
+const inquiryService = z
+	.object({
+		value: z.enum([
+			"integral",
+			"decorative-restyling",
+			"strategic-consultation",
+			"other-challenge",
+		]),
+		label: z.string().min(1),
+		description: z.string().min(1),
+	})
+	.strict();
 const inquiryField = z
 	.object({
 		name: z.string().regex(/^[a-z][A-Za-z0-9]*$/),
@@ -416,6 +435,14 @@ const inquiryField = z
 const inquiryPath = z
 	.object({
 		value: z.enum(["first-space", "existing-space", "growth"]),
+		title: z.string().min(1),
+		description: z.string().min(1),
+		serviceOptions: z.array(inquiryService).min(2).max(3),
+		fields: z.array(inquiryField).min(1),
+	})
+	.strict();
+const alternateInquiry = z
+	.object({
 		title: z.string().min(1),
 		description: z.string().min(1),
 		fields: z.array(inquiryField).min(1),
@@ -450,47 +477,35 @@ const translations = defineCollection({
 				)
 				.optional(),
 		}),
-		contactForm: z.object({
-			inquiryPaths: z
-				.object({
-					heading: z.string().min(1),
-					chooseLabel: z.string().min(1),
-					paths: z.array(inquiryPath).length(3),
-				})
-				.strict(),
-			name: z.string(),
-			company: z.string(),
-			email: z.string(),
-			phone: z.string(),
-			projectType: z.string(),
-			projectTypes: z
-				.array(
-					z.object({
-						value: z.string(),
-						label: z.string(),
-					}),
-				)
-				.optional(),
-			serviceType: z.string(),
-			serviceTypes: z
-				.array(
-					z.object({
-						value: z.string(),
-						label: z.string(),
-					}),
-				)
-				.optional(),
-			message: z.string(),
-			privacy: z.string(),
-			submit: z.string(),
-			sending: z.string(),
-			success: z.string(),
-			error: z.string(),
-			turnstileFailed: z.string(),
-			invalidEmail: z.string(),
-			missingFields: z.string(),
-			invalidFile: z.string(),
-		}),
+		contactForm: z
+			.object({
+				inquiryPaths: z
+					.object({
+						heading: z.string().min(1),
+						situationLabel: z.string().min(1),
+						serviceLabel: z.string().min(1),
+						selectPlaceholder: z.string().min(1),
+						continue: z.string().min(1),
+						paths: z.array(inquiryPath).length(3),
+						alternate: alternateInquiry,
+					})
+					.strict(),
+				name: z.string(),
+				company: z.string(),
+				email: z.string(),
+				phone: z.string(),
+				privacy: z.string(),
+				submit: z.string(),
+				sending: z.string(),
+				success: z.string(),
+				error: z.string(),
+				turnstileFailed: z.string(),
+				invalidEmail: z.string(),
+				missingFields: z.string(),
+				invalidFile: z.string(),
+				invalidSelection: z.string(),
+			})
+			.strict(),
 		projects: z.object({
 			title: z.string(),
 			description: z.string(),

@@ -6,7 +6,6 @@ import {
 	parseBoundedFormData,
 	validateInquiryPayload,
 } from "../../../utils/inquiry-contract.mjs";
-import { findServicePackage } from "../../../utils/service-packages.mjs";
 
 const MAX_REQUEST_BYTES = 12 * 1024 * 1024;
 
@@ -67,17 +66,21 @@ export const POST: APIRoute = async ({ request, params }) => {
 		return new Response("Translations not found", { status: 500 });
 	const t = translations.data.contactForm;
 	const returnUrl = safeReturnUrl(request, lang);
-	const redirect = (error?: string, success = false, inquiryPath?: string) => {
+	const redirect = (
+		error?: string,
+		success = false,
+		businessSituation?: string,
+		desiredService?: string,
+	) => {
 		returnUrl.searchParams.delete("contact_error");
 		returnUrl.searchParams.delete("contact_success");
+		returnUrl.searchParams.delete("path");
+		returnUrl.searchParams.delete("package");
 		if (error) returnUrl.searchParams.set("contact_error", error);
 		if (success) returnUrl.searchParams.set("contact_success", "1");
-		if (
-			inquiryPath &&
-			["first-space", "existing-space", "growth"].includes(inquiryPath)
-		) {
-			returnUrl.searchParams.set("path", inquiryPath);
-		}
+		if (businessSituation)
+			returnUrl.searchParams.set("situation", businessSituation);
+		if (desiredService) returnUrl.searchParams.set("service", desiredService);
 		return Response.redirect(returnUrl.toString(), 303);
 	};
 
@@ -97,7 +100,8 @@ export const POST: APIRoute = async ({ request, params }) => {
 		const email = String(formData.get("email") ?? "").trim();
 		const phone = String(formData.get("phone") ?? "").trim();
 		const privacyAccepted = formData.get("privacy") === "accepted";
-		const inquiryPath = String(formData.get("inquiryPath") ?? "");
+		const businessSituation = String(formData.get("businessSituation") ?? "");
+		const desiredService = String(formData.get("desiredService") ?? "");
 		if (
 			!name ||
 			name.length > 200 ||
@@ -107,46 +111,59 @@ export const POST: APIRoute = async ({ request, params }) => {
 			company.length > 200 ||
 			phone.length > 80
 		) {
-			return redirect("missingFields", false, inquiryPath);
+			return redirect(
+				"missingFields",
+				false,
+				businessSituation,
+				desiredService,
+			);
 		}
 		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-			return redirect("invalidEmail", false, inquiryPath);
+			return redirect("invalidEmail", false, businessSituation, desiredService);
 
-		const validated = await validateInquiryPayload(
-			t.inquiryPaths.paths,
-			formData,
-		);
+		const validated = await validateInquiryPayload(t.inquiryPaths, formData);
 		if (!validated.ok) {
+			if (validated.error === "invalid-config") {
+				console.error("Inquiry questionnaire configuration is invalid.");
+				return new Response("Inquiry configuration unavailable", {
+					status: 500,
+				});
+			}
 			const error =
-				validated.error === "invalid-file" ? "invalidFile" : "missingFields";
-			return redirect(error, false, inquiryPath);
+				validated.error === "invalid-file"
+					? "invalidFile"
+					: validated.error === "invalid-option" ||
+							validated.error === "unknown-path"
+						? "invalidSelection"
+						: "missingFields";
+			return redirect(error, false, businessSituation, desiredService);
 		}
 		const token = String(formData.get("cf-turnstile-response") ?? "");
 		if (
 			!(await verifyTurnstile(token, request.headers.get("CF-Connecting-IP")))
 		) {
-			return redirect("turnstileFailed", false, inquiryPath);
+			return redirect(
+				"turnstileFailed",
+				false,
+				businessSituation,
+				desiredService,
+			);
 		}
 
 		const selected = t.inquiryPaths.paths.find(
-			(path) => path.value === validated.path,
+			(path) => path.value === validated.businessSituation,
 		);
 		if (!selected) {
-			console.error("Validated inquiry path is missing from translations.");
+			console.error(
+				"Validated business situation is missing from translations.",
+			);
 			return new Response("Inquiry configuration unavailable", { status: 500 });
 		}
-		const servicePackage = validated.servicePackage
-			? findServicePackage(
-					(await getEntry("pages", `${lang}/services`))?.data.blocks,
-					lang,
-					validated.servicePackage,
-				)
-			: null;
-		if (validated.servicePackage && !servicePackage) {
-			console.error("Validated service package is missing from localized methods content.");
-			return new Response("Inquiry configuration unavailable", { status: 500 });
-		}
-		const answerLines = selected.fields
+		const questions =
+			validated.desiredService === "other-challenge"
+				? t.inquiryPaths.alternate
+				: selected;
+		const answerLines = questions.fields
 			.map((field) => {
 				const answer = validated.values[field.name];
 				if (!answer) return null;
@@ -156,8 +173,11 @@ export const POST: APIRoute = async ({ request, params }) => {
 			.filter(Boolean);
 		const text = [
 			"New inquiry from senshac.com",
-			`Path: ${selected.title}`,
-			...(servicePackage ? [`Service package: ${servicePackage.title}`] : []),
+			`Business situation: ${selected.title}`,
+			`Desired service: ${validated.serviceLabel}`,
+			...(validated.serviceDescription
+				? [`Service context: ${validated.serviceDescription}`]
+				: []),
 			`Name: ${name}`,
 			`Company: ${company || "Not provided"}`,
 			`Email: ${email}`,
@@ -194,9 +214,9 @@ export const POST: APIRoute = async ({ request, params }) => {
 			console.error("Contact email provider rejected inquiry", {
 				status: response.status,
 			});
-			return redirect("error", false, inquiryPath);
+			return redirect("error", false, businessSituation, desiredService);
 		}
-		return redirect(undefined, true, inquiryPath);
+		return redirect(undefined, true, businessSituation, desiredService);
 	} catch (error) {
 		console.error(
 			"Contact submission processing failed",
