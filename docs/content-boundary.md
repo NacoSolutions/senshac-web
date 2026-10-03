@@ -38,6 +38,22 @@ and run summary preserve exact source provenance.
 The Tina schema and generated Tina artifacts remain in `senshac-web`. The
 content repository has no `tina/` directory and no Tina schema.
 
+## Page chrome and shared copy
+
+Global `siteConfig.chrome` supplies header/footer appearance and behavior
+defaults. Each page document may override `chrome.header` and/or
+`chrome.footer`; only the header `style` (`default` or `transparent`),
+positioning `mode`, and scrolling/final appearances vary per page. The shared
+header/footer copy stays global or localized in each translation document.
+The Tina page editor exposes these page-scoped controls on home, studio,
+methods, contact, project, legal, and work-list documents. Live header/footer
+islands receive the page override and merge it over the global defaults.
+
+Footer credits are localized content at `translations.footer.attributions`, a
+repeatable list of `{ label, name }` pairs. Each displayed value has its own
+Tina marker, so owners can add, remove, reorder, or rename credits without
+changing the renderer for a particular role.
+
 ## Local Tina verification
 
 With the sibling checkout available and `TINA_CLIENT_ID` and `TINA_TOKEN`

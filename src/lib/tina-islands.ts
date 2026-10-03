@@ -28,6 +28,7 @@ import {
 	getTranslations,
 	type TinaRuntimeEnv,
 } from "./tina-data";
+import { resolvePageChrome } from "../utils/page-chrome.mjs";
 
 export function createIslands(env?: TinaRuntimeEnv): IslandRegistry {
 	return {
@@ -82,7 +83,8 @@ export function createIslands(env?: TinaRuntimeEnv): IslandRegistry {
 				data: data?.translations?.data?.translations,
 				siteData: data?.site?.data?.siteConfig,
 				lang: params?.get("lang") ?? "es",
-				headerStyle: params?.get("headerStyle") ?? "default",
+				headerStyle: JSON.parse(params?.get("pageChrome") ?? "{}").header?.style ?? params?.get("headerStyle") ?? "default",
+				chrome: resolvePageChrome(data?.site?.data?.siteConfig?.chrome, JSON.parse(params?.get("pageChrome") ?? "{}")),
 			}),
 		},
 		footer: {
@@ -100,6 +102,7 @@ export function createIslands(env?: TinaRuntimeEnv): IslandRegistry {
 				data: data?.translations?.data?.translations,
 				siteData: data?.site?.data?.siteConfig,
 				lang: params?.get("lang") ?? "es",
+				chrome: resolvePageChrome(data?.site?.data?.siteConfig?.chrome, JSON.parse(params?.get("pageChrome") ?? "{}")),
 			}),
 		},
 		contact: {

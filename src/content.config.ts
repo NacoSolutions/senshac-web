@@ -17,6 +17,11 @@ const chromePart = z.object({
 	scrolling: appearancePreset,
 });
 
+const pageChrome = z.object({
+	header: chromePart.partial().extend({ style: z.enum(["default", "transparent"]).optional() }).optional(),
+	footer: chromePart.partial().optional(),
+});
+
 const blockNames = [
 	"accordion",
 	"banner",
@@ -274,12 +279,6 @@ const siteConfig = defineCollection({
 				icon: z.string(), // UnoCSS icon class, e.g. "i-simple-icons-instagram"
 			}),
 		),
-		attribution: z
-			.object({
-				design: z.string().optional(),
-				development: z.string().optional(),
-			})
-			.optional(),
 		branding: z.object({
 			logo: z.string(),
 			logoWhite: z.string(),
@@ -299,7 +298,7 @@ const siteConfig = defineCollection({
 const homePageSchema = z.object({
 	title: z.string(),
 	description: z.string(),
-	headerStyle: z.enum(["default", "transparent"]).default("transparent"),
+	chrome: pageChrome.optional(),
 	blocks: z.array(contentBlock),
 });
 
@@ -308,6 +307,7 @@ const aboutPageSchema = z.object({
 	title: z.string(),
 	description: z.string(),
 	heroImage: z.string().optional(),
+	chrome: pageChrome.optional(),
 	blocks: z.array(contentBlock),
 });
 
@@ -315,6 +315,7 @@ const aboutPageSchema = z.object({
 const servicesPageSchema = z.object({
 	title: z.string(),
 	description: z.string(),
+	chrome: pageChrome.optional(),
 	blocks: z.array(contentBlock),
 });
 
@@ -324,6 +325,7 @@ const contactPageSchema = z.object({
 	description: z.string(),
 	heading: z.string(),
 	subheading: z.string(),
+	chrome: pageChrome.optional(),
 	blocks: z.array(contentBlock),
 });
 
@@ -344,6 +346,7 @@ const legal = defineCollection({
 	schema: z.object({
 		title: z.string(),
 		description: z.string(),
+		chrome: pageChrome.optional(),
 		lastUpdated: z.coerce.date().optional(),
 	}),
 });
@@ -364,6 +367,7 @@ const projectSchema = z.object({
 	title: z.string(),
 	description: z.string(),
 	slug: z.string(),
+	chrome: pageChrome.optional(),
 	publishDate: z.preprocess((val) => {
 		if (!val || val === "") return undefined;
 		return new Date(val as string);
@@ -468,6 +472,7 @@ const translations = defineCollection({
 		footer: z.object({
 			privacy: z.string(),
 			legal: z.string(),
+			attributions: z.array(z.object({ label: z.string().min(1), name: z.string().min(1) }).strict()),
 			links: z
 				.array(
 					z.object({
@@ -510,6 +515,7 @@ const translations = defineCollection({
 			title: z.string(),
 			description: z.string(),
 			heading: z.string(),
+			chrome: pageChrome.optional(),
 		}),
 		accessibility: z.object({
 			skipToContent: z.string(),

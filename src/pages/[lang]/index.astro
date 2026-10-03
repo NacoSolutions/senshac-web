@@ -27,10 +27,10 @@ const homeResult = await requestWithMetadata({
 	variables: { relativePath: `${lang}/home.json` },
 }, { priority: "primary" });
 const home = homeResult.data.home;
-const { title, description, headerStyle, blocks } = home as {
+const { title, description, chrome, blocks } = home as {
 	title: string;
 	description: string;
-	headerStyle: "default" | "transparent";
+	chrome?: any;
 	blocks?: any[];
 };
 
@@ -43,7 +43,7 @@ const site = await getSiteConfig();
   description={description}
   lang={lang}
   schema="LocalBusiness"
-  headerStyle={headerStyle}
+  pageChrome={chrome}
   translationsData={translations}
   siteData={site}
   aot

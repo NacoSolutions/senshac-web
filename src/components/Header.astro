@@ -124,9 +124,10 @@ const getLocalizedPath = (targetLang: string) => {
             class="flex items-center gap-1 text-sm uppercase tracking-wider transition-colors"
             x-bind:class={`appearance === '${scrollingAppearance}' ? '${controlAppearance(scrollingAppearance)}' : '${controlAppearance(finalAppearance)}'`}
             x-on:click="langOpen = !langOpen"
-            aria-label={`Select language, current: ${lang.toUpperCase()}`}
+            aria-label={`${t.accessibility.selectLanguage}, current: ${lang.toUpperCase()}`}
+            data-tina-field={tinaField(t.accessibility, "selectLanguage")}
           >
-            <span>{lang.toUpperCase()}</span>
+            <span data-tina-field={tinaField(site, "locales", site.locales.indexOf(lang))}>{lang.toUpperCase()}</span>
             <span class="i-lucide-chevron-down w-3 h-3 transition-transform" x-bind:class="langOpen && 'rotate-180'" />
           </button>
 
@@ -146,7 +147,7 @@ const getLocalizedPath = (targetLang: string) => {
                 href={getLocalizedPath(l.code)}
                 class="block px-4 py-2 text-sm uppercase text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
               >
-                {l.label}
+                <span data-tina-field={tinaField(site, "locales", site.locales.indexOf(l.code))}>{l.label}</span>
               </a>
             ))}
           </div>
@@ -158,7 +159,8 @@ const getLocalizedPath = (targetLang: string) => {
           class="p-2 transition-colors"
           x-bind:class={`appearance === '${scrollingAppearance}' ? '${controlAppearance(scrollingAppearance)}' : '${controlAppearance(finalAppearance)}'`}
           x-on:click="menuOpen = !menuOpen"
-          aria-label="Toggle menu"
+          aria-label={t.accessibility.toggleMenu}
+          data-tina-field={tinaField(t.accessibility, "toggleMenu")}
           aria-expanded="false"
           x-bind:aria-expanded="menuOpen"
         >
@@ -204,7 +206,8 @@ const getLocalizedPath = (targetLang: string) => {
           type="button"
           class="p-2 text-gray-600 hover:text-black transition-colors"
           x-on:click="menuOpen = false"
-          aria-label="Close menu"
+          aria-label={t.accessibility.closeMenu}
+          data-tina-field={tinaField(t.accessibility, "closeMenu")}
         >
           <span class="i-lucide-x w-6 h-6" />
         </button>
@@ -220,11 +223,12 @@ const getLocalizedPath = (targetLang: string) => {
               {socialLinks.map((link: any, index: number) => (
                 <a
                   href={link.url}
+                  data-tina-field={tinaField(site.socialLinks[index], "url")}
                   target="_blank"
                   rel="noopener noreferrer"
                   class="block py-3 text-lg md:text-xl text-black border-b border-gray-200 hover:text-gray-600 transition-colors"
                 >
-                  <span data-tina-field={tinaField(site.socialLinks as any, index)}>{link.name}</span>
+                  <span data-tina-field={tinaField(site.socialLinks[index], "name")}>{link.name}</span>
                 </a>
               ))}
             </div>
@@ -242,9 +246,9 @@ const getLocalizedPath = (targetLang: string) => {
                     currentPath.startsWith(item.href) && "font-medium"
                   ]}
                   x-on:click="menuOpen = false"
-                  data-tina-field={tinaField(t.nav.links as any, index)}
+                  data-tina-field={t.nav.links?.[index] ? tinaField(t.nav.links[index], "href") : undefined}
                 >
-                  {item.label}
+                  <span data-tina-field={t.nav.links?.[index] ? tinaField(t.nav.links[index], "label") : undefined}>{item.label}</span>
                 </a>
               ))}
             </div>

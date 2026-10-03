@@ -53,6 +53,7 @@ const t = propTranslations ?? (await getTranslations(lang));
 const site = (propSiteData ?? (await getSiteConfig())) as any;
 
 const navLinks = (t.footer as any).links || [];
+const attributions = (t.footer as any).attributions || [];
 
 // Use social links from site config
 const socialLinks = site.socialLinks;
@@ -130,8 +131,9 @@ const socialLinks = site.socialLinks;
             <a
               href={link.href}
               class="page-link text-current opacity-50 hover:opacity-100 transition-colors"
+              data-tina-field={tinaField(navLinks[index], "href")}
             >
-              <span data-tina-field={tinaField((t.footer as any).links, index)}>{link.label}</span>
+              <span data-tina-field={tinaField(navLinks[index], "label")}>{link.label}</span>
               <span class="page-link-icon i-lucide-arrow-up-right" aria-hidden="true" />
             </a>
           ))}
@@ -144,8 +146,12 @@ const socialLinks = site.socialLinks;
     <div class="flex flex-wrap justify-between gap-4 py-4">
       <!-- Attribution -->
       <div class="text-sm text-current opacity-70">
-        {site.attribution?.design && <p data-tina-field={tinaField(site.attribution, 'design')}>Design by {site.attribution.design}</p>}
-        {site.attribution?.development && <p data-tina-field={tinaField(site.attribution, 'development')}>Development by {site.attribution.development}</p>}
+		{attributions.map((credit: { label: string; name: string }, index: number) => (
+			<p>
+				<span data-tina-field={tinaField(attributions[index], "label")}>{credit.label}</span>{" "}
+				<span data-tina-field={tinaField(attributions[index], "name")}>{credit.name}</span>
+			</p>
+		))}
       </div>
 
       <!-- Legal Links -->
