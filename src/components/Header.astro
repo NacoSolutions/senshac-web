@@ -4,6 +4,7 @@ import type { SiteConfigQuery } from "../../tina/__generated__/types";
 import { getSiteConfig } from "../utils/site-config";
 // src/components/Header.astro
 import { getTranslations, type Translations } from "../utils/translations";
+import { resolvePageChromeFieldTarget } from "../utils/page-chrome.mjs";
 import R2Picture from "./R2Picture.astro";
 
 type Appearance = "transparent-adaptive" | "transparent-light" | "transparent-dark" | "opaque-light" | "opaque-dark";
@@ -15,6 +16,8 @@ interface Props {
 	translations?: Translations;
 	siteData?: SiteConfigQuery["siteConfig"];
 	chrome?: { header?: ChromePart };
+	pageData?: Record<string, unknown>;
+	pageChromePath?: string;
 }
 
 const {
@@ -23,6 +26,8 @@ const {
 	translations: propTranslations,
 	siteData: propSiteData,
 	chrome: propChrome,
+	pageData,
+	pageChromePath,
 } = Astro.props;
 const currentPath = Astro.url.pathname;
 
@@ -40,6 +45,7 @@ const appearanceClasses: Record<Appearance, string> = {
 };
 const initialAppearance = appearanceClasses[scrollingAppearance];
 const finalAppearanceClasses = appearanceClasses[finalAppearance];
+const pageChromeTarget = resolvePageChromeFieldTarget(pageData, pageChromePath, "header");
 const lightForegroundAppearances = ["transparent-adaptive", "transparent-light", "opaque-dark"];
 const controlAppearance = (appearance: string) =>
 	lightForegroundAppearances.includes(appearance)
@@ -86,6 +92,7 @@ const getLocalizedPath = (targetLang: string) => {
     data-chrome-mode={mode}
     data-chrome-at-final={finalAppearance}
     data-chrome-scrolling={scrollingAppearance}
+    data-tina-field={pageChromeTarget ? tinaField(pageChromeTarget.data, pageChromeTarget.field) : undefined}
     x-bind:class={`appearance === '${scrollingAppearance}' ? '${initialAppearance}' : '${finalAppearanceClasses}'`}
     x-effect="appearance = scrolled ? finalAppearance : scrollingAppearance"
   >

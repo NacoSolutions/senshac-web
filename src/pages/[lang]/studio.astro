@@ -25,7 +25,7 @@ const { title, description, chrome, blocks } = page.data as {
 };
 ---
 
-<Base title={title} description={description} lang={lang} schema="LocalBusiness" pageChrome={chrome} aot>
+<Base title={title} description={description} lang={lang} schema="LocalBusiness" pageChrome={chrome} pageSource={{ collection: "about", relativePath: `${lang}/about.json`, chromePath: "chrome" }} aot>
   <TinaIsland name="about" wrapper={{ tag: "main" }} params={{ relativePath: `${lang}/about.json` }} primary>
 <main id="main">
     <div class="min-h-screen pt-24 pb-16">

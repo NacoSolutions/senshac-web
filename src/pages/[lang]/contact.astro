@@ -23,7 +23,7 @@ const { title, description, chrome, blocks } = page.data as {
 };
 ---
 
-<Base title={title} description={description} lang={lang ?? "es"} schema="LocalBusiness" pageChrome={chrome} aot>
+<Base title={title} description={description} lang={lang ?? "es"} schema="LocalBusiness" pageChrome={chrome} pageSource={{ collection: "contact", relativePath: `${lang}/contact.json`, chromePath: "chrome" }} aot>
   <TinaIsland name="contact" wrapper={{ tag: "main" }} params={{ relativePath: `${lang}/contact.json` }} primary>
 <main class="min-h-screen">
     {blocks && blocks.map((block: any, index: number) => (

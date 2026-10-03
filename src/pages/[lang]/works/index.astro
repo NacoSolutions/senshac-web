@@ -57,7 +57,7 @@ const works = sortedProjects.map((project, index) => {
 const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
 ---
 
-<Base title={t.title} description={t.description} lang={lang} pageChrome={t.chrome} schema="BreadcrumbList" breadcrumbs={breadcrumbs}>
+<Base title={t.title} description={t.description} lang={lang} pageChrome={t.chrome} pageSource={{ collection: "translations", relativePath: `${lang}.json`, chromePath: "projects.chrome" }} schema="BreadcrumbList" breadcrumbs={breadcrumbs}>
   <main id="main" class="works-index">
     <div class="editorial-shell">
       <h1 class="works-index__title" data-tina-field={tinaField(t, "heading")}>
