@@ -44,6 +44,7 @@ const site = await getSiteConfig();
   lang={lang}
   schema="LocalBusiness"
   pageChrome={chrome}
+  pageSource={{ collection: "home", relativePath: `${lang}/home.json`, chromePath: "chrome" }}
   translationsData={translations}
   siteData={site}
   aot

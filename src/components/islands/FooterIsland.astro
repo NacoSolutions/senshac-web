@@ -13,10 +13,12 @@ interface Props {
 	siteData?: SiteConfigQuery["siteConfig"];
 	lang: string;
 	chrome?: Record<string, unknown>;
+	pageData?: Record<string, unknown>;
+	pageChromePath?: string;
 	relativePath?: string;
 }
 
-let { data, siteData, lang, chrome } = Astro.props;
+let { data, siteData, lang, chrome, pageData, pageChromePath } = Astro.props;
 const tinaEnv = getTinaRuntimeEnv(Astro.locals);
 
 if (!data) {
@@ -31,6 +33,8 @@ if (!siteData) {
 <Footer
   lang={lang}
   translations={data!}
-  siteData={siteData!}
+	siteData={siteData!}
 	chrome={chrome ?? (siteData as any)?.chrome}
+	pageData={pageData}
+	pageChromePath={pageChromePath}
 />

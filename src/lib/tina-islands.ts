@@ -22,13 +22,51 @@ import {
 	getContact,
 	getHome,
 	getLegal,
+	getPageChromeDocument,
 	getProject,
 	getServices,
 	getSiteConfigTina,
 	getTranslations,
+	type PageChromeCollection,
 	type TinaRuntimeEnv,
 } from "./tina-data";
 import { resolvePageChrome } from "../utils/page-chrome.mjs";
+
+const pageChromeCollections = new Set([
+	"home",
+	"about",
+	"services",
+	"projects",
+	"contact",
+	"legal",
+	"translations",
+]);
+
+async function fetchPageSource(pageSource: any, translations: any, env?: TinaRuntimeEnv) {
+	if (!pageSource?.collection || !pageSource?.relativePath || !pageSource?.chromePath) {
+		return null;
+	}
+	if (!pageChromeCollections.has(pageSource.collection)) {
+		throw new Error(`Unsupported page chrome collection: ${pageSource.collection}`);
+	}
+	if (pageSource.collection === "translations") {
+		return translations?.data?.translations;
+	}
+
+	const result = await getPageChromeDocument(
+		pageSource.collection as PageChromeCollection,
+		pageSource.relativePath,
+		env,
+	);
+	return (result?.data as Record<string, any> | undefined)?.[pageSource.collection];
+}
+
+function resolvePageChromeData(pageData: any, pageSource: any, fallback: any) {
+	const value = pageSource?.chromePath
+		?.split(".")
+		.reduce((current: any, key: string) => current?.[key], pageData);
+	return value ?? fallback;
+}
 
 export function createIslands(env?: TinaRuntimeEnv): IslandRegistry {
 	return {
@@ -70,40 +108,64 @@ export function createIslands(env?: TinaRuntimeEnv): IslandRegistry {
 		},
 		header: {
 			fetch: async (_request, params) => {
+				const pageSource = JSON.parse(params.get("pageSource") ?? "{}");
 				const transData = await getTranslations(
 					params.get("relativePath") ?? "es.json",
 					env,
 				);
 				const siteData = await getSiteConfigTina("site.json", env);
-				return { translations: transData, site: siteData };
+				const pageData = await fetchPageSource(pageSource, transData, env);
+				return { translations: transData, site: siteData, page: pageData };
 			},
 			component: HeaderIsland,
 			wrapper: { tag: "div", className: "relative z-50" },
-			propsFromData: (data: any, params) => ({
-				data: data?.translations?.data?.translations,
-				siteData: data?.site?.data?.siteConfig,
-				lang: params?.get("lang") ?? "es",
-				headerStyle: JSON.parse(params?.get("pageChrome") ?? "{}").header?.style ?? params?.get("headerStyle") ?? "default",
-				chrome: resolvePageChrome(data?.site?.data?.siteConfig?.chrome, JSON.parse(params?.get("pageChrome") ?? "{}")),
-			}),
+			propsFromData: (data: any, params) => {
+				const pageSource = JSON.parse(params?.get("pageSource") ?? "{}");
+				const pageChrome = resolvePageChromeData(
+					data?.page,
+					pageSource,
+					JSON.parse(params?.get("pageChrome") ?? "{}"),
+				);
+				return {
+					data: data?.translations?.data?.translations,
+					siteData: data?.site?.data?.siteConfig,
+					lang: params?.get("lang") ?? "es",
+					headerStyle: pageChrome?.header?.style ?? params?.get("headerStyle") ?? "default",
+					chrome: resolvePageChrome(data?.site?.data?.siteConfig?.chrome, pageChrome),
+					pageData: data?.page,
+					pageChromePath: pageSource?.chromePath,
+				};
+			},
 		},
 		footer: {
 			fetch: async (_request, params) => {
+				const pageSource = JSON.parse(params.get("pageSource") ?? "{}");
 				const transData = await getTranslations(
 					params.get("relativePath") ?? "es.json",
 					env,
 				);
 				const siteData = await getSiteConfigTina("site.json", env);
-				return { translations: transData, site: siteData };
+				const pageData = await fetchPageSource(pageSource, transData, env);
+				return { translations: transData, site: siteData, page: pageData };
 			},
 			component: FooterIsland,
 			wrapper: { tag: "div" },
-			propsFromData: (data: any, params) => ({
-				data: data?.translations?.data?.translations,
-				siteData: data?.site?.data?.siteConfig,
-				lang: params?.get("lang") ?? "es",
-				chrome: resolvePageChrome(data?.site?.data?.siteConfig?.chrome, JSON.parse(params?.get("pageChrome") ?? "{}")),
-			}),
+			propsFromData: (data: any, params) => {
+				const pageSource = JSON.parse(params?.get("pageSource") ?? "{}");
+				const pageChrome = resolvePageChromeData(
+					data?.page,
+					pageSource,
+					JSON.parse(params?.get("pageChrome") ?? "{}"),
+				);
+				return {
+					data: data?.translations?.data?.translations,
+					siteData: data?.site?.data?.siteConfig,
+					lang: params?.get("lang") ?? "es",
+					chrome: resolvePageChrome(data?.site?.data?.siteConfig?.chrome, pageChrome),
+					pageData: data?.page,
+					pageChromePath: pageSource?.chromePath,
+				};
+			},
 		},
 		contact: {
 			fetch: (_request, params) =>

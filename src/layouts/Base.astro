@@ -17,6 +17,11 @@ interface Props {
 	image?: string;
 	lang?: string;
 	pageChrome?: { header?: { style?: "default" | "transparent"; mode?: "fixed" | "scrolling"; atFinal?: string; scrolling?: string }; footer?: { mode?: "fixed" | "scrolling"; atFinal?: string; scrolling?: string } };
+	pageSource?: {
+		collection: "home" | "about" | "services" | "projects" | "contact" | "legal" | "translations";
+		relativePath: string;
+		chromePath: string;
+	};
 	schema?:
 		| "LocalBusiness"
 		| "Article"
@@ -37,6 +42,7 @@ const {
 	image,
 	lang = "es",
 	pageChrome,
+	pageSource,
 	schema,
 	publishDate,
 	breadcrumbs,
@@ -62,6 +68,7 @@ const globalChrome = (siteData as any).chrome ?? {
 };
 const siteChrome = resolvePageChrome(globalChrome, pageChrome);
 const pageChromeParam = JSON.stringify(pageChrome ?? {});
+const pageSourceParam = JSON.stringify(pageSource ?? {});
 
 const mediaBaseUrl = (
 	import.meta.env.PUBLIC_MEDIA_BASE_URL || "https://media.senshac.com"
@@ -125,7 +132,7 @@ const deferredFontScript = `window.addEventListener('load',()=>{const style=docu
     <TinaIsland
       name="header"
       wrapper={{ tag: "div", className: "relative z-50" }}
-      params={{ relativePath: `${lang}.json`, lang, headerStyle, pageChrome: pageChromeParam }}
+      params={{ relativePath: `${lang}.json`, lang, headerStyle, pageChrome: pageChromeParam, pageSource: pageSourceParam }}
     >
       <Header lang={lang} headerStyle={headerStyle} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
     </TinaIsland>
@@ -135,7 +142,7 @@ const deferredFontScript = `window.addEventListener('load',()=>{const style=docu
     <TinaIsland
       name="footer"
       wrapper={{ tag: "div" }}
-      params={{ relativePath: `${lang}.json`, lang, pageChrome: pageChromeParam }}
+      params={{ relativePath: `${lang}.json`, lang, pageChrome: pageChromeParam, pageSource: pageSourceParam }}
     >
       <Footer lang={lang} chrome={siteChrome} translations={translationsData as any} siteData={siteData as any} />
     </TinaIsland>

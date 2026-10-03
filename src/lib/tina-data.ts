@@ -19,6 +19,14 @@ export interface TinaRuntimeEnv {
 	TINA_TOKEN?: string;
 }
 
+export type PageChromeCollection =
+	| "home"
+	| "about"
+	| "services"
+	| "projects"
+	| "contact"
+	| "legal";
+
 export function getTinaRuntimeEnv(
 	_locals: App.Locals,
 ): TinaRuntimeEnv | undefined {
@@ -122,4 +130,27 @@ export function getSiteConfigTina(relativePath: string, env?: TinaRuntimeEnv) {
 	return requestWithMetadata<SiteConfigQuery>(
 		getClient(env).queries.siteConfig({ relativePath }),
 	);
+}
+
+export function getPageChromeDocument(
+	collection: PageChromeCollection,
+	relativePath: string,
+	env?: TinaRuntimeEnv,
+) {
+	const client = getClient(env);
+
+	switch (collection) {
+		case "home":
+			return requestWithMetadata(client.queries.home({ relativePath }));
+		case "about":
+			return requestWithMetadata(client.queries.about({ relativePath }));
+		case "services":
+			return requestWithMetadata(client.queries.services({ relativePath }));
+		case "projects":
+			return requestWithMetadata(client.queries.projects({ relativePath }));
+		case "contact":
+			return requestWithMetadata(client.queries.contact({ relativePath }));
+		case "legal":
+			return requestWithMetadata(client.queries.legal({ relativePath }));
+	}
 }

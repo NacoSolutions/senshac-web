@@ -47,7 +47,8 @@ positioning `mode`, and scrolling/final appearances vary per page. The shared
 header/footer copy stays global or localized in each translation document.
 The Tina page editor exposes these page-scoped controls on home, studio,
 methods, contact, project, legal, and work-list documents. Live header/footer
-islands receive the page override and merge it over the global defaults.
+islands load the owning page document as an editable reference, mark their
+chrome controls against it, and merge live page values over global defaults.
 
 Footer credits are localized content at `translations.footer.attributions`, a
 repeatable list of `{ label, name }` pairs. Each displayed value has its own
