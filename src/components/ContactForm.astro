@@ -156,6 +156,8 @@ const siteKey =
 		if (!selection) return;
 		const situation = document.getElementById('business-situation');
 		const service = document.getElementById('desired-service');
+		const renderedSituation = form?.querySelector('[name="businessSituation"]')?.getAttribute('value');
+		const renderedService = form?.querySelector('[name="desiredService"]')?.getAttribute('value');
 		const description = document.getElementById('desired-service-description');
 		const selectionFeedback = document.getElementById('selection-change-feedback');
 		const updateServiceOptions = () => {
@@ -171,6 +173,10 @@ const siteKey =
 				selectionFeedback.hidden = false;
 			} else if (service.value) {
 				selectionFeedback.hidden = true;
+			}
+			if (form) {
+				form.hidden =
+					situation.value !== renderedSituation || service.value !== renderedService;
 			}
 			const chosen = service.options[service.selectedIndex];
 			const descriptions = JSON.parse(chosen?.dataset.descriptions || '{}');

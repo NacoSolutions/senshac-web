@@ -73,6 +73,7 @@ test("the two inquiry selectors prefill, filter services, and adapt the question
 	);
 
 	await service.selectOption("strategic-consultation");
+	await expect(page.locator("#contact-form")).toBeHidden();
 	await situation.selectOption("growth");
 	await expect(service).toHaveValue("");
 	await expect(page.locator("#selection-change-feedback")).toBeVisible();
