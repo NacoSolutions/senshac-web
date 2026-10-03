@@ -6,6 +6,7 @@ import {
 	parseBoundedFormData,
 	validateInquiryPayload,
 } from "../../../utils/inquiry-contract.mjs";
+import { resolveContactRecipient } from "../../../utils/contact-recipient.mjs";
 
 const MAX_REQUEST_BYTES = 12 * 1024 * 1024;
 
@@ -186,8 +187,9 @@ export const POST: APIRoute = async ({ request, params }) => {
 			`Language: ${lang}`,
 		].join("\n");
 		const apiKey = import.meta.env.RESEND_API_KEY;
-		if (!apiKey) {
-			console.error("Contact email is not configured; inquiry rejected.");
+		const recipient = resolveContactRecipient(import.meta.env.CONTACT_EMAIL);
+		if (!apiKey || !recipient) {
+			console.error("Contact delivery configuration is incomplete; inquiry rejected.");
 			return new Response("Contact delivery unavailable", { status: 503 });
 		}
 
@@ -203,7 +205,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 			},
 			body: JSON.stringify({
 				from: "Senshac Web <noreply@senshac.com>",
-				to: import.meta.env.CONTACT_EMAIL || "info@senshac.com",
+				to: recipient,
 				reply_to: email,
 				subject: `New inquiry: ${selected.title}`,
 				text,
