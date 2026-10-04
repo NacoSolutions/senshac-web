@@ -82,7 +82,7 @@ jobs:
           test -s AGENTS.md
           test -s README.md
           test -s .warren/config.yaml
-          grep -q '^agentImage: ghcr.io/nacosolutions/senshac-warren-agent@sha256:' .warren/config.yaml
+          grep -q '^agentImage: ghcr.io/rogernavelsaker/warren-agent@sha256:e810f33eb23c5a5959d1209b5eb81b6c811f1aed97632f6abbfb4900b680b41f$' .warren/config.yaml
           test -s content/tina-fixture.json
           test -s content/tina-schema.json
           if find . -type f \( -name '.env' -o -name '*.pem' -o -name '*.key' \) -not -path './.git/*' | grep -q .; then
