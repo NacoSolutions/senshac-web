@@ -41,12 +41,13 @@ exclusion check reports a green result when the task touches its scope.
 
 ### Gentle coding
 
-Make the smallest change that satisfies the objective, preserve adjacent
-behavior and existing project guidance, and retain repository-local settings.
+Make the smallest change that satisfies the objective and preserve adjacent
+behavior. Keep repository policy in `.warren/config.yaml`; leave image and
+provider/model choices to Warren instance and agent configuration.
 
 **Acceptance check:** the diff contains no production application changes and
-`.warren/config.yaml` retains `defaultProvider: openrouter` and
-`defaultModel: openai/gpt-5.6-luna`.
+`.warren/config.yaml` contains no `agentImage`, `defaultProvider`, or
+`defaultModel` override.
 
 ### Token economy
 
