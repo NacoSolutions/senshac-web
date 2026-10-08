@@ -6,18 +6,20 @@ import mdx from "@astrojs/mdx";
 import tina from "@tinacms/astro/integration";
 import UnoCSS from "@unocss/astro";
 import { defineConfig } from "astro/config";
+import { resolveSiteUrl } from "./src/utils/site-url.mjs";
 
 const deploymentVersion =
 	process.env.CF_PAGES_COMMIT_SHA ||
 	process.env.GITHUB_SHA ||
 	execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const siteUrl = resolveSiteUrl();
 
 // https://astro.build/config
 export default defineConfig({
 	devToolbar: {
 		enabled: false,
 	},
-	site: 'https://preview.invalid',
+	site: siteUrl,
 	output: "server",
 	adapter: cloudflare({
 		imageService: "compile",
@@ -45,6 +47,7 @@ export default defineConfig({
 
 	vite: {
 		define: {
+			"import.meta.env.SENSHAC_SITE_URL": JSON.stringify(siteUrl),
 			"import.meta.env.SENSHAC_DEPLOYMENT_VERSION":
 				JSON.stringify(deploymentVersion),
 		},

@@ -20,6 +20,15 @@ promoting a reviewed commit. This target is documentation only: Pages settings,
 custom domains, DNS, bindings, and credentials remain platform-owned and are
 not configured here.
 
+The content-triggered production workflow supplies
+`PUBLIC_SITE_URL=https://cutover.senshac.com`; Pages preview builds resolve
+their deployment origin from `CF_PAGES_URL`. Local builds retain
+`https://preview.invalid`, and a Pages `main` build without an explicit
+production URL also fails closed to that placeholder rather than emitting a
+deployment-specific `pages.dev` URL. If the Pages production branch changes
+from `main`, set `SENSHAC_PRODUCTION_BRANCH` to match in the Pages build
+environment; the content deployment workflow explicitly targets `main`.
+
 Tina admin routing has one canonical entry point: `/admin/`. Pages redirects
 `/admin` and the legacy localized `/es/admin` path to `/admin/`; no localized
 admin bundle is generated. The Tina CLI writes `public/admin/index.html` and

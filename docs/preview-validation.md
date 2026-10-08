@@ -28,20 +28,19 @@ to the corresponding acceptance gate in `docs/cutover-plan.md`.
 - [ ] `GET /` displays `"A representative editorial fixture for the Astro preview slice."` in a `<p>` element
 - [ ] Content comes from `content/tina-fixture.json`, not from environment variables or production secrets
 
-## 4. Accessibility and SEO placeholders
+## 4. Accessibility and SEO
 
 - [ ] `<html lang="en">` is present in the document root
 - [ ] `<meta charset="UTF-8">` is set
 - [ ] `<meta name="viewport" content="width=device-width">` is set
 - [ ] A visible page title (`<title>`) is set
 - [ ] A `<meta name="description">` tag is present
+- [ ] Canonical, hreflang, Open Graph, and structured-data URLs use the expected deployment origin
+  - Production content builds set `PUBLIC_SITE_URL=https://cutover.senshac.com`
+  - Cloudflare Pages preview builds use their injected `CF_PAGES_URL`
+  - Local builds retain the non-indexable `https://preview.invalid` fallback
 - [ ] A header contains a keyboard-accessible link to the home page (the current wordmark has `href="/"` and accessible name `Senshac home`)
 - [ ] Page content is reachable via semantic `<main>` and `<h1>` elements
-- [ ] Placeholder comments exist for future additions:
-  - `[ ]` Canonical URL meta tag (TBD — add when production domain is assigned)
-  - `[ ]` Sitemap / robots policy (TBD — define in Astro config when approved)
-  - `[ ]` Open Graph / Twitter card meta tags (TBD — add when design is finalised)
-  - `[ ]` Structured data / schema.org markup (TBD — evaluate if applicable)
 
 ## 5. Secret boundaries
 
@@ -55,14 +54,15 @@ to the corresponding acceptance gate in `docs/cutover-plan.md`.
 
 ## 6. Explicit production exclusions
 
-The following items are **intentionally absent** from this repository and must
-be configured through platform or CI secret stores only:
+The following platform-owned settings remain outside this repository. Store
+credentials in platform or CI secret stores; configure the public production
+origin through the reviewed deployment workflow:
 
 - [ ] No Cloudflare Pages project settings or deployment tokens
 - [ ] No DNS records, zones, or redirects
 - [ ] No Cloudflare R2 bucket names, bindings, or access keys
 - [ ] No TinaCMS client IDs, secrets, or API tokens
-- [ ] No production `site` URL in `astro.config.mjs` (currently set to `https://preview.invalid`)
+- [ ] No hard-coded production host in source; production builds supply `PUBLIC_SITE_URL`, Pages previews use `CF_PAGES_URL`
 - [ ] No generated Tina schema output or client code
 - [ ] No migrated code from the archived `NacoSolutions/senshac` repository beyond the approved preview slice
 - [ ] No cutover activation — the archive remains the rollback source
@@ -70,10 +70,10 @@ be configured through platform or CI secret stores only:
 ## Deterministic final gate
 
 Run the following from a clean checkout. `bun run quality` includes the Tina and
-Astro builds, fixture-backed preview check, and `bun run repository:check`; the latter rejects
-secret-like files/assignments, private-key markers, generated deployment/Tina
-configuration, and a non-placeholder Astro site URL. `git diff --check` is run
-separately because it checks the review diff rather than the checkout.
+Astro builds, fixture-backed preview check, and `bun run repository:check`; the
+site-origin tests verify production, preview, and local fallback behavior.
+`git diff --check` is run separately because it checks the review diff rather
+than the checkout.
 
 ```sh
 bun install --frozen-lockfile

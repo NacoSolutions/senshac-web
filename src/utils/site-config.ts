@@ -10,6 +10,6 @@ export async function getSiteConfig() {
 	}
 	return {
 		...entry.data,
-		siteUrl: import.meta.env.PUBLIC_SITE_URL || entry.data.siteUrl,
+		siteUrl: import.meta.env.SENSHAC_SITE_URL || entry.data.siteUrl,
 	};
 }
