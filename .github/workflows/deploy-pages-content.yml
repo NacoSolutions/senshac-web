@@ -111,7 +111,9 @@ jobs:
           BUN_VERSION: '1.3.13'
           CF_PAGES: '1'
           ESBUILD_WORKER_THREADS: '0'
+          PUBLIC_SITE_URL: https://cutover.senshac.com
           PUBLIC_MEDIA_BASE_URL: https://media.senshac.com
+          SENSHAC_PRODUCTION_BRANCH: main
           SENSHAC_CONTENT_REVISION: ${{ steps.content.outputs.revision }}
           SKIP_DEPENDENCY_INSTALL: '1'
           TINA_CLIENT_ID: ${{ secrets.TINA_CLIENT_ID }}
