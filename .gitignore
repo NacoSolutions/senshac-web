@@ -1,5 +1,7 @@
 node_modules/
 dist/
+.devenv/
+.engram/
 .astro/
 .env
 .env.*
