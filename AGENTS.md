@@ -38,11 +38,13 @@ guide:
 Use these focused guides for the corresponding Senshac web responsibility:
 
 - [`git-workflow`](.agents/skills/git-workflow/SKILL.md) — inspect, validate, commit, and confirm clean Git delivery.
+- [`terrarium-triage`](.agents/skills/terrarium-triage/SKILL.md) — select an owned, unblocked Seed from the canonical Senshac graph before implementation.
 - [`dependency-hygiene`](.agents/skills/dependency-hygiene/SKILL.md) — keep Astro, TinaCMS, and Cloudflare tooling reproducible.
 - [`security-review`](.agents/skills/security-review/SKILL.md) — review Tina credentials and Cloudflare deployment boundaries.
 - [`verification-before-completion`](.agents/skills/verification-before-completion/SKILL.md) — run bounded checks and capture completion evidence.
 - [`web-performance`](.agents/skills/web-performance/SKILL.md) — measure Astro output and protect Pages delivery performance.
 - [`tina-astro-cloudflare`](.agents/skills/tina-astro-cloudflare/SKILL.md) — coordinate Tina editing, Astro builds, and Cloudflare Pages releases.
+- [`toolchain-bun-web`](.agents/skills/toolchain-bun-web/SKILL.md) — use the repository's Bun, Astro, Tina, and Cloudflare toolchain safely.
 
 ## Tina schema and lockfile workflow
 
