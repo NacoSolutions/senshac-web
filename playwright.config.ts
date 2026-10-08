@@ -19,7 +19,7 @@ export default defineConfig({
 		? undefined
 		: {
 			command:
-				"(test -d dist || bun run build) && bunx wrangler pages dev dist --ip 127.0.0.1 --port 4321",
+				"bun run build && bunx wrangler pages dev dist --ip 127.0.0.1 --port 4321",
 			url: "http://127.0.0.1:4321/es/",
 			reuseExistingServer: !process.env.CI,
 			timeout: 180_000,
