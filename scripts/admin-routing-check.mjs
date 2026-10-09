@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { access, readdir, readFile } from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { access, mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import { createServer } from "node:net";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 
 const redirects = await readFile("public/_redirects", "utf8");
 const adminHtml = "dist/admin/index.html";
@@ -83,5 +89,66 @@ for (const icon of [
 	assert.ok(publicHtml.includes(`.${icon}{`), `missing emitted icon CSS: ${icon}`);
 }
 assert.ok(publicHtml.includes("--un-icon:url("), "icon CSS has no emitted mask source");
+
+const port = await new Promise((resolve, reject) => {
+	const server = createServer();
+	server.once("error", reject);
+	server.listen(0, "127.0.0.1", () => {
+		const { port } = server.address();
+		server.close((error) => (error ? reject(error) : resolve(port)));
+	});
+});
+const origin = `http://127.0.0.1:${port}`;
+const state = await mkdtemp(join(tmpdir(), "senshac-pages-routing-"));
+const pages = spawn(
+	"wrangler",
+	[
+		"pages",
+		"dev",
+		"dist",
+		"--ip",
+		"127.0.0.1",
+		"--port",
+		String(port),
+		"--persist-to",
+		state,
+		"--show-interactive-dev-session=false",
+		"--log-level",
+		"error",
+	],
+	{ stdio: "ignore" },
+);
+try {
+	let ready = false;
+	for (let attempt = 0; attempt < 40; attempt++) {
+		if (pages.exitCode !== null) throw new Error("wrangler pages dev exited early");
+		try {
+			await fetch(`${origin}/`, { signal: AbortSignal.timeout(500) });
+			ready = true;
+			break;
+		} catch {
+			await delay(250);
+		}
+	}
+	assert.ok(ready, "wrangler pages dev did not become ready");
+	for (const path of ["admin", "admin/", "es/admin", "es/admin/", "ca/admin", "en/admin"]) {
+		const response = await fetch(`${origin}/${path}`, { redirect: "manual" });
+		assert.equal(response.status, 302, `/${path} did not redirect`);
+		assert.equal(new URL(response.headers.get("location"), origin).href, `${origin}/admin/index.html`);
+	}
+} finally {
+	if (pages.exitCode === null) {
+		pages.kill("SIGTERM");
+		const exited = await Promise.race([
+			once(pages, "exit").then(() => true),
+			delay(2_000).then(() => false),
+		]);
+		if (!exited) {
+			pages.kill("SIGKILL");
+			await once(pages, "exit");
+		}
+	}
+	await rm(state, { recursive: true, force: true });
+}
 
 console.log("admin routing and generated icon CSS: covered");
