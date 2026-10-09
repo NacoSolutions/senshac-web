@@ -1,12 +1,12 @@
 # Senshac Web Audit Constitution
 
-**Status:** Proposed for human ratification (not yet authoritative).
+**Status:** Ratified by the owner.
 
 **Date:** 2026-10-09
 
 This document records the standards referenced by the Senshac Web audit
-mandate. Until a human ratifies this proposal, audits should treat its articles
-as guidance, not as an authoritative basis for findings.
+mandate. The owner has ratified these articles; they are authoritative for
+Senshac Web audits.
 
 ## Article I — Scope and truthful descriptions
 
