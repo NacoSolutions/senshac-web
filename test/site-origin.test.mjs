@@ -59,6 +59,18 @@ test("the production content deployment supplies the approved canonical origin",
 	assert.match(workflow, /PUBLIC_SITE_URL:\s*https:\/\/cutover\.senshac\.com/);
 });
 
+test("build-affecting web pushes deploy through the explicit production workflow", () => {
+	const workflow = readFileSync(
+		new URL("../.github/workflows/deploy-pages-content.yml", import.meta.url),
+		"utf8",
+	);
+	assert.match(workflow, /^on:\s*\n[\s\S]*?^  push:\s*\n    branches:\s*\[main\]/m);
+	assert.match(
+		workflow,
+		/^  push:[\s\S]*?^    paths-ignore:[\s\S]*?^      - \.seeds\/\*\*[\s\S]*?^      - \.mulch\/\*\*[\s\S]*?^      - docs\/\*\*/m,
+	);
+});
+
 test("Astro metadata and generated site URLs share one resolved origin", () => {
 	const astroConfig = readFileSync(
 		new URL("../astro.config.mjs", import.meta.url),
