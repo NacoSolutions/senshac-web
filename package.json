@@ -35,7 +35,7 @@
     "test": "node --test",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:coverage": "bun test src/ scripts/ --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage",
+    "test:coverage": "bun test test/ --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage",
     "check:coverage": "bun run scripts/check-coverage.ts",
     "check:bundle-size": "bun run scripts/check-bundle-size.ts",
     "check:worker-size": "bun run scripts/check-worker-size.ts",
