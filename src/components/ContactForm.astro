@@ -74,28 +74,28 @@ const siteKey =
 		<p class="text-lg font-medium" data-tina-field={tinaField(f, "success")}>{f.success}</p>
 	</div>
 ) : (
-	<div id="contact-form-container">
+	<div id="contact-form-container" class="contact-form">
 		{feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert" data-tina-field={tinaField(f, invalidQuery ? "invalidSelection" : inquiryError ?? "error")}>{feedback}</p>}
 		<h2 class="mb-4 text-2xl font-semibold" data-tina-field={tinaField(inquiry, "heading")}>{inquiry.heading}</h2>
-		<form id="inquiry-selection" class="mt-6 space-y-6" action={`/${lang}/contact`} method="GET">
-			<label class="block text-sm font-medium" for="business-situation" data-tina-field={tinaField(inquiry, "situationLabel")}>
+		<form id="inquiry-selection" class="contact-form__selection mt-6 space-y-6" action={`/${lang}/contact`} method="GET">
+			<label class="contact-form__field text-sm font-medium" for="business-situation" data-tina-field={tinaField(inquiry, "situationLabel")}>
 				{inquiry.situationLabel}
-				<select id="business-situation" name="situation" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
+				<select id="business-situation" name="situation" class="contact-form__control w-full">
 					<option value="" data-tina-field={tinaField(inquiry, "selectPlaceholder")}>{inquiry.selectPlaceholder}</option>
 					{paths.map((path: any, index: number) => (
 						<option value={path.value} selected={path.value === requestedSituation} data-service-ids={JSON.stringify(path.serviceOptions.map((option: any) => option.value))} data-tina-field={tinaField(path, "title")}>{path.title}</option>
 					))}
 				</select>
 			</label>
-			<label class="block text-sm font-medium" for="desired-service" data-tina-field={tinaField(inquiry, "serviceLabel")}>
+			<label class="contact-form__field text-sm font-medium" for="desired-service" data-tina-field={tinaField(inquiry, "serviceLabel")}>
 				{inquiry.serviceLabel}
-				<select id="desired-service" name="service" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
+				<select id="desired-service" name="service" class="contact-form__control w-full">
 					<option value="" data-tina-field={tinaField(inquiry, "selectPlaceholder")}>{inquiry.selectPlaceholder}</option>
 					{services.map((service) => (
 						<option value={service.value} selected={service.value === requestedService} disabled={Boolean(selectedPath && !selectedPath.serviceOptions.some((option: any) => option.value === service.value))} data-descriptions={JSON.stringify(service.descriptions)} data-tina-field={tinaField(service.sourcePath.serviceOptions[service.sourceIndex], "label")}>{service.label}</option>
 					))}
 				</select>
-				<span id="desired-service-description" class="mt-2 block text-gray-600" aria-live="polite" data-tina-field={selectedServiceOption ? tinaField(selectedPath.serviceOptions, selectedServiceOptionIndex) : undefined}>{selectedServiceOption?.description}</span>
+				<span id="desired-service-description" class="contact-form__description mt-2 block text-gray-600" aria-live="polite" data-tina-field={selectedServiceOption ? tinaField(selectedPath.serviceOptions, selectedServiceOptionIndex) : undefined}>{selectedServiceOption?.description}</span>
 			</label>
 			<p id="selection-change-feedback" class="text-sm text-red-800" role="status" hidden data-tina-field={tinaField(f, "invalidSelection")}>{f.invalidSelection}</p>
 			<button type="submit" class="border border-black px-6 py-3 text-sm hover:bg-black hover:text-white" data-tina-field={tinaField(inquiry, "continue")}>{inquiry.continue}</button>
@@ -109,28 +109,28 @@ const siteKey =
 					<input type="hidden" name="desiredService" value={requestedService} />
 					<div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
 					<div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-						<label class="block text-sm" data-tina-field={tinaField(f, "name")}>{f.name} *<input name="name" required maxlength="200" autocomplete="name" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
-						<label class="block text-sm" data-tina-field={tinaField(f, "company")}>{f.company}<input name="company" maxlength="200" autocomplete="organization" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
-						<label class="block text-sm" data-tina-field={tinaField(f, "email")}>{f.email} *<input type="email" name="email" required maxlength="254" autocomplete="email" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
-						<label class="block text-sm" data-tina-field={tinaField(f, "phone")}>{f.phone}<input type="tel" name="phone" maxlength="80" autocomplete="tel" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" /></label>
+						<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "name")}>{f.name} *<input name="name" required maxlength="200" autocomplete="name" class="contact-form__control w-full" /></label>
+						<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "company")}>{f.company}<input name="company" maxlength="200" autocomplete="organization" class="contact-form__control w-full" /></label>
+						<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "email")}>{f.email} *<input type="email" name="email" required maxlength="254" autocomplete="email" class="contact-form__control w-full" /></label>
+						<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "phone")}>{f.phone}<input type="tel" name="phone" maxlength="80" autocomplete="tel" class="contact-form__control w-full" /></label>
 					</div>
 
-					<fieldset class="space-y-6">
+					<fieldset class="contact-form__questions space-y-6">
 						<legend class="mb-2 text-xl font-semibold" data-tina-field={requestedService === "other-challenge" ? tinaField(inquiry.alternate, "title") : tinaField(selectedPath, "title")}>{requestedService === "other-challenge" ? inquiry.alternate.title : selectedPath.title}</legend>
 						{questionFields.map((field: any, fieldIndex: number) => (
-							<label class="block text-sm font-medium" for={`inquiry-${requestedService}-${field.name}`} data-tina-field={tinaField(questionFields, fieldIndex)}>
+							<label class="contact-form__field text-sm font-medium" for={`inquiry-${requestedService}-${field.name}`} data-tina-field={tinaField(questionFields, fieldIndex)}>
 								{field.label}{field.required ? " *" : ""}
 								{field.kind === "select" ? (
-									<select id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3">
+									<select id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} class="contact-form__control w-full">
 										<option value="">—</option>
 										{field.options.map((option: any, optionIndex: number) => <option value={option.value} data-tina-field={tinaField(field.options, optionIndex)}>{option.label}</option>)}
 									</select>
 								) : field.kind === "textarea" ? (
-									<textarea id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} maxlength="4000" rows="4" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3"></textarea>
+									<textarea id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} maxlength="4000" rows="4" class="contact-form__control w-full"></textarea>
 								) : field.kind === "file" ? (
-									<input id={`inquiry-${requestedService}-${field.name}`} type="file" name={field.name} multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" required={field.required} class="mt-2 block w-full border-b border-gray-400 bg-transparent px-2 py-3" />
+									<input id={`inquiry-${requestedService}-${field.name}`} type="file" name={field.name} multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" required={field.required} class="contact-form__control block w-full" />
 								) : (
-									<input id={`inquiry-${requestedService}-${field.name}`} type="text" name={field.name} required={field.required} maxlength="4000" class="mt-2 w-full border-b border-gray-400 bg-transparent px-2 py-3" />
+									<input id={`inquiry-${requestedService}-${field.name}`} type="text" name={field.name} required={field.required} maxlength="4000" class="contact-form__control w-full" />
 								)}
 							</label>
 						))}
@@ -213,3 +213,62 @@ const siteKey =
 		});
 	})();
 </script>
+
+
+<style>
+  .contact-form__field {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.7fr) minmax(0, 1.3fr);
+    align-items: center;
+    column-gap: clamp(1rem, 3vw, 2rem);
+    row-gap: 0.5rem;
+  }
+
+  .contact-form__description {
+    grid-column: 2;
+    margin: 0;
+  }
+
+  .contact-form :global(.contact-form__control) {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 3.25rem;
+    margin: 0;
+    border: 1px solid #777;
+    border-radius: 0.25rem;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .contact-form :global(textarea.contact-form__control) {
+    min-height: 8rem;
+    resize: vertical;
+  }
+
+  .contact-form :global(input[type="file"].contact-form__control) {
+    min-height: auto;
+    padding: 0.75rem;
+  }
+
+  .contact-form :global(.contact-form__control:focus-visible) {
+    border-color: currentColor;
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 47.99rem) {
+    .contact-form__field {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0.5rem;
+    }
+
+    .contact-form__description {
+      grid-column: 1;
+    }
+  }
+</style>
