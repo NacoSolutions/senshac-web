@@ -1,8 +1,11 @@
 ---
 import { tinaField } from "@tinacms/astro/tina-field";
+import { getTranslations } from "../../../utils/translations";
 import RichText from "./RichText.astro";
+import MediaPlaceholder from "./MediaPlaceholder.astro";
 
 interface Item {
+	number?: string;
 	title?: string;
 	text?: any;
 	href?: string;
@@ -10,41 +13,283 @@ interface Item {
 }
 
 interface Props {
+	variant?: "default" | "phase-scroll";
 	title?: string;
 	intro?: any;
 	items?: Item[] | null;
+	mediaId?: string | null;
+	imageAlt?: string;
+	placeholderLabel?: string;
 	tinaData?: any;
 }
 
-const { title, intro, items: itemList, tinaData } = Astro.props;
+const {
+	variant,
+	title,
+	intro,
+	items: itemList,
+	mediaId,
+	imageAlt,
+	placeholderLabel,
+	tinaData,
+} = Astro.props;
 const items = itemList ?? [];
 const itemHeadingLevel = title ? "h3" : "h2";
+const lang = Astro.url.pathname.split("/")[1] || "es";
+const nextSlideLabel =
+	variant === "phase-scroll"
+		? (await getTranslations(lang)).accessibility.nextSlide
+		: "";
 ---
 
-<section class="editorial-section">
-  <div class="editorial-shell">
-    {title && <h2 data-tina-field={tinaField(tinaData, 'title')} class="editorial-heading editorial-heading--compact" x-reveal>{title}</h2>}
-    {intro && (
-      <div data-tina-field={tinaField(tinaData, 'intro')} class="editorial-body max-w-[52rem] mb-[clamp(2.5rem,5vw,5rem)] whitespace-normal">
-        <RichText content={intro} />
+{variant === "phase-scroll" ? (
+  <section class="editorial-section editorial-phase-scroll" aria-labelledby="home-phase-title">
+    <div class="editorial-shell">
+      <div class="editorial-phase-scroll__copy">
+        {title && <h2 id="home-phase-title" data-tina-field={tinaField(tinaData, "title")}>{title}</h2>}
+        {intro && <div data-tina-field={tinaField(tinaData, "intro")}><RichText content={intro} /></div>}
       </div>
-    )}
-    <div class="border-t border-[#111]">
-      {items.map((item, index) => (
-        <article class="grid gap-4 py-6 border-b border-[#111] md:grid-cols-2 md:gap-8 md:py-10">
-          {itemHeadingLevel === "h3" ? (
-            <h3 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class="underline-offset-4 hover:underline">{item.title} <span aria-hidden="true">↗</span></a> : item.title}</h3>
-          ) : (
-            <h2 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class="underline-offset-4 hover:underline">{item.title} <span aria-hidden="true">↗</span></a> : item.title}</h2>
-          )}
-          <div>
-            <div data-tina-field={tinaField(tinaData.items[index], 'text')} class="[&>p]:m-0 [&>p]:text-base [&>p]:leading-[1.45]"><RichText content={item.text} /></div>
-            {item.ctaText && item.href && (
-              <a data-tina-field={tinaField(tinaData.items[index], 'ctaText')} href={item.href} class="editorial-link mt-6 inline-flex">{item.ctaText}</a>
-            )}
+      <div class="editorial-phase-scroll__layout">
+        <div class="editorial-phase-scroll__image">
+          <MediaPlaceholder
+            mediaId={mediaId}
+            alt={imageAlt}
+            label={placeholderLabel}
+            aspect="landscape"
+            mediaSlot="content"
+            fieldMarker={tinaField(tinaData, "mediaId")}
+          />
+        </div>
+        <div
+          class="editorial-phase-scroll__carousel"
+          data-phase-scroll
+          x-data={`{
+            canAdvance: true,
+            updateScrollState() {
+              const track = this.$refs.track;
+              this.canAdvance = track.scrollLeft + track.clientWidth < track.scrollWidth - 1;
+            },
+            advance() {
+              const track = this.$refs.track;
+              const trackBounds = track.getBoundingClientRect();
+              const nextCard = Array.from(track.querySelectorAll("[data-phase-card]")).find(
+                (card) => card.getBoundingClientRect().right > trackBounds.right + 1,
+              );
+              if (!nextCard) return;
+              const left = track.scrollLeft + nextCard.getBoundingClientRect().left - trackBounds.left;
+              const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+              track.scrollTo({ left, behavior });
+            },
+          }`}
+          x-init="updateScrollState()"
+        >
+          <div
+            class="editorial-phase-scroll__track"
+            data-phase-track
+            role="region"
+            aria-label={title || nextSlideLabel}
+            tabindex="0"
+            x-ref="track"
+            x-on:scroll.debounce.100ms="updateScrollState()"
+          >
+            {items.map((item, index) => (
+              <article class="editorial-phase-scroll__card" data-phase-card>
+                <span data-tina-field={tinaField(tinaData.items[index], "number")} class="editorial-phase-scroll__number">{item.number ?? String(index + 1).padStart(2, "0")}</span>
+                <h3 data-tina-field={tinaField(tinaData.items[index], "title")}>{item.title}</h3>
+                <div data-tina-field={tinaField(tinaData.items[index], "text")} class="editorial-phase-scroll__text"><RichText content={item.text} /></div>
+              </article>
+            ))}
           </div>
-        </article>
-      ))}
+          <button
+            type="button"
+            class="editorial-phase-scroll__next"
+            aria-label={nextSlideLabel}
+            x-bind:disabled="!canAdvance"
+            x-on:click="advance()"
+          >→</button>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
+) : (
+  <section class="editorial-section">
+    <div class="editorial-shell">
+      {title && <h2 data-tina-field={tinaField(tinaData, 'title')} class="editorial-heading editorial-heading--compact" x-reveal>{title}</h2>}
+      {intro && (
+        <div data-tina-field={tinaField(tinaData, 'intro')} class="editorial-body max-w-[52rem] mb-[clamp(2.5rem,5vw,5rem)] whitespace-normal">
+          <RichText content={intro} />
+        </div>
+      )}
+      <div class="border-t border-[#111]">
+        {items.map((item, index) => (
+          <article class="grid gap-4 py-6 border-b border-[#111] md:grid-cols-2 md:gap-8 md:py-10">
+            {itemHeadingLevel === "h3" ? (
+              <h3 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class="underline-offset-4 hover:underline">{item.title} <span aria-hidden="true">↗</span></a> : item.title}</h3>
+            ) : (
+              <h2 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class="underline-offset-4 hover:underline">{item.title} <span aria-hidden="true">↗</span></a> : item.title}</h2>
+            )}
+            <div>
+              <div data-tina-field={tinaField(tinaData.items[index], 'text')} class="[&>p]:m-0 [&>p]:text-base [&>p]:leading-[1.45]"><RichText content={item.text} /></div>
+              {item.ctaText && item.href && (
+                <a data-tina-field={tinaField(tinaData.items[index], 'ctaText')} href={item.href} class="editorial-link mt-6 inline-flex">{item.ctaText}</a>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .editorial-phase-scroll__copy {
+    max-width: 52rem;
+    margin: 0 0 clamp(2rem, 4vw, 3.25rem) auto;
+  }
+
+  .editorial-phase-scroll__copy :global(h2) {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.25rem, 1.8vw, 1.75rem);
+    font-weight: 400;
+    line-height: 1.35;
+  }
+
+  .editorial-phase-scroll__copy :global(p) {
+    margin: 0;
+    font-size: clamp(1rem, 1.2vw, 1.125rem);
+    line-height: 1.45;
+  }
+
+  .editorial-phase-scroll__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.85fr);
+    gap: clamp(1.5rem, 3vw, 3rem);
+    border-block: 1px solid #111;
+  }
+
+  .editorial-phase-scroll__image {
+    align-self: stretch;
+    padding: 1.25rem 0;
+  }
+
+  .editorial-phase-scroll__image :global(> div) {
+    height: 100%;
+    min-height: 18rem;
+  }
+
+  .editorial-phase-scroll__carousel {
+    position: relative;
+    min-width: 0;
+    padding: 1.25rem 0;
+  }
+
+  .editorial-phase-scroll__track {
+    display: flex;
+    gap: clamp(1.5rem, 3vw, 3rem);
+    overflow-x: auto;
+    width: calc(100% - 3.5rem);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .editorial-phase-scroll__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .editorial-phase-scroll__track:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  .editorial-phase-scroll__card {
+    flex: 0 0 85%;
+    min-width: 0;
+    padding: 0.25rem 0;
+    scroll-snap-align: start;
+  }
+
+  .editorial-phase-scroll__number {
+    display: block;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 300;
+    line-height: 0.9;
+  }
+
+  .editorial-phase-scroll__card h3 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.2rem, 1.6vw, 1.6rem);
+    font-weight: 500;
+    line-height: 1.15;
+  }
+
+  .editorial-phase-scroll__text {
+    max-width: 20rem;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .editorial-phase-scroll__text :global(p) {
+    margin: 0;
+  }
+
+  .editorial-phase-scroll__next {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    right: 0;
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    place-items: center;
+    transform: translateY(-50%);
+    border: 0;
+    background: white;
+    color: #111;
+    font-size: 2.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .editorial-phase-scroll__next:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+
+  .editorial-phase-scroll__next:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  @media (min-width: 768px) {
+    .editorial-phase-scroll__card {
+      flex-basis: calc(50% - 1.5rem);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .editorial-phase-scroll__layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .editorial-phase-scroll__image {
+      padding: 1rem 0;
+    }
+
+    .editorial-phase-scroll__image :global(> div) {
+      height: auto;
+      min-height: 18rem;
+    }
+
+    .editorial-phase-scroll__carousel {
+      padding-top: 0.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .editorial-phase-scroll__track {
+      scroll-behavior: auto;
+    }
+  }
+</style>

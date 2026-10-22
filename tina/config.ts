@@ -334,6 +334,10 @@ const editorialRowsBlock: TinaField = {
 	label: "List",
 	type: "object",
 	fields: [
+		{ name: "variant", label: "Layout variant", type: "string", options: ["default", "phase-scroll"] },
+		{ name: "mediaId", label: "Anchor image (R2 media ID)", type: "image" },
+		{ name: "imageAlt", label: "Anchor image alt text", type: "string" },
+		{ name: "placeholderLabel", label: "Anchor image placeholder", type: "string" },
 		{
 			name: "title",
 			label: "Title",
@@ -348,6 +352,7 @@ const editorialRowsBlock: TinaField = {
 			list: true,
 			ui: { itemProps: (item) => ({ label: item?.title }) },
 			fields: [
+				{ name: "number", label: "Number", type: "string" },
 				{ name: "title", label: "Title", type: "string" },
 				{ name: "text", label: "Text", type: "rich-text" },
 				{ name: "href", label: "Optional Link", type: "string" },
