@@ -21,7 +21,7 @@ const { label, content, statement, mediaId, imageAlt, placeholderLabel } =
       <MediaPlaceholder mediaId={mediaId} alt={imageAlt} label={placeholderLabel} aspect="portrait" mediaSlot="grid" />
     </div>
     <div class="grid gap-8 max-w-[42rem]">
-      <h1 class="editorial-eyebrow">{label}</h1>
+      <h1 class="editorial-heading editorial-heading--page max-w-[14ch] studio-intro__title">{label}</h1>
       <div class="editorial-body whitespace-normal columns-1 gap-10 md:columns-2">
         <RichText content={content} />
       </div>
@@ -34,3 +34,10 @@ const { label, content, statement, mediaId, imageAlt, placeholderLabel } =
     <h2 class="editorial-display max-w-[20ch]" x-reveal>{statement}</h2>
   </div>
 </section>
+
+
+<style>
+  h1.studio-intro__title {
+    margin: 0;
+  }
+</style>
