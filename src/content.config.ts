@@ -80,7 +80,7 @@ const blockFields: Record<(typeof blockNames)[number], readonly string[]> = {
 		"placeholderLabel",
 		"objectFit",
 	],
-	list: ["title", "intro", "items"],
+	list: ["title", "intro", "variant", "mediaId", "imageAlt", "placeholderLabel", "items"],
 	media: ["variant", "mediaId", "alt"],
 	showcase: [
 		"eyebrow",
@@ -125,7 +125,7 @@ const contentBlock = z
 			for (const [index, item] of block.items.entries()) {
 				if (item && typeof item === "object") {
 					for (const key of Object.keys(item)) {
-						if (!["title", "text", "href", "ctaText"].includes(key)) {
+						if (!["number", "title", "text", "href", "ctaText"].includes(key)) {
 							context.addIssue({
 								code: "custom",
 								path: ["items", index, key],
@@ -215,7 +215,9 @@ const contentBlock = z
 				? ["banner", "full"]
 				: block._template === "text"
 					? ["brief", "concept", "strategy"]
-					: undefined;
+					: block._template === "list"
+						? ["default", "phase-scroll"]
+						: undefined;
 		if (
 			block._template === "media" &&
 			!variants?.includes(block.variant ?? "")
@@ -235,6 +237,17 @@ const contentBlock = z
 				code: "custom",
 				path: ["variant"],
 				message: "text variant must be brief, concept, or strategy",
+			});
+		}
+		if (
+			block._template === "list" &&
+			block.variant &&
+			!variants?.includes(block.variant)
+		) {
+			context.addIssue({
+				code: "custom",
+				path: ["variant"],
+				message: "list variant must be default or phase-scroll",
 			});
 		}
 		if (!variants && block.variant) {

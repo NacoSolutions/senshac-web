@@ -147,7 +147,7 @@ test("list action labels are editable links admitted by the strict schema", asyn
 	assert.match(rows, /href=\{item\.href\}/);
 	assert.match(
 		contentSchema,
-		/\["title",\s*"text",\s*"href",\s*"ctaText"\]\.includes\(key\)/,
+		/\["number",\s*"title",\s*"text",\s*"href",\s*"ctaText"\]\.includes\(key\)/,
 	);
 	assert.match(tinaSchema, /name: "ctaText", label: "Action Text"/);
 });

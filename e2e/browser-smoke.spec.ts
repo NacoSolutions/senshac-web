@@ -41,6 +41,57 @@ test.describe("Senshac browser smoke contract", () => {
 		expect(await page.locator("footer").count()).toBeGreaterThan(0);
 	});
 
+	test("editorial navigation and grids adapt to desktop and mobile", async ({ page }) => {
+		const headerNav = page.locator("header nav > ul");
+		const menuButton = page.locator('button[aria-controls="mobile-menu"]');
+		const mobileMenu = page.locator("#mobile-menu");
+		const footerGrid = page.locator("footer .grid").first();
+		const worksGrid = page.locator(".works-index__list");
+
+		await page.setViewportSize({ width: 1280, height: 800 });
+		await page.goto("/es/works/");
+		await expect(headerNav).toBeVisible();
+		await expect(headerNav.getByRole("link", { name: "Conócenos" })).toBeVisible();
+		await expect(menuButton).toBeHidden();
+		await expect
+			.poll(() =>
+				footerGrid.evaluate((element) =>
+					getComputedStyle(element).gridTemplateColumns.split(" ").length,
+				),
+			)
+			.toBe(4);
+		await expect
+			.poll(() =>
+				worksGrid.evaluate((element) =>
+					getComputedStyle(element).gridTemplateColumns.split(" ").length,
+				),
+			)
+			.toBe(2);
+
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expect(headerNav).toBeHidden();
+		await expect(menuButton).toBeVisible();
+		await expect
+			.poll(() =>
+				footerGrid.evaluate((element) =>
+					getComputedStyle(element).gridTemplateColumns.split(" ").length,
+				),
+			)
+			.toBe(1);
+		await expect
+			.poll(() =>
+				worksGrid.evaluate((element) =>
+					getComputedStyle(element).gridTemplateColumns.split(" ").length,
+				),
+			)
+			.toBe(1);
+
+		await menuButton.click();
+		await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+		await expect(mobileMenu).toBeVisible();
+		await expect(mobileMenu.getByRole("link", { name: "Proyectos" })).toBeVisible();
+	});
+
 	test("keeps the Tina admin entry point available", async ({ page }) => {
 		const redirect = await page.request.get("/admin", { maxRedirects: 0 });
 		expect(redirect.status()).toBe(302);
@@ -62,4 +113,54 @@ test.describe("Senshac browser smoke contract", () => {
 		});
 		expect(preview.status()).toBe(404);
 	});
+	test("Home phase cards scroll on desktop and remain touch-scrollable on mobile", async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 800 });
+		await expectPage(page, "/es/");
+		const phase = page.locator("[data-phase-scroll]");
+		const track = phase.locator("[data-phase-track]");
+		await expect(phase.locator("[data-phase-card]")).toHaveCount(5);
+		await expect(track).toHaveAttribute("tabindex", "0");
+		const desktopOverflow = await track.evaluate(
+			(element) => element.scrollWidth - element.clientWidth,
+		);
+		expect(desktopOverflow).toBeGreaterThan(0);
+
+		const next = phase.getByRole("button", { name: "Siguiente diapositiva" });
+		await expect(next).toBeEnabled();
+		await next.click();
+		await expect
+			.poll(() => track.evaluate((element) => element.scrollLeft))
+			.toBeGreaterThan(0);
+		const thirdCard = phase.locator("[data-phase-card]").nth(2);
+		await expect
+			.poll(() => thirdCard.evaluate((card) => {
+				const rail = card.closest("[data-phase-track]");
+				if (!rail) return false;
+				const cardBounds = card.getBoundingClientRect();
+				const railBounds = rail.getBoundingClientRect();
+				return cardBounds.left >= railBounds.left - 1 && cardBounds.right <= railBounds.right + 1;
+			}))
+			.toBe(true);
+		await expect(next).toBeEnabled();
+		await next.click();
+		const fifthCard = phase.locator("[data-phase-card]").nth(4);
+		await expect
+			.poll(() => fifthCard.evaluate((card) => {
+				const rail = card.closest("[data-phase-track]");
+				if (!rail) return false;
+				const cardBounds = card.getBoundingClientRect();
+				const railBounds = rail.getBoundingClientRect();
+				return cardBounds.left >= railBounds.left - 1 && cardBounds.right <= railBounds.right + 1;
+			}))
+			.toBe(true);
+		await expect(next).toBeDisabled();
+
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.reload();
+		const mobileOverflow = await track.evaluate(
+			(element) => element.scrollWidth - element.clientWidth,
+		);
+		expect(mobileOverflow).toBeGreaterThan(0);
+	});
+
 });
