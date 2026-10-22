@@ -13,3 +13,10 @@ test("media-only showcase items retain fallbacks without empty hash links or tit
 	assert.match(showcase, /\{item\.title\s*&&/);
 	assert.match(showcase, /label=\{item\.placeholderLabel\}/);
 });
+
+test("project carousel slides have small semantic title headings", () => {
+	assert.match(
+		showcase,
+		/<h3 class="m-0 text-sm md:text-lg font-medium tracking-wide text-white">\{slide\.title\}<\/h3>/,
+	);
+});

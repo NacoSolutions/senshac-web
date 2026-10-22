@@ -21,10 +21,16 @@ test("home inquiry links open the matching qualification path", async ({
 	);
 });
 
-test("homepage banner exposes Tina metadata for the slogan line", async ({
-	page,
-}) => {
+test("homepage studio mark exposes Tina metadata", async ({ page }) => {
 	await page.goto("/es/");
+	const eyebrow = page.getByText("interior design studio®", { exact: true });
+	if (await eyebrow.count()) {
+		await expect(eyebrow).toHaveAttribute(
+			"data-tina-field",
+			/---home\.blocks\.\d+\.eyebrow$/,
+		);
+		return;
+	}
 	await expect(page.getByText("interior", { exact: true })).toHaveAttribute(
 		"data-tina-field",
 		/---home\.blocks\.\d+\.topRight\.lines\.0$/,

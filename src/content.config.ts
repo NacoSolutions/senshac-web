@@ -66,7 +66,7 @@ const blockFields: Record<(typeof blockNames)[number], readonly string[]> = {
 		"location",
 		"locationLabel",
 	],
-	feed: ["title", "description", "tag", "limit", "maxVisible"],
+	feed: ["title", "description", "tag", "limit", "maxVisible", "disableLinks"],
 	form: ["heading", "subheading", "mediaId"],
 	gallery: ["cols", "images"],
 	hero: [
@@ -120,6 +120,17 @@ const contentBlock = z
 					message: `unsupported ${block._template} field ${field}`,
 				});
 			}
+		}
+		if (
+			block._template === "feed" &&
+			block.disableLinks !== undefined &&
+			typeof block.disableLinks !== "boolean"
+		) {
+			context.addIssue({
+				code: "custom",
+				path: ["disableLinks"],
+				message: "feed disableLinks must be a boolean",
+			});
 		}
 		if (block._template === "list" && Array.isArray(block.items)) {
 			for (const [index, item] of block.items.entries()) {
