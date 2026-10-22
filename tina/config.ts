@@ -481,6 +481,12 @@ const editorialInstagramBlock: TinaField = {
 			description:
 				"Show up to this many posts at once (e.g. 4). If more are available, a horizontal carousel is created.",
 		},
+		{
+			name: "disableLinks",
+			label: "Disable Instagram Links",
+			type: "boolean",
+			description: "Keep post media visible without post or profile links.",
+		},
 	],
 };
 

@@ -8,10 +8,11 @@ interface Props {
 	tag?: string;
 	limit?: number;
 	maxVisible?: number;
+	disableLinks?: boolean;
 	tinaData?: any;
 }
 
-const { title = "Instagram", description, tag, tinaData } = Astro.props;
+const { title = "Instagram", description, tag, disableLinks = false, tinaData } = Astro.props;
 
 const limit = Astro.props.limit || 12;
 const maxVisible = Astro.props.maxVisible || 4;
@@ -131,9 +132,11 @@ const carouselSlides = (urls: string[]) =>
               loading="lazy"
             />
           )}
-            <a href={post.permalink} target="_blank" rel="noopener noreferrer" class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10" aria-label={post.caption?.slice(0, 50) || "Instagram post"}>
-              <span class="i-lucide-instagram text-white w-8 h-8" />
-            </a>
+            {!disableLinks && (
+              <a href={post.permalink} target="_blank" rel="noopener noreferrer" class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10" aria-label={post.caption?.slice(0, 50) || "Instagram post"}>
+                <span class="i-lucide-instagram text-white w-8 h-8" />
+              </a>
+            )}
             {post.media_type === 'CAROUSEL_ALBUM' && (
               <button
                 class="absolute bottom-4 right-4 z-20 text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-black/50 hover:bg-black/70 rounded-full"
@@ -157,11 +160,13 @@ const carouselSlides = (urls: string[]) =>
       ))}
     </div>
 
-    <div class="mt-8 text-center">
-      <a href="https://instagram.com/senshac" target="_blank" rel="noopener noreferrer" class="editorial-link mt-0 text-sm tracking-wider">
-        SÍGUENOS EN INSTAGRAM
-      </a>
-    </div>
+    {!disableLinks && (
+      <div class="mt-8 text-center">
+        <a href="https://instagram.com/senshac" target="_blank" rel="noopener noreferrer" class="editorial-link mt-0 text-sm tracking-wider">
+          SÍGUENOS EN INSTAGRAM
+        </a>
+      </div>
+    )}
   </section>
 
   <script>

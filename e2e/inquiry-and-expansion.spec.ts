@@ -21,14 +21,13 @@ test("home inquiry links open the matching qualification path", async ({
 	);
 });
 
-test("homepage banner exposes Tina metadata for the slogan line", async ({
+test("homepage project carousel exposes Tina metadata for its studio eyebrow", async ({
 	page,
 }) => {
 	await page.goto("/es/");
-	await expect(page.getByText("interior", { exact: true })).toHaveAttribute(
-		"data-tina-field",
-		/---home\.blocks\.\d+\.topRight\.lines\.0$/,
-	);
+	await expect(
+		page.getByText("interior design studio®", { exact: true }),
+	).toHaveAttribute("data-tina-field", /---home\.blocks\.\d+\.eyebrow$/);
 });
 
 test("legacy and incompatible inquiry URLs fail visibly instead of falling back", async ({
