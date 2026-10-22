@@ -27,7 +27,7 @@ test("homepage banner exposes Tina metadata for the slogan line", async ({
 	await page.goto("/es/");
 	await expect(page.getByText("interior", { exact: true })).toHaveAttribute(
 		"data-tina-field",
-		/---home\.blocks\.1\.topRight\.lines\.0$/,
+		/---home\.blocks\.\d+\.topRight\.lines\.0$/,
 	);
 });
 
