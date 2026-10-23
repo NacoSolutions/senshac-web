@@ -395,6 +395,8 @@ const editorialShowcaseBlock: TinaField = {
 		{ name: "placeholderLabel", label: "Placeholder Label", type: "string" },
 		{ name: "ctaText", label: "Link Text", type: "string" },
 		{ name: "ctaLink", label: "Link URL", type: "string" },
+		{ name: "limit", label: "Project Limit (1–3)", type: "number" },
+		{ name: "maxVisible", label: "Visible Projects (1–3)", type: "number" },
 		{
 			name: "items",
 			label: "Work Items",

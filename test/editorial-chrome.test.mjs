@@ -12,7 +12,7 @@ const footer = await readFile(
 );
 
 test("header has localized desktop navigation and an accessible mobile menu control", () => {
-	assert.match(header, /<ul class="hidden list-none items-center gap-6 p-0 lg:flex"/);
+	assert.match(header, /<ul class="hidden list-none items-center gap-10 xl:gap-12 p-0 lg:flex"/);
 	assert.match(header, /navItems\.map/);
 	assert.match(header, /data-tina-field=\{t\.nav\.links\?\.\[index\]/);
 	assert.match(
