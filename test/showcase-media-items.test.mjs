@@ -7,16 +7,21 @@ const showcase = await readFile(
 	"utf8",
 );
 
-test("media-only showcase items retain fallbacks without empty hash links or titles", () => {
+test("showcase item placeholders remain non-linked and linked items retain their routes", () => {
 	assert.doesNotMatch(showcase, /href=\{item\.link\s*\|\|\s*['"]#['"]\}/);
+	assert.match(showcase, /item\.link\s*\?/);
 	assert.match(showcase, /href=\{item\.link\}/);
-	assert.match(showcase, /\{item\.title\s*&&/);
 	assert.match(showcase, /label=\{item\.placeholderLabel\}/);
 });
 
-test("project carousel slides have small semantic title headings", () => {
-	assert.match(
-		showcase,
-		/<h3 class="m-0 text-sm md:text-lg font-medium tracking-wide text-white">\{slide\.title\}<\/h3>/,
-	);
+test("project showcases cap content and use responsive multi-card scroll snapping", () => {
+	assert.match(showcase, /limit\?: number/);
+	assert.match(showcase, /maxVisible\?: number/);
+	assert.match(showcase, /sorted\.slice\(0,\s*limit\s*\?\?\s*sorted\.length\)/);
+	assert.match(showcase, /data-project-carousel/);
+	assert.match(showcase, /data-visible-items=\{visibleProjectCount\}/);
+	assert.match(showcase, /scroll-snap-type:\s*x mandatory/);
+	assert.match(showcase, /slide\.category/);
+	assert.match(showcase, /<h3[^>]*>\{slide\.title\}<\/h3>/);
+	assert.doesNotMatch(showcase, /x-data="carousel"/);
 });

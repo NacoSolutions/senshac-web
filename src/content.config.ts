@@ -91,6 +91,8 @@ const blockFields: Record<(typeof blockNames)[number], readonly string[]> = {
 		"placeholderLabel",
 		"ctaText",
 		"ctaLink",
+		"limit",
+		"maxVisible",
 		"items",
 	],
 	statement: [
@@ -131,6 +133,24 @@ const contentBlock = z
 				path: ["disableLinks"],
 				message: "feed disableLinks must be a boolean",
 			});
+		}
+		if (block._template === "showcase") {
+			for (const field of ["limit", "maxVisible"] as const) {
+				const value = (block as Record<string, unknown>)[field];
+				if (
+					value !== undefined &&
+					(typeof value !== "number" ||
+						!Number.isInteger(value) ||
+						value < 1 ||
+						value > 3)
+				) {
+					context.addIssue({
+						code: "custom",
+						path: [field],
+						message: `showcase ${field} must be an integer between 1 and 3`,
+					});
+				}
+			}
 		}
 		if (block._template === "list" && Array.isArray(block.items)) {
 			for (const [index, item] of block.items.entries()) {
