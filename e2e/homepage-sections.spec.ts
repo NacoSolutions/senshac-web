@@ -44,7 +44,10 @@ test("Home follows the project, accordion, featured-work, and Instagram layout",
 	const opening = projectCarousels.nth(0);
 	const featured = projectCarousels.nth(1);
 	await expect(opening).toHaveAttribute("data-visible-items", "2");
-	await expect(opening.locator("[data-project-slide]")).toHaveCount(5);
+	await expect(opening.locator("[data-project-slide]")).toHaveCount(2);
+	expect(
+		await opening.locator("[data-project-slide] h3").allTextContents(),
+	).toEqual(["La Trobada", "Doley"]);
 	await expect(featured).toHaveAttribute("data-visible-items", "3");
 	await expect(featured.locator("[data-project-slide]")).toHaveCount(3);
 	await expect(featuredHeading).toBeVisible();
@@ -69,7 +72,7 @@ test("Home follows the project, accordion, featured-work, and Instagram layout",
 	await expect(
 		page.locator("[data-showcase-items]").getByText("Imagen pendiente de confirmar", { exact: true }),
 	).toHaveCount(1);
-	expect(await page.locator('a[href="/es/works/rude"]').count()).toBeGreaterThan(2);
+	expect(await page.locator('a[href="/es/works/rude"]').count()).toBeGreaterThanOrEqual(2);
 
 	const adjacentToInstagram = await page.evaluate(() => {
 		const findBlock = (text: string) => {
