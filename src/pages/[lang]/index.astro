@@ -55,10 +55,50 @@ const site = await getSiteConfig();
     params={{ relativePath: `${lang}/home.json` }}
     primary
   >
-    <main id="main">
+    <main id="main" class="home-page">
       {blocks && blocks.map((block: any, index: number) => (
         <BlocksRenderer block={block} index={index} parentData={home} />
       ))}
     </main>
   </TinaIsland>
+  <style is:global>
+    @media (min-width: 768px) {
+      .home-page .editorial-shell { width: 88vw; max-width: none; }
+      .home-page > [data-block-template="hero"] .home-hero__copy { width: 59%; max-width: none; margin-left: 41%; text-align: left; }
+      .home-page > [data-block-template="hero"] .home-hero__title { max-width: 24ch; margin: 0; font-size: 30px; }
+      .home-page > [data-block-template="hero"] .home-hero__intro { margin-left: 0; font-size: 18px; }
+      .home-page > [data-block-template="hero"] .home-hero__cta { display: flex; width: max-content; margin-left: auto; }
+      .home-page > [data-block-template="text"] .editorial-shell { display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); column-gap: 0; }
+      .home-page > [data-block-template="text"] .editorial-shell > * { grid-column: 3; }
+      .home-page > [data-block-template="text"] .editorial-heading { font-size: 30px; }
+      .home-page > [data-block-template="text"] .editorial-body { font-size: 18px; }
+      .home-page > [data-block-template="showcase"] .editorial-shell { display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); column-gap: 0; }
+      .home-page > [data-block-template="showcase"] .editorial-shell > :not(.showcase-project-carousel) { grid-column: 3; }
+      .home-page > [data-block-template="showcase"]:nth-child(7) .editorial-shell > [data-tina-field] { grid-column: 1 / -1; }
+      .home-page > [data-block-template="showcase"] .showcase-project-carousel { grid-column: 1 / -1; width: 100vw; margin-left: calc((88vw - 100vw) / 2); }
+      .home-page > [data-block-template="showcase"] .showcase-project-carousel__track { gap: 0 !important; }
+      .home-page > [data-block-template="showcase"] .showcase-project-carousel__slide { flex: 0 0 42vw !important; }
+      .home-page > [data-block-template="showcase"] .showcase-project-carousel__slide:nth-child(2) { flex-basis: 58vw !important; }
+      .home-page > [data-block-template="accordion"] .editorial-shell { display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); column-gap: 0; }
+      .home-page > [data-block-template="accordion"] .editorial-shell > * { grid-column: 3; }
+      .home-page > [data-block-template="accordion"] .editorial-lede { font-size: 18px; }
+      .home-page > [data-block-template="accordion"] details > summary > span:nth-child(2) { font-size: 22px; }
+      .home-page > [data-block-template="accordion"] details > div { padding-left: 0; font-size: 18px; }
+      .home-page > [data-block-template="list"] .editorial-shell { display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); column-gap: 0; }
+      .home-page > [data-block-template="list"] .editorial-heading,
+      .home-page > [data-block-template="list"] .editorial-shell > .border-t { grid-column: 3; }
+      .home-page > [data-block-template="list"] .editorial-heading { font-size: 29px; }
+      .home-page > [data-block-template="list"] .editorial-phase-scroll__copy { grid-column: 3; font-size: 18px; }
+      .home-page > [data-block-template="list"] .editorial-phase-scroll__copy h2 { font-size: 30px; }
+      .home-page > [data-block-template="list"] .editorial-phase-scroll__layout { grid-column: 1 / -1; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); gap: 0 !important; border: 0; }
+      .home-page > [data-block-template="list"] .editorial-phase-scroll__image { grid-column: 1; }
+      .home-page > [data-block-template="list"] .editorial-phase-scroll__carousel { grid-column: 3; }
+      .home-page > [data-block-template="list"]:nth-child(9) .editorial-heading { grid-column: 1; }
+      .home-page > [data-block-template="list"] .editorial-phase-scroll__number { font-size: 38px; }
+      .home-page > [data-block-template="list"] .editorial-phase-scroll__card h3 { font-size: 22px !important; }
+      .home-page > [data-block-template="list"] .editorial-phase-scroll__text { font-size: 18px; }
+      .home-page > [data-block-template="feed"] section { width: 88vw; max-width: none; margin-inline: auto; padding-inline: 0; }
+      .home-page > [data-block-template="feed"] h2 { font-size: 18px; }
+    }
+  </style>
 </Base>

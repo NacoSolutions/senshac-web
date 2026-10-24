@@ -65,7 +65,7 @@ function mediaId(value?: string | null) {
 }
 ---
 
-<div data-tina-field={tinaField(block)}>
+<div data-tina-field={tinaField(block)} data-block-template={template}>
   {template === 'banner' && <EditorialBanner {...block} tinaData={block} eager={index === 0} />}
   {template === 'hero' && <EditorialHero {...block} tinaData={block} eager={index === 0} />}
   {template === 'text' && !['brief', 'concept', 'strategy'].includes(block.variant) && <EditorialCopy {...block} tinaData={block} />}
