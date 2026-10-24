@@ -1,23 +1,34 @@
 import { expect, test } from "@playwright/test";
 import type { Locator } from "@playwright/test";
 
-test("Home follows the project, accordion, featured-work, and Instagram layout", async ({ page }) => {
+test("Home follows the PDF order and ends with an unlinked featured Instagram feed", async ({ page }) => {
 	const response = await page.goto("/es/", { waitUntil: "domcontentloaded" });
 	expect(response?.status()).toBe(200);
 
-	const projectCarousels = page.locator("[data-project-carousel]");
-	const featuredHeading = page.getByRole("heading", {
-		name: "PROYECTOS DESTACADOS",
-		exact: true,
-	});
+	const renderedBlockIndexes = await page.evaluate(() =>
+		[...document.querySelectorAll("[data-tina-field]")]
+			.map((element) => element.getAttribute("data-tina-field")?.match(/home\.blocks\.(\d+)$/)?.[1])
+			.filter((index) => index !== undefined),
+	);
 	const instagramHeading = page.getByRole("heading", {
 		name: "Instagram",
 		exact: true,
 	});
 	test.skip(
-		(await projectCarousels.count()) < 2 || (await instagramHeading.count()) === 0,
-		"paired content revision is not present in web CI",
+		renderedBlockIndexes.length === 11 && (await instagramHeading.count()) > 0,
+		"paired homepage content revision is not present in web CI",
 	);
+	expect(renderedBlockIndexes).toEqual(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
+
+	const blockIndex = (locator: Locator) =>
+		locator.evaluate((element) => {
+			const block = [...document.querySelectorAll("[data-tina-field]")].find((candidate) =>
+				/home\.blocks\.\d+$/.test(candidate.getAttribute("data-tina-field") ?? "") &&
+				candidate.contains(element),
+			);
+			const match = block?.getAttribute("data-tina-field")?.match(/home\.blocks\.(\d+)$/);
+			return match ? Number(match[1]) : -1;
+		});
 
 	const hero = await page.locator(".home-hero").evaluate((element) => {
 		const intro = element.querySelector(".home-hero__intro");
@@ -41,16 +52,18 @@ test("Home follows the project, accordion, featured-work, and Instagram layout",
 	expect(hero?.textAlign).toBe("right");
 	expect(hero?.copyStartsOnRight).toBe(true);
 
-	const opening = projectCarousels.nth(0);
-	const featured = projectCarousels.nth(1);
+	const headline = page.getByRole("heading", {
+		name: "Si tu producto o servicio te hace diferente, tu espacio tiene que demostrarlo.",
+		exact: true,
+	});
+	const projectCarousels = page.locator("[data-project-carousel]");
+	await expect(projectCarousels).toHaveCount(1);
+	const opening = projectCarousels.first();
 	await expect(opening).toHaveAttribute("data-visible-items", "2");
 	await expect(opening.locator("[data-project-slide]")).toHaveCount(2);
 	expect(
 		await opening.locator("[data-project-slide] h3").allTextContents(),
 	).toEqual(["La Trobada", "Doley"]);
-	await expect(featured).toHaveAttribute("data-visible-items", "3");
-	await expect(featured.locator("[data-project-slide]")).toHaveCount(3);
-	await expect(featuredHeading).toBeVisible();
 
 	const fullyVisibleCount = async (carousel: Locator) =>
 		carousel.locator("[data-project-carousel-track]").evaluate((track: HTMLElement) => {
@@ -61,29 +74,30 @@ test("Home follows the project, accordion, featured-work, and Instagram layout",
 			}).length;
 		});
 	expect(await fullyVisibleCount(opening)).toBe(2);
-	expect(await fullyVisibleCount(featured)).toBe(3);
 
-	expect(
-		await featured.locator("[data-project-slide] h3").allTextContents(),
-	).toEqual(["La Trobada", "Doley", "Rude"]);
-	await expect(
-		page.locator('[data-showcase-items] a[href="/es/works/rude"]'),
-	).toHaveCount(1);
+	const bodyCopy = page
+		.locator(".editorial-body")
+		.filter({ hasText: "Diseñamos interiores con lenguaje visual propio" });
+	const rudeLink = page.locator('[data-showcase-items] a[href="/es/works/rude"]');
+	await expect(rudeLink).toHaveCount(1);
 	await expect(
 		page.locator("[data-showcase-items]").getByText("Imagen pendiente de confirmar", { exact: true }),
 	).toHaveCount(1);
-	expect(await page.locator('a[href="/es/works/rude"]').count()).toBeGreaterThanOrEqual(2);
+	expect(await page.locator('a[href="/es/works/rude"]').count()).toBe(1);
+	await expect(page.getByRole("heading", { name: "¿Qué puede hacer el diseño por tu negocio?" })).toBeVisible();
 
-	const adjacentToInstagram = await page.evaluate(() => {
-		const findBlock = (text: string) => {
-			const heading = [...document.querySelectorAll("h1, h2, h3, h4, h5, h6")].find(
-				(element) => element.textContent?.trim() === text,
-			);
-			return heading?.closest("div[data-tina-field]");
-		};
-		return findBlock("PROYECTOS DESTACADOS")?.nextElementSibling === findBlock("Instagram");
+	expect(await blockIndex(headline)).toBe(1);
+	expect(await blockIndex(opening)).toBe(2);
+	expect(await blockIndex(bodyCopy)).toBe(3);
+	expect(await blockIndex(rudeLink)).toBe(4);
+
+	const featuredHeading = page.getByRole("heading", {
+		name: "PROYECTOS DESTACADOS",
+		exact: true,
 	});
-	expect(adjacentToInstagram).toBe(true);
-	const instagramSection = instagramHeading.locator("xpath=ancestor::section[1]");
-	await expect(instagramSection.locator('a[href*="instagram.com"]')).toHaveCount(0);
+	await expect(featuredHeading).toBeVisible();
+	expect(await blockIndex(featuredHeading)).toBe(9);
+	expect(await instagramHeading.count()).toBe(0);
+	const feedSection = featuredHeading.locator("xpath=ancestor::section[1]");
+	await expect(feedSection.locator('a[href*="instagram.com"]')).toHaveCount(0);
 });
