@@ -1,6 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const languages = ["es", "ca", "en"];
+const navigationLabels = {
+	es: ["Servicios", "Proyectos", "Conócenos", "Contacto"],
+	ca: ["Serveis", "Projectes", "Coneix-nos", "Contacte"],
+	en: ["Services", "Projects", "About", "Contact"],
+};
 const representativeRoutes = [
 	{ path: "about", landmark: "main" },
 	{ path: "services", landmark: "main" },
@@ -27,6 +32,11 @@ test.describe("Senshac browser smoke contract", () => {
 			await expectPage(page, `/${language}/`);
 			expect(await page.locator("html").getAttribute("lang")).toBe(language);
 			await expect(page.locator("main#main")).toContainText(/\S/);
+			const navLinks = page.locator("header nav > ul a");
+			await expect(navLinks).toHaveCount(4);
+			expect((await navLinks.allTextContents()).map((label) => label.trim())).toEqual(
+				navigationLabels[language as keyof typeof navigationLabels],
+			);
 		}
 
 		for (const route of representativeRoutes) {
@@ -43,16 +53,25 @@ test.describe("Senshac browser smoke contract", () => {
 
 	test("editorial navigation and grids adapt to desktop and mobile", async ({ page }) => {
 		const headerNav = page.locator("header nav > ul");
-		const menuButton = page.locator('button[aria-controls="mobile-menu"]');
-		const mobileMenu = page.locator("#mobile-menu");
 		const footerGrid = page.locator("footer .grid").first();
 		const worksGrid = page.locator(".works-index__list");
+		const expectVisibleNav = async () => {
+			await expect(headerNav).toBeVisible();
+			const links = headerNav.getByRole("link");
+			await expect(links).toHaveCount(4);
+			expect((await links.allTextContents()).map((label) => label.trim())).toEqual([
+				"Servicios",
+				"Proyectos",
+				"Conócenos",
+				"Contacto",
+			]);
+			await expect(page.locator('button[aria-controls="mobile-menu"]')).toHaveCount(0);
+			await expect(page.locator("#mobile-menu")).toHaveCount(0);
+		};
 
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await page.goto("/es/works/");
-		await expect(headerNav).toBeVisible();
-		await expect(headerNav.getByRole("link").first()).toBeVisible();
-		await expect(menuButton).toBeHidden();
+		await expectVisibleNav();
 		await expect
 			.poll(() =>
 				footerGrid.evaluate((element) =>
@@ -69,8 +88,7 @@ test.describe("Senshac browser smoke contract", () => {
 			.toBe(2);
 
 		await page.setViewportSize({ width: 390, height: 844 });
-		await expect(headerNav).toBeHidden();
-		await expect(menuButton).toBeVisible();
+		await expectVisibleNav();
 		await expect
 			.poll(() =>
 				footerGrid.evaluate((element) =>
@@ -85,13 +103,11 @@ test.describe("Senshac browser smoke contract", () => {
 				),
 			)
 			.toBe(1);
-
-		await menuButton.click();
-		await expect(menuButton).toHaveAttribute("aria-expanded", "true");
-		await expect(mobileMenu).toBeVisible();
-		await expect(mobileMenu.getByRole("link").first()).toBeVisible();
+		const languageSelector = page.locator("header nav button");
+		await expect(languageSelector).toBeVisible();
+		await languageSelector.click();
+		await expect(page.locator('header a[href="/ca/works/"]')).toBeVisible();
 	});
-
 	test("keeps the Tina admin entry point available", async ({ page }) => {
 		const redirect = await page.request.get("/admin", { maxRedirects: 0 });
 		expect(redirect.status()).toBe(302);

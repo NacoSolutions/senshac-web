@@ -67,6 +67,23 @@ test("Home follows the PDF block order and preserves the opening and final feed"
 	expect(
 		await projectCarousel.locator("[data-project-slide] h3").allTextContents(),
 	).toEqual(["La Trobada", "Doley"]);
+	const openingSlideStyle = await projectCarousel.locator("[data-project-slide]").first().evaluate((slide) => {
+		const overlay = slide.querySelector(".showcase-project-carousel__overlay");
+		if (!overlay) return null;
+		return {
+			overlayOffset: overlay.getBoundingClientRect().top - slide.getBoundingClientRect().top,
+			borderWidth: getComputedStyle(slide).borderBottomWidth,
+			borderColor: getComputedStyle(slide).borderBottomColor,
+		};
+	});
+	expect(openingSlideStyle).not.toBeNull();
+	expect(openingSlideStyle?.overlayOffset).toBeLessThanOrEqual(1);
+	expect(openingSlideStyle?.borderWidth).toBe("1px");
+	expect(openingSlideStyle?.borderColor).toBe("rgb(255, 255, 255)");
+	await expect(block(7).locator(".editorial-phase-scroll__copy strong")).toContainText(
+		"los pasos que tomaremos para empezar a trabajar en tu proyecto:",
+	);
+	await expect(block(7).locator(".editorial-phase-scroll__text em")).toHaveText("match");
 
 	const rudeLink = block(4).locator('[data-showcase-items] a[href="/es/works/rude"]');
 	await expect(rudeLink).toHaveCount(1);
@@ -132,6 +149,12 @@ for (const locale of locales) {
 					textAlign: style.textAlign,
 				};
 			};
+			const lineCount = (element: Element | null | undefined) => {
+				if (!element) return null;
+				const range = document.createRange();
+				range.selectNodeContents(element);
+				return [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0).length;
+			};
 			const homeShell = block(0)?.querySelector(".editorial-shell");
 			const shellRect = homeShell?.getBoundingClientRect();
 			if (!shellRect) return null;
@@ -168,8 +191,13 @@ for (const locale of locales) {
 					title: box(block(0)?.querySelector(".home-hero__title")),
 					cta: box(block(0)?.querySelector(".home-hero__cta")),
 				},
+				lines: {
+					heroTitle: lineCount(block(0)?.querySelector(".home-hero__title")),
+					processHeading: lineCount(block(7)?.querySelector(".editorial-phase-scroll__copy h2")),
+				},
 				typography: {
 					heroTitle: box(block(0)?.querySelector(".home-hero__title"))?.fontSize ?? null,
+					processHeading: box(block(7)?.querySelector(".editorial-phase-scroll__copy h2"))?.fontSize ?? null,
 					headline: box(block(1)?.querySelector(".editorial-heading"))?.fontSize ?? null,
 					bodyCopy: box(block(3)?.querySelector(".editorial-body"))?.fontSize ?? null,
 					benefitTitle: box(block(5)?.querySelector("details > summary > span:nth-child(2)"))?.fontSize ?? null,
@@ -203,6 +231,8 @@ for (const locale of locales) {
 			}
 		}
 
+		expect(metrics.lines.heroTitle).toBe(2);
+		expect(metrics.lines.processHeading).toBe(2);
 		expect(metrics.hero.copy?.textAlign).toBe("left");
 		expect(metrics.hero.cta?.right).not.toBeNull();
 		expect(Math.abs((metrics.hero.cta?.right ?? 0) - metrics.shell.right)).toBeLessThanOrEqual(3);
@@ -213,6 +243,7 @@ for (const locale of locales) {
 			bodyCopy: 18,
 			benefitTitle: 21.6,
 			processNumber: 38.4,
+			processHeading: 18,
 			processTitle: 21.6,
 			processBody: 18,
 			inquiryTitle: 28.8,
