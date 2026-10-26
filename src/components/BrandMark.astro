@@ -1,0 +1,66 @@
+---
+type Kind = "wordmark" | "symbol";
+type Size = "header" | "footer" | "legacy";
+
+interface Props {
+	kind?: Kind;
+	size?: Size;
+}
+
+const { kind = "wordmark", size = "header" } = Astro.props;
+---
+
+<span class:list={["brand-mark", `brand-mark--${kind}`, `brand-mark--${size}`]} aria-hidden="true">
+	{kind === "wordmark" && <span>sens</span>}<span class="brand-mark__star">*</span>{kind === "wordmark" && <span>hac</span>}</span>
+
+<style>
+	.brand-mark {
+		display: inline-flex;
+		align-items: baseline;
+		color: inherit;
+		white-space: nowrap;
+	}
+
+	.brand-mark--wordmark {
+		font-family: "Sinteca", sans-serif;
+		font-size: 2rem;
+		font-weight: 600;
+		letter-spacing: -0.05em;
+		line-height: 1;
+	}
+
+	.brand-mark__star {
+		color: #e85d3f;
+		font-family: "Space Mono", monospace;
+		font-size: 0.85em;
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: 1;
+		margin-inline: 0.03em;
+	}
+
+	.brand-mark--symbol {
+		font-family: "Space Mono", monospace;
+		font-size: 2.5rem;
+		font-weight: 400;
+		line-height: 1;
+	}
+
+	.brand-mark--symbol .brand-mark__star {
+		color: currentColor;
+		font-size: 1em;
+		margin: 0;
+	}
+
+	.brand-mark--footer {
+		font-size: 3rem;
+	}
+
+	.brand-mark--legacy {
+		font-size: 1.5rem;
+	}
+
+	:global(header.text-white) .brand-mark--wordmark .brand-mark__star {
+		color: currentColor;
+	}
+</style>

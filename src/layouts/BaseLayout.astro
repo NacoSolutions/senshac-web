@@ -1,10 +1,18 @@
 ---
+import BrandMark from "../components/BrandMark.astro";
+import { getBrandFontFaceCss, getFontAssets } from "../utils/font-assets.mjs";
+
 interface Props {
   title: string;
   description: string;
 }
 
 const { title, description } = Astro.props;
+const mediaBaseUrl = (
+  import.meta.env.PUBLIC_MEDIA_BASE_URL || "https://media.senshac.com"
+).replace(/\/$/, "");
+const fonts = getFontAssets(mediaBaseUrl);
+const brandFontCss = getBrandFontFaceCss(fonts);
 ---
 <!doctype html>
 <html lang="en">
@@ -13,11 +21,15 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <style is:inline set:html={brandFontCss}></style>
+    <link rel="preconnect" href={mediaBaseUrl} crossorigin />
+    <link rel="preload" href={fonts.sintecaSemibold} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fonts.spaceMonoRegular} as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
-      <a class="wordmark" href="/" aria-label="Senshac home">Sens<span>*</span>Hac</a>
+      <a class="wordmark" href="/" aria-label="Senshac home"><BrandMark kind="wordmark" size="legacy" /></a>
       <nav aria-label="Primary navigation">
         <a href="#studio">Studio</a>
         <a href="#contact">Contact</a>
@@ -37,8 +49,7 @@ const { title, description } = Astro.props;
     .skip-link { position: absolute; left: 1rem; top: -4rem; padding: .75rem 1rem; background: #111; color: #fff; z-index: 10; }
     .skip-link:focus { top: 1rem; }
     .site-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem clamp(1.25rem, 4vw, 4rem); border-bottom: 1px solid #ddd; }
-    .wordmark { font-size: 1.5rem; font-weight: 700; text-decoration: none; letter-spacing: -.05em; }
-    .wordmark span { color: #e85d3f; }
+    .wordmark { text-decoration: none; }
     nav { display: flex; gap: 1.5rem; font-size: .9rem; }
     nav a { text-decoration: none; }
     nav a:hover, nav a:focus-visible { text-decoration: underline; text-underline-offset: .3em; }

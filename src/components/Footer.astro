@@ -4,7 +4,7 @@ import type { SiteConfigQuery } from "../../tina/__generated__/types";
 import { getSiteConfig } from "../utils/site-config";
 import { getTranslations, type Translations } from "../utils/translations";
 import { resolvePageChromeFieldTarget } from "../utils/page-chrome.mjs";
-import R2Picture from "./R2Picture.astro";
+import BrandMark from "./BrandMark.astro";
 
 type Appearance = "transparent-adaptive" | "transparent-light" | "transparent-dark" | "opaque-light" | "opaque-dark";
 type ChromePart = { mode?: "fixed" | "scrolling"; atFinal?: Appearance; scrolling?: Appearance };
@@ -125,17 +125,10 @@ const socialLinks = site.socialLinks;
       </div>
 
       <div class="flex items-start lg:justify-end">
-        <a href={`/${lang}/`} aria-label={site.company.name}>
-          <R2Picture
-            id={site.branding.symbolWhite}
-            alt={site.company.name.toLowerCase()}
-            x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(scrolled ? finalAppearance : scrollingAppearance)"
-            class="h-12 w-auto"
-            mediaSlot="logo"
-            width="900"
-            height="900"
-            data-tina-field={tinaField(site.branding, 'symbolWhite')}
-          />
+        <a href={`/${lang}/`} aria-label="Senshac home">
+          <span x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(scrolled ? finalAppearance : scrollingAppearance)">
+            <BrandMark kind="symbol" size="footer" />
+          </span>
         </a>
       </div>
     </div>
