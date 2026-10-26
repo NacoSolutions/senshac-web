@@ -26,6 +26,20 @@ const blockIndex = (locator: Locator) =>
 		return match ? Number(match[1]) : -1;
 	});
 
+for (const locale of locales) {
+	test(`${locale.toUpperCase()} Home uses the selected accessible wordmark`, async ({ page }) => {
+		const response = await page.goto(`/${locale}/`, { waitUntil: "domcontentloaded" });
+		expect(response?.status()).toBe(200);
+
+		const wordmark = page.locator('header a[aria-label="Senshac home"] .brand-mark--wordmark');
+		await expect(wordmark).toBeVisible();
+		await expect(wordmark).toHaveText("sens*hac");
+		await expect(wordmark).toHaveCSS("font-family", /Sinteca/);
+		await expect(wordmark).toHaveCSS("font-weight", "600");
+		await expect(wordmark.locator(".brand-mark__star")).toHaveCSS("font-family", /Space Mono/);
+	});
+}
+
 test("Home follows the PDF block order and preserves the opening and final feed", async ({
 	page,
 }) => {

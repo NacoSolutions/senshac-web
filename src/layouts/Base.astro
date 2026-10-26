@@ -9,6 +9,7 @@ import "virtual:uno.css";
 import globalStyles from "../styles/global.css?url";
 import { getSiteConfig } from "../utils/site-config";
 import { resolvePageChrome } from "../utils/page-chrome.mjs";
+import { getBrandFontFaceCss, getFontAssets } from "../utils/font-assets.mjs";
 import { getTranslations as getPublicTranslations } from "../utils/translations";
 
 interface Props {
@@ -73,20 +74,14 @@ const pageSourceParam = JSON.stringify(pageSource ?? {});
 const mediaBaseUrl = (
 	import.meta.env.PUBLIC_MEDIA_BASE_URL || "https://media.senshac.com"
 ).replace(/\/$/, "");
-const fontUrl = (filename: string) => `${mediaBaseUrl}/fonts/${filename}`;
-const fonts = {
-	jozsikaLight: fontUrl("jozsika-light-cb357743.woff2"),
-	sintecaRegular: fontUrl("sinteca-regular.woff2"),
-	sintecaMedium: fontUrl("sinteca-medium.woff2"),
-	sintecaSemibold: fontUrl("sinteca-semibold.woff2"),
-};
+const fonts = getFontAssets(mediaBaseUrl);
 const fontCss = `
 @font-face{font-family:'Jozsika';src:url('${fonts.jozsikaLight}') format('woff2');font-weight:300;font-style:normal;font-display:swap}
 @font-face{font-family:'Sinteca';src:url('${fonts.sintecaRegular}') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+${getBrandFontFaceCss(fonts)}
 `;
 const deferredFontCss = `
 @font-face{font-family:'Sinteca';src:url('${fonts.sintecaMedium}') format('woff2');font-weight:500;font-style:normal;font-display:swap}
-@font-face{font-family:'Sinteca';src:url('${fonts.sintecaSemibold}') format('woff2');font-weight:600;font-style:normal;font-display:swap}
 `;
 const deferredFontScript = `window.addEventListener('load',()=>{const style=document.createElement('style');style.textContent=${JSON.stringify(deferredFontCss)};document.head.append(style)},{once:true});`;
 ---
@@ -120,6 +115,8 @@ const deferredFontScript = `window.addEventListener('load',()=>{const style=docu
     <link rel="preconnect" href={mediaBaseUrl} crossorigin />
     <link rel="preload" href={fonts.jozsikaLight} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={fonts.sintecaRegular} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fonts.sintecaSemibold} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fonts.spaceMonoRegular} as="font" type="font/woff2" crossorigin />
 
     {preloadImage && <link rel="preload" href={preloadImage} as="image" type="image/webp" fetchpriority="high" />}
 

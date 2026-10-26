@@ -10,6 +10,10 @@ const tinaConfig = await readFile(
 	new URL("../tina/config.ts", import.meta.url),
 	"utf8",
 );
+const seo = await readFile(
+	new URL("../src/components/SEO.astro", import.meta.url),
+	"utf8",
+);
 const markerSources = (
 	await Promise.all(
 		[
@@ -48,9 +52,6 @@ const genericBlocks = [
 
 const legacyMarkers = [
 	"block",
-	"site.branding, 'logo'",
-	"site.branding, 'logoWhite'",
-	"site.branding, 'symbolWhite'",
 	"site.contact, 'email'",
 	"site.contact, 'phone'",
 	"site.socialLinks, index",
@@ -113,6 +114,10 @@ test("banner text and nested slogan lines have selectable Tina markers", () => {
 	);
 	assert.ok(markerSources.includes("tinaField(tinaData, 'title')"));
 	assert.ok(markerSources.includes("tinaField(tinaData, 'subtitle')"));
+});
+
+test("structured data retains the editorial logo asset", () => {
+	assert.match(seo, /mediaUrl\(site\.branding\.logo\)/);
 });
 
 test("inquiry path questions and options remain selectable in Tina", () => {

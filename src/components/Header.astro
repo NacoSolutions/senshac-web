@@ -5,7 +5,7 @@ import { getSiteConfig } from "../utils/site-config";
 // src/components/Header.astro
 import { getTranslations, type Translations } from "../utils/translations";
 import { resolvePageChromeFieldTarget } from "../utils/page-chrome.mjs";
-import R2Picture from "./R2Picture.astro";
+import BrandMark from "./BrandMark.astro";
 
 type Appearance = "transparent-adaptive" | "transparent-light" | "transparent-dark" | "opaque-light" | "opaque-dark";
 type ChromePart = { mode?: "fixed" | "scrolling"; atFinal?: Appearance; scrolling?: Appearance };
@@ -94,28 +94,8 @@ const getLocalizedPath = (targetLang: string) => {
   >
     <nav aria-label={t.nav.menu} class="w-full px-4 md:px-8 min-h-20 py-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 lg:h-20 lg:flex-nowrap lg:py-0">
       <!-- Logo -->
-      <a href={`/${lang}/`} class="flex-shrink-0">
-        <R2Picture
-          x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(appearance)"
-          id={site.branding?.logoWhite || ''}
-          alt={site.company?.name?.toLowerCase() || ''}
-          class="h-8 w-auto"
-          mediaSlot="logo"
-          width="768"
-          height="142"
-          data-tina-field={tinaField(site.branding, 'logoWhite')}
-        />
-        <R2Picture
-          x-show="!['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(appearance)"
-          id={site.branding?.logo || ''}
-          alt={site.company?.name?.toLowerCase() || ''}
-          class="h-8 w-auto"
-          mediaSlot="logo"
-          width="768"
-          height="142"
-          x-cloak={isTransparent}
-          data-tina-field={tinaField(site.branding, 'logo')}
-        />
+      <a href={`/${lang}/`} class="flex-shrink-0" aria-label="Senshac home">
+        <BrandMark kind="wordmark" size="header" />
       </a>
 
       <ul class="order-3 flex w-full list-none items-center justify-between gap-3 overflow-x-auto p-0 lg:order-2 lg:mx-auto lg:w-auto lg:gap-10 xl:gap-12">
