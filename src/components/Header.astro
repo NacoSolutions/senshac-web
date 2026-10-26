@@ -60,9 +60,6 @@ const navItems = (t.nav.links || []).map((item: any) => ({
 	label: item.label,
 }));
 
-// Use social links from site config
-const socialLinks = site.socialLinks;
-
 // Infer languages from locales config
 const languages = (site.locales || []).map((code: string | null) => ({
 	code,
@@ -76,7 +73,6 @@ const getLocalizedPath = (targetLang: string) => {
 
 <div
   x-data={`{
-    menuOpen: false,
     langOpen: false,
     scrolled: false,
     isTransparent: ${isTransparent},
@@ -96,11 +92,11 @@ const getLocalizedPath = (targetLang: string) => {
     x-bind:class={`appearance === '${scrollingAppearance}' ? '${initialAppearance}' : '${finalAppearanceClasses}'`}
     x-effect="appearance = scrolled ? finalAppearance : scrollingAppearance"
   >
-    <nav class="w-full px-4 md:px-8 h-20 flex items-center justify-between">
+    <nav aria-label={t.nav.menu} class="w-full px-4 md:px-8 min-h-20 py-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 lg:h-20 lg:flex-nowrap lg:py-0">
       <!-- Logo -->
       <a href={`/${lang}/`} class="flex-shrink-0">
         <R2Picture
-          x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(appearance) && !menuOpen"
+          x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(appearance)"
           id={site.branding?.logoWhite || ''}
           alt={site.company?.name?.toLowerCase() || ''}
           class="h-8 w-auto"
@@ -110,7 +106,7 @@ const getLocalizedPath = (targetLang: string) => {
           data-tina-field={tinaField(site.branding, 'logoWhite')}
         />
         <R2Picture
-          x-show="!['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(appearance) || menuOpen"
+          x-show="!['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(appearance)"
           id={site.branding?.logo || ''}
           alt={site.company?.name?.toLowerCase() || ''}
           class="h-8 w-auto"
@@ -122,13 +118,13 @@ const getLocalizedPath = (targetLang: string) => {
         />
       </a>
 
-      <ul class="hidden list-none items-center gap-10 xl:gap-12 p-0 lg:flex" aria-label={t.nav.menu}>
+      <ul class="order-3 flex w-full list-none items-center justify-between gap-3 overflow-x-auto p-0 lg:order-2 lg:mx-auto lg:w-auto lg:gap-10 xl:gap-12">
         {navItems.map((item: any, index: number) => (
           <li>
             <a
               href={item.href}
               class:list={[
-                "text-xs uppercase tracking-[0.16em] transition-colors",
+                "whitespace-nowrap text-[0.6875rem] uppercase tracking-[0.04em] transition-colors lg:text-xs lg:tracking-[0.16em]",
                 currentPath.startsWith(item.href) && "font-medium",
               ]}
               x-bind:class={`appearance === '${scrollingAppearance}' ? '${controlAppearance(scrollingAppearance)}' : '${controlAppearance(finalAppearance)}'`}
@@ -141,7 +137,7 @@ const getLocalizedPath = (targetLang: string) => {
         ))}
       </ul>
       <!-- Right side controls -->
-      <div class="flex items-center gap-4">
+      <div class="order-2 ml-auto flex items-center gap-4 lg:order-3 lg:ml-0">
         <!-- Language Dropdown -->
         <div class="relative" x-on:click.away="langOpen = false">
           <button
@@ -178,152 +174,12 @@ const getLocalizedPath = (targetLang: string) => {
           </div>
         </div>
 
-        <!-- Hamburger Menu Button -->
-        <button
-          type="button"
-          class="p-2 transition-colors lg:hidden"
-          x-bind:class={`appearance === '${scrollingAppearance}' ? '${controlAppearance(scrollingAppearance)}' : '${controlAppearance(finalAppearance)}'`}
-          x-on:click="menuOpen = !menuOpen"
-          aria-label={t.accessibility.toggleMenu}
-          data-tina-field={tinaField(t.accessibility, "toggleMenu")}
-          aria-expanded="false"
-          aria-controls="mobile-menu"
-          x-bind:aria-expanded="menuOpen"
-        >
-          <!-- Hamburger icon -->
-          <span x-show="!menuOpen" class="i-lucide-menu w-6 h-6" />
-          <!-- Close icon -->
-          <span x-show="menuOpen" x-cloak class="i-lucide-x w-6 h-6" />
-        </button>
+
       </div>
     </nav>
   </header>
 
-  <!-- Backdrop for menu - outside header -->
-  <div
-    class="fixed inset-0 bg-black/20 z-[60] lg:hidden"
-    x-show="menuOpen"
-    x-on:click="menuOpen = false"
-    x-transition:enter="transition ease-out duration-300"
-    x-transition:enter-start="opacity-0"
-    x-transition:enter-end="opacity-100"
-    x-transition:leave="transition ease-in duration-200"
-    x-transition:leave-start="opacity-100"
-    x-transition:leave-end="opacity-0"
-    x-cloak
-  ></div>
-
-  <!-- Menu Panel - Full viewport height, half width on desktop, full on mobile -->
-  <div
-    class="fixed inset-0 md:left-auto md:w-1/2 bg-white z-[70] overflow-y-auto lg:hidden"
-    id="mobile-menu"
-    x-show="menuOpen"
-    x-transition:enter="transition ease-out duration-300"
-    x-transition:enter-start="translate-x-full"
-    x-transition:enter-end="translate-x-0"
-    x-transition:leave="transition ease-in duration-200"
-    x-transition:leave-start="translate-x-0"
-    x-transition:leave-end="translate-x-full"
-    x-cloak
-  >
-    <div class="min-h-full flex flex-col">
-      <!-- Close button inside panel -->
-      <div class="flex justify-end p-4 h-20 items-center">
-        <button
-          type="button"
-          class="p-2 text-gray-600 hover:text-black transition-colors"
-          x-on:click="menuOpen = false"
-          aria-label={t.accessibility.closeMenu}
-          data-tina-field={tinaField(t.accessibility, "closeMenu")}
-        >
-          <span class="i-lucide-x w-6 h-6" />
-        </button>
-      </div>
-
-      <!-- Main Content -->
-      <div class="flex-1 px-6 py-8 md:px-12">
-        <div class="grid grid-cols-2 gap-8 md:gap-12">
-          <!-- Social Column -->
-          <div>
-            <p class="text-sm text-gray-400 uppercase tracking-wider mb-6" data-tina-field={tinaField(t.nav, 'social')}>{t.nav.social}</p>
-            <div class="space-y-0">
-              {socialLinks.map((link: any, index: number) => (
-                <a
-                  href={link.url}
-                  data-tina-field={tinaField(site.socialLinks[index], "url")}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="block py-3 text-lg md:text-xl text-black border-b border-gray-200 hover:text-gray-600 transition-colors"
-                >
-                  <span data-tina-field={tinaField(site.socialLinks[index], "name")}>{link.name}</span>
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <!-- Menu Column -->
-          <div>
-            <p class="text-sm text-gray-400 uppercase tracking-wider mb-6" data-tina-field={tinaField(t.nav, 'menu')}>{t.nav.menu}</p>
-            <div class="space-y-0">
-              {navItems.map((item: any, index: number) => (
-                <a
-                  href={item.href}
-                  aria-current={currentPath.startsWith(item.href) ? "page" : undefined}
-                  class:list={[
-                    "block py-3 text-lg md:text-xl text-black border-b border-gray-200 hover:text-gray-600 transition-colors",
-                    currentPath.startsWith(item.href) && "font-medium"
-                  ]}
-                  x-on:click="menuOpen = false"
-                  data-tina-field={t.nav.links?.[index] ? tinaField(t.nav.links[index], "href") : undefined}
-                >
-                  <span data-tina-field={t.nav.links?.[index] ? tinaField(t.nav.links[index], "label") : undefined}>{item.label}</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Section -->
-      <div class="px-6 py-8 md:px-12 border-t border-gray-200 bg-gray-50 mt-auto">
-        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <!-- Logo and Let's Talk -->
-          <div>
-            <a href={`/${lang}/`} aria-label={site.company.name}>
-              <R2Picture
-                id={site.branding.symbol}
-                alt={site.company.name.toLowerCase()}
-                class="h-10 w-auto mb-4"
-                mediaSlot="logo"
-                width="900"
-                height="900"
-                data-tina-field={tinaField(site.branding, 'symbol')}
-              />
-            </a>
-            <p class="text-base font-bold uppercase tracking-wider text-black" data-tina-field={tinaField(t.nav, 'letsTalk')}>{t.nav.letsTalk}</p>
-          </div>
-
-          <!-- Contact Info -->
-          <div class="md:text-right">
-            <a
-              href={`mailto:${site.contact.email}`}
-              class="block text-base text-black hover:text-gray-600 transition-colors"
-            >
-              <span data-tina-field={tinaField(site.contact, 'email')}>{site.contact.email}</span>
-            </a>
-            <a
-              href={`tel:${site.contact.phoneLink || site.contact.phone.replace(/\s/g, '')}`}
-              class="block text-base text-black hover:text-gray-600 transition-colors"
-            >
-              <span data-tina-field={tinaField(site.contact, 'phone')}>{site.contact.phone}</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
-
 <style>
   [x-cloak] {
     display: none !important;

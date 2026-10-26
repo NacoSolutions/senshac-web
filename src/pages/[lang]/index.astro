@@ -62,10 +62,13 @@ const site = await getSiteConfig();
     </main>
   </TinaIsland>
   <style is:global>
+    .home-page > [data-block-template="hero"] .home-hero__title { text-transform: none; white-space: pre-line; }
+    .home-page > [data-block-template="showcase"]:nth-child(3) .showcase-project-carousel__slide { border-bottom: 1px solid #fff; }
+    .home-page > [data-block-template="showcase"]:nth-child(3) .showcase-project-carousel__overlay { inset: 0 0 auto; background: linear-gradient(180deg, rgb(0 0 0 / 68%), transparent); }
     @media (min-width: 768px) {
       .home-page .editorial-shell { width: 88vw; max-width: none; }
       .home-page > [data-block-template="hero"] .home-hero__copy { width: 59%; max-width: none; margin-left: 41%; text-align: left; }
-      .home-page > [data-block-template="hero"] .home-hero__title { max-width: 24ch; margin: 0; font-size: 30px; }
+      .home-page > [data-block-template="hero"] .home-hero__title { max-width: none; margin: 0; font-size: 30px; line-height: 1.1; }
       .home-page > [data-block-template="hero"] .home-hero__intro { margin-left: 0; font-size: 18px; }
       .home-page > [data-block-template="hero"] .home-hero__cta { display: flex; width: max-content; margin-left: auto; }
       .home-page > [data-block-template="text"] .editorial-shell { display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); column-gap: 0; }
@@ -89,7 +92,7 @@ const site = await getSiteConfig();
       .home-page > [data-block-template="list"] .editorial-shell > .border-t { grid-column: 3; }
       .home-page > [data-block-template="list"] .editorial-heading { font-size: 29px; }
       .home-page > [data-block-template="list"] .editorial-phase-scroll__copy { grid-column: 3; font-size: 18px; }
-      .home-page > [data-block-template="list"] .editorial-phase-scroll__copy h2 { font-size: 30px; }
+      .home-page > [data-block-template="list"] .editorial-phase-scroll__copy h2 { font-size: 18px; font-weight: 400; line-height: 1.35; }
       .home-page > [data-block-template="list"] .editorial-phase-scroll__layout { grid-column: 1 / -1; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); gap: 0 !important; border: 0; }
       .home-page > [data-block-template="list"] .editorial-phase-scroll__image { grid-column: 1; }
       .home-page > [data-block-template="list"] .editorial-phase-scroll__carousel { grid-column: 3; }

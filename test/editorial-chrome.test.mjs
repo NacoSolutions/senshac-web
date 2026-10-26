@@ -11,20 +11,20 @@ const footer = await readFile(
 	"utf8",
 );
 
-test("header has localized desktop navigation and an accessible mobile menu control", () => {
-	assert.match(header, /<ul class="hidden list-none items-center gap-10 xl:gap-12 p-0 lg:flex"/);
+test("header keeps four localized links visible without a menu drawer", () => {
+	const nav = header.match(/<ul class="([^"]*)"/);
+	assert.ok(nav);
+	assert.match(nav[1], /items-center/);
+	assert.doesNotMatch(nav[1], /\bhidden\b/);
 	assert.match(header, /navItems\.map/);
 	assert.match(header, /data-tina-field=\{t\.nav\.links\?\.\[index\]/);
 	assert.match(
 		header,
 		/aria-current=\{currentPath\.startsWith\(item\.href\) \? "page" : undefined\}/,
 	);
-	assert.match(header, /aria-controls="mobile-menu"/);
-	assert.match(header, /id="mobile-menu"/);
-	assert.match(header, /aria-expanded="false"[\s\S]*x-bind:aria-expanded="menuOpen"/);
-	assert.match(header, /class="p-2 transition-colors lg:hidden"/);
-	assert.match(header, /bg-black\/20 z-\[60\] lg:hidden/);
-	assert.match(header, /overflow-y-auto lg:hidden/);
+	assert.match(header, /getLocalizedPath/);
+	assert.match(header, /x-on:click.away="langOpen = false"/);
+	assert.doesNotMatch(header, /menuOpen|mobile-menu|toggleMenu|closeMenu|socialLinks/);
 });
 
 test("footer uses four responsive columns and keeps text links and editable legal content", () => {
