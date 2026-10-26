@@ -35,8 +35,15 @@ for (const locale of locales) {
 		await expect(wordmark).toBeVisible();
 		await expect(wordmark).toHaveText("sens*hac");
 		await expect(wordmark).toHaveCSS("font-family", /Sinteca/);
-		await expect(wordmark).toHaveCSS("font-weight", "600");
-		await expect(wordmark.locator(".brand-mark__star")).toHaveCSS("font-family", /Space Mono/);
+		await expect(wordmark).toHaveCSS("font-weight", "700");
+		await expect(wordmark).toHaveCSS("font-style", "normal");
+		const star = wordmark.locator(".brand-mark__star");
+		await expect(star).toHaveCSS("font-family", /Space Mono/);
+		await expect(star).toHaveCSS("font-weight", "700");
+		await expect(star).toHaveCSS("font-style", "normal");
+		await expect(star).toHaveCSS("vertical-align", "super");
+		const wordmarkColor = await wordmark.evaluate((element) => getComputedStyle(element).color);
+		await expect(star).toHaveCSS("color", wordmarkColor);
 	});
 }
 

@@ -11,13 +11,13 @@ export function getFontAssets(mediaBaseUrl) {
 		sintecaRegular: fontUrl(`${sintecaPrefix}/sinteca-regular.woff2`),
 		sintecaMedium: fontUrl(`${sintecaPrefix}/sinteca-medium.woff2`),
 		sintecaSemibold: fontUrl(`${sintecaPrefix}/sinteca-semibold.woff2`),
-		spaceMonoRegular: fontUrl(`${spaceMonoPrefix}/SpaceMono-Regular.woff2`),
+		spaceMonoBold: fontUrl(`${spaceMonoPrefix}/SpaceMono-Bold.woff2`),
 	};
 }
 
 export function getBrandFontFaceCss(fonts) {
 	return `
 @font-face{font-family:'Sinteca';src:url('${fonts.sintecaSemibold}') format('woff2');font-weight:600;font-style:normal;font-display:swap}
-@font-face{font-family:'Space Mono';src:url('${fonts.spaceMonoRegular}') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Space Mono';src:url('${fonts.spaceMonoBold}') format('woff2');font-weight:700;font-style:normal;font-display:swap}
 `;
 }

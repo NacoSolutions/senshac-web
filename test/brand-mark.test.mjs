@@ -28,6 +28,14 @@ test("site chrome uses the selected accessible typographic brand mark", () => {
 	assert.doesNotMatch(footer, /R2Picture/);
 });
 
+test("wordmark text and star share bold styling, color, and superscript placement", () => {
+	assert.match(brandMark, /\.brand-mark--wordmark\s*\{[^}]*display:\s*inline;[^}]*font-weight:\s*700;[^}]*font-style:\s*normal;/s);
+	assert.match(brandMark, /\.brand-mark--wordmark\s+\.brand-mark__star\s*\{[^}]*font-size:\s*0\.7em;[^}]*vertical-align:\s*super;/s);
+	assert.match(brandMark, /\.brand-mark__star\s*\{[^}]*color:\s*currentColor;[^}]*font-weight:\s*700;[^}]*font-style:\s*normal;/s);
+	assert.match(brandMark, /\.brand-mark--symbol\s*\{[^}]*font-weight:\s*700;[^}]*font-style:\s*normal;/s);
+	assert.doesNotMatch(brandMark, /color:\s*#e85d3f/i);
+});
+
 test("versioned font assets retain Jozsika Light and load the approved brand fonts", () => {
 	assert.equal(
 		fonts.jozsikaLight,
@@ -46,14 +54,14 @@ test("versioned font assets retain Jozsika Light and load the approved brand fon
 		"https://media.senshac.com/fonts/sinteca/f0d31aad8d62d053c99b97190a47e2d246ae227e9e99c6a5d5cff09ac4bf19cd/sinteca-semibold.woff2",
 	);
 	assert.equal(
-		fonts.spaceMonoRegular,
-		"https://media.senshac.com/fonts/space-mono/d9ee25f2cfb7fbc32e3f42ab807e7fca3ab4ff351dcbbb8b66996f940613f7e6/SpaceMono-Regular.woff2",
+		fonts.spaceMonoBold,
+		"https://media.senshac.com/fonts/space-mono/d9ee25f2cfb7fbc32e3f42ab807e7fca3ab4ff351dcbbb8b66996f940613f7e6/SpaceMono-Bold.woff2",
 	);
 	const brandFontCss = getBrandFontFaceCss(fonts);
 	assert.ok(brandFontCss.includes(fonts.sintecaSemibold));
-	assert.ok(brandFontCss.includes(fonts.spaceMonoRegular));
+	assert.ok(brandFontCss.includes(fonts.spaceMonoBold));
 	assert.match(brandFontCss, /font-weight:600/);
-	assert.match(brandFontCss, /font-weight:400/);
+	assert.match(brandFontCss, /font-weight:700/);
 	assert.match(brandFontCss, /font-display:swap/);
 	assert.ok(base.includes("fonts.jozsikaLight"));
 	assert.match(base, /getBrandFontFaceCss\(fonts\)/);

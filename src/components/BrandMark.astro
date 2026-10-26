@@ -22,27 +22,38 @@ const { kind = "wordmark", size = "header" } = Astro.props;
 	}
 
 	.brand-mark--wordmark {
+		display: inline;
+		/* shortcut: synthesize 700 from staged 600; switch to a true Bold face if one is staged. */
 		font-family: "Sinteca", sans-serif;
 		font-size: 2rem;
-		font-weight: 600;
+		font-weight: 700;
+		font-style: normal;
+		font-synthesis: weight;
 		letter-spacing: -0.05em;
 		line-height: 1;
 	}
 
 	.brand-mark__star {
-		color: #e85d3f;
+		color: currentColor;
 		font-family: "Space Mono", monospace;
 		font-size: 0.85em;
-		font-weight: 400;
+		font-weight: 700;
+		font-style: normal;
 		letter-spacing: 0;
 		line-height: 1;
 		margin-inline: 0.03em;
 	}
 
+	.brand-mark--wordmark .brand-mark__star {
+		font-size: 0.7em;
+		vertical-align: super;
+	}
+
 	.brand-mark--symbol {
 		font-family: "Space Mono", monospace;
 		font-size: 2.5rem;
-		font-weight: 400;
+		font-weight: 700;
+		font-style: normal;
 		line-height: 1;
 	}
 
@@ -60,7 +71,4 @@ const { kind = "wordmark", size = "header" } = Astro.props;
 		font-size: 1.5rem;
 	}
 
-	:global(header.text-white) .brand-mark--wordmark .brand-mark__star {
-		color: currentColor;
-	}
 </style>
