@@ -2,6 +2,11 @@ import { expect, test } from "@playwright/test";
 import type { Locator } from "@playwright/test";
 
 const locales = ["es", "ca", "en"] as const;
+const carouselNextLabels: Record<(typeof locales)[number], string> = {
+	es: "Siguiente diapositiva",
+	ca: "Següent diapositiva",
+	en: "Next slide",
+};
 const expectedTemplates = [
 	"hero",
 	"text",
@@ -42,8 +47,14 @@ for (const locale of locales) {
 		await expect(star).toHaveCSS("font-weight", "700");
 		await expect(star).toHaveCSS("font-style", "normal");
 		await expect(star).toHaveCSS("vertical-align", "super");
-		const wordmarkColor = await wordmark.evaluate((element) => getComputedStyle(element).color);
-		await expect(star).toHaveCSS("color", wordmarkColor);
+		const wordmarkColors = await wordmark.evaluate((element) => {
+			const star = element.querySelector(".brand-mark__star");
+			return {
+				wordmark: getComputedStyle(element).color,
+				star: star ? getComputedStyle(star).color : null,
+			};
+		});
+		expect(wordmarkColors.star).toBe(wordmarkColors.wordmark);
 	});
 }
 
@@ -84,23 +95,51 @@ test("Home follows the PDF block order and preserves the opening and final feed"
 	const projectCarousel = block(2).locator("[data-project-carousel]");
 	await expect(projectCarousel).toHaveCount(1);
 	await expect(projectCarousel).toHaveAttribute("data-visible-items", "2");
-	await expect(projectCarousel.locator("[data-project-slide]")).toHaveCount(2);
+	await expect(projectCarousel).toHaveAttribute("data-scroll-step", "1");
+	await expect(projectCarousel.locator("[data-project-slide]")).toHaveCount(5);
 	expect(
-		await projectCarousel.locator("[data-project-slide] h3").allTextContents(),
+		(await projectCarousel.locator("[data-project-slide] h3").allTextContents()).slice(0, 2),
 	).toEqual(["La Trobada", "Doley"]);
+	await expect(projectCarousel.locator("[data-project-slide]").nth(1).locator(".showcase-project-carousel__description")).toHaveText("Estética, color y salud capilar convertidos en una experiencia envolvente.");
 	const openingSlideStyle = await projectCarousel.locator("[data-project-slide]").first().evaluate((slide) => {
 		const overlay = slide.querySelector(".showcase-project-carousel__overlay");
 		if (!overlay) return null;
 		return {
 			overlayOffset: overlay.getBoundingClientRect().top - slide.getBoundingClientRect().top,
-			borderWidth: getComputedStyle(slide).borderBottomWidth,
-			borderColor: getComputedStyle(slide).borderBottomColor,
+			borderWidth: getComputedStyle(overlay).borderBottomWidth,
+			borderColor: getComputedStyle(overlay).borderBottomColor,
 		};
 	});
 	expect(openingSlideStyle).not.toBeNull();
 	expect(openingSlideStyle?.overlayOffset).toBeLessThanOrEqual(1);
 	expect(openingSlideStyle?.borderWidth).toBe("1px");
 	expect(openingSlideStyle?.borderColor).toBe("rgb(255, 255, 255)");
+	const track = projectCarousel.locator("[data-project-carousel-track]");
+	const fullyVisibleSlideCount = () => track.evaluate((element) => {
+		const bounds = element.getBoundingClientRect();
+		return [...element.querySelectorAll("[data-project-slide]")].filter((slide) => {
+			const rect = slide.getBoundingClientRect();
+			return rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1;
+		}).length;
+	});
+	expect(await fullyVisibleSlideCount()).toBe(2);
+	const scrollBefore = await track.evaluate((element) => element.scrollLeft);
+	const firstSlideWidth = await projectCarousel.locator("[data-project-slide]").first().evaluate((slide) => slide.getBoundingClientRect().width);
+	const nextButton = projectCarousel.getByRole("button", { name: "Siguiente diapositiva" });
+	await nextButton.click();
+	await expect.poll(() => track.evaluate((element) => element.scrollLeft)).toBeGreaterThan(scrollBefore + firstSlideWidth - 3);
+	const scrollAfter = await track.evaluate((element) => element.scrollLeft);
+	expect(Math.abs(scrollAfter - scrollBefore - firstSlideWidth)).toBeLessThanOrEqual(3);
+	expect(await fullyVisibleSlideCount()).toBe(2);
+	const rapidTargetScroll = await track.evaluate((element) => {
+		const bounds = element.getBoundingClientRect();
+		const target = element.querySelectorAll("[data-project-slide]")[3];
+		return element.scrollLeft + target.getBoundingClientRect().left - bounds.left;
+	});
+	await nextButton.click();
+	await nextButton.click();
+	await expect.poll(() => track.evaluate((element) => element.scrollLeft)).toBeGreaterThan(rapidTargetScroll - 3);
+	expect(Math.abs((await track.evaluate((element) => element.scrollLeft)) - rapidTargetScroll)).toBeLessThanOrEqual(3);
 	await expect(block(7).locator(".editorial-phase-scroll__copy strong")).toContainText(
 		"los pasos que tomaremos para empezar a trabajar en tu proyecto:",
 	);
@@ -111,17 +150,23 @@ test("Home follows the PDF block order and preserves the opening and final feed"
 	await expect(
 		block(4).locator("[data-showcase-items]").getByText("Imagen pendiente de confirmar", { exact: true }),
 	).toHaveCount(1);
-	await expect(
-		block(5).getByRole("heading", { name: "¿Qué puede hacer el diseño por tu negocio?" }),
-	).toBeVisible();
-
+	const highlightGeometry = await block(4).locator("[data-showcase-items] > *").evaluateAll((items) => ({
+		left: items[0].getBoundingClientRect().left,
+		rude: items[1].getBoundingClientRect().left,
+		rail: window.innerWidth * 0.42,
+	}));
+	expect(highlightGeometry.left).toBeLessThan(highlightGeometry.rail);
+	expect(Math.abs(highlightGeometry.rude - highlightGeometry.rail)).toBeLessThanOrEqual(3);
+	await expect(block(5).getByRole("heading", { name: "El espacio debe trabajar para ti, y no al revés. El diseño inteligente te ayuda a:" })).toBeVisible();
+	await expect(block(8).getByRole("heading", { name: "¿En qué punto estás ahora mismo?" })).toBeVisible();
+	await expect(block(8).getByText("Cada negocio es un mundo y tiene sus propios retos. Para poder ayudarte, necesito entender tu situación.", { exact: true })).toBeVisible();
 	const featuredHeading = block(9).getByRole("heading", {
 		name: "PROYECTOS DESTACADOS",
 		exact: true,
 	});
 	if (await block(9).locator("section").count()) await expect(featuredHeading).toBeVisible();
 	expect(await page.getByRole("heading", { name: "Instagram", exact: true }).count()).toBe(0);
-	expect(await page.locator('a[href="/es/works/rude"]').count()).toBe(1);
+	expect(await page.locator('a[href="/es/works/rude"]').count()).toBe(2);
 	expect(await blockIndex(headline)).toBe(1);
 	expect(await blockIndex(projectCarousel)).toBe(2);
 	expect(await blockIndex(rudeLink)).toBe(4);
@@ -136,6 +181,8 @@ for (const locale of locales) {
 		await page.setViewportSize({ width: 1200, height: 865 });
 		const response = await page.goto(`/${locale}/`, { waitUntil: "domcontentloaded" });
 		expect(response?.status()).toBe(200);
+		const carousel = page.locator("#main > [data-tina-field]").nth(2).locator("[data-project-carousel]");
+		await expect(carousel.getByRole("button", { name: carouselNextLabels[locale] })).toBeVisible();
 
 		const accordion = page.locator("#main > [data-tina-field]").nth(5).locator("details").first();
 		if (!(await accordion.getAttribute("open"))) {
@@ -180,10 +227,12 @@ for (const locale of locales) {
 			const shellRect = homeShell?.getBoundingClientRect();
 			if (!shellRect) return null;
 			const rail = shellRect.left + shellRect.width * 0.41;
+			const headerLinks = document.querySelector("[data-homepage-nav] > ul");
 			const mediaCarousel = block(2)?.querySelector(".showcase-project-carousel");
 			const slides = [...(block(2)?.querySelectorAll("[data-project-slide]") ?? [])];
 			return {
 				viewportWidth: document.documentElement.clientWidth,
+				headerLinksLeft: headerLinks?.getBoundingClientRect().left ?? null,
 				shell: {
 					left: shellRect.left,
 					right: shellRect.right,
@@ -252,6 +301,8 @@ for (const locale of locales) {
 			}
 		}
 
+		expect(metrics.headerLinksLeft).not.toBeNull();
+		expect(Math.abs((metrics.headerLinksLeft ?? 0) - metrics.rail)).toBeLessThanOrEqual(3);
 		expect(metrics.lines.heroTitle).toBe(2);
 		expect(metrics.lines.processHeading).toBe(2);
 		expect(metrics.hero.copy?.textAlign).toBe("left");
@@ -279,8 +330,8 @@ for (const locale of locales) {
 			}
 		}
 
-		expect(metrics.openingCarousel.slideLefts).toHaveLength(2);
-		expect(metrics.openingCarousel.slideWidths).toHaveLength(2);
+		expect(metrics.openingCarousel.slideLefts.length).toBeGreaterThan(2);
+		expect(metrics.openingCarousel.slideWidths.length).toBeGreaterThan(2);
 		expect(metrics.openingCarousel.slideLefts[1]).not.toBeNull();
 		expect(Math.abs((metrics.openingCarousel.slideLefts[1] ?? 0) - metrics.rail)).toBeLessThanOrEqual(3);
 		expect((metrics.openingCarousel.slideWidths[0] ?? 0) / metrics.viewportWidth).toBeCloseTo(0.42, 2);
@@ -294,6 +345,20 @@ test("Home preserves a single-column mobile flow without horizontal overflow", a
 	await page.setViewportSize({ width: 390, height: 844 });
 	const response = await page.goto("/es/", { waitUntil: "domcontentloaded" });
 	expect(response?.status()).toBe(200);
+	const mobileSlides = page.locator("[data-project-carousel] [data-project-slide]");
+	const overlayBounds = await mobileSlides.evaluateAll((slides) => slides.map((slide) => {
+		const overlay = slide.querySelector(".showcase-project-carousel__overlay");
+		if (!overlay) throw new Error("Carousel slide has no overlay");
+		return {
+			title: slide.querySelector("h3")?.textContent ?? "untitled",
+			bottom: overlay.getBoundingClientRect().bottom,
+			slideBottom: slide.getBoundingClientRect().bottom,
+		};
+	}));
+	expect(overlayBounds).toHaveLength(5);
+	for (const bounds of overlayBounds) {
+		expect(bounds.bottom, "Mobile overlay extends past slide " + bounds.title).toBeLessThanOrEqual(bounds.slideBottom + 1);
+	}
 
 	const mobile = await page.evaluate(() => {
 		const heroTitle = document.querySelector(".home-hero__title");

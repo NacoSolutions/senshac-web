@@ -93,6 +93,7 @@ const blockFields: Record<(typeof blockNames)[number], readonly string[]> = {
 		"ctaLink",
 		"limit",
 		"maxVisible",
+		"scrollStep",
 		"items",
 	],
 	statement: [
@@ -135,7 +136,7 @@ const contentBlock = z
 			});
 		}
 		if (block._template === "showcase") {
-			for (const field of ["limit", "maxVisible"] as const) {
+			for (const field of ["limit", "maxVisible", "scrollStep"] as const) {
 				const value = (block as Record<string, unknown>)[field];
 				if (
 					value !== undefined &&
