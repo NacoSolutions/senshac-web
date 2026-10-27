@@ -25,6 +25,7 @@ interface Props {
 	placeholderLabel?: string;
 	limit?: number;
 	maxVisible?: number;
+	scrollStep?: number;
 	items?: Item[] | null;
 	tinaData?: any;
 }
@@ -40,6 +41,7 @@ const {
 	placeholderLabel,
 	limit,
 	maxVisible = 1,
+	scrollStep = 1,
 	items: itemList,
 	tinaData,
 } = Astro.props;
@@ -53,6 +55,7 @@ let projectSlides: {
 	mediaId: string;
 	alt: string;
 	category: string;
+	description: string;
 }[] = [];
 
 if (items.length === 0 && !mediaId) {
@@ -86,19 +89,21 @@ if (items.length === 0 && !mediaId) {
 					? bannerBlock.alt
 					: project.data.title,
 			category: project.data.tags?.[0]?.split("/")[0]?.trim() ?? "",
+			description: project.data.description ?? "",
 		};
 	});
 }
 
 const showProjectCarousel = projectSlides.length > 0;
 const visibleProjectCount = Math.min(maxVisible, projectSlides.length);
+const carouselTranslations = showProjectCarousel ? await getTranslations(lang) : undefined;
 const projectCarouselLabel = showProjectCarousel
 	? title ||
-		(await getTranslations(lang)).nav.links?.find((link) =>
-			link.href.endsWith("/works"),
-		)?.label ||
+		carouselTranslations?.nav.links?.find((link) => link.href.endsWith("/works"))?.label ||
 		"Projects"
 	: undefined;
+const previousSlideLabel = carouselTranslations?.accessibility.previousSlide ?? "Previous slide";
+const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next slide";
 ---
 
 <section class="editorial-section">
@@ -111,19 +116,60 @@ const projectCarouselLabel = showProjectCarousel
         class="showcase-project-carousel"
         data-project-carousel
         data-visible-items={visibleProjectCount}
+        data-scroll-step={scrollStep}
         role="region"
+        aria-roledescription="carousel"
         aria-label={projectCarouselLabel}
+        x-data={`{
+          scrollStep: ${scrollStep},
+          canGoBack: false,
+          canGoForward: true,
+          currentIndex: 0,
+          pendingIndex: null,
+          updateScrollState() {
+            const track = this.$refs.track;
+            const bounds = track.getBoundingClientRect();
+            const slides = Array.from(track.querySelectorAll("[data-project-slide]"));
+            const index = slides.findIndex((slide) => slide.getBoundingClientRect().right > bounds.left + 1);
+            if (index >= 0 && this.pendingIndex === null) this.currentIndex = index;
+            this.canGoBack = track.scrollLeft > 1;
+            this.canGoForward = track.scrollLeft + track.clientWidth < track.scrollWidth - 1;
+          },
+          finishScroll() {
+            this.pendingIndex = null;
+            this.updateScrollState();
+          },
+          move(direction) {
+            const track = this.$refs.track;
+            const bounds = track.getBoundingClientRect();
+            const slides = Array.from(track.querySelectorAll("[data-project-slide]"));
+            const index = this.currentIndex;
+            const targetIndex = Math.max(0, Math.min(slides.length - 1, index + direction * this.scrollStep));
+            if (index < 0 || targetIndex === index) return;
+            this.currentIndex = targetIndex;
+            this.pendingIndex = targetIndex;
+            const left = track.scrollLeft + slides[targetIndex].getBoundingClientRect().left - bounds.left;
+            const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+            track.scrollTo({ left, behavior });
+          },
+        }`}
+        x-init="updateScrollState()"
+        x-on:resize.window="updateScrollState()"
       >
         <div
           class="showcase-project-carousel__track"
           data-project-carousel-track
           tabindex="0"
+          x-ref="track"
+          x-on:scroll.debounce.100ms="updateScrollState()"
+          x-on:scrollend="finishScroll()"
         >
           {projectSlides.map((slide, index) => (
             <a
               href={slide.href}
               class="showcase-project-carousel__slide"
               data-project-slide
+              aria-label={slide.description ? `${slide.title}. ${slide.description}` : slide.title}
             >
               <div class="showcase-project-carousel__media">
                 {slide.mediaId ? (
@@ -153,12 +199,19 @@ const projectCarouselLabel = showProjectCarousel
                 )}
               </div>
               <div class="showcase-project-carousel__overlay">
-                {slide.category && <p>{slide.category}</p>}
+                {slide.description && <p class="showcase-project-carousel__description">{slide.description}</p>}
+                {slide.category && <p class="showcase-project-carousel__category">{slide.category}</p>}
                 <h3>{slide.title}</h3>
               </div>
             </a>
           ))}
         </div>
+        {projectSlides.length > visibleProjectCount && (
+          <div class="showcase-project-carousel__controls">
+            <button type="button" aria-label={previousSlideLabel} x-bind:disabled="!canGoBack" x-on:click="move(-1)"><span class="i-lucide-arrow-left h-4 w-4" aria-hidden="true" /></button>
+            <button type="button" aria-label={nextSlideLabel} x-bind:disabled="!canGoForward" x-on:click="move(1)"><span class="i-lucide-arrow-right h-4 w-4" aria-hidden="true" /></button>
+          </div>
+        )}
       </div>
     ) : items.length > 0 ? (
       <div data-showcase-items class="grid gap-8 grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]">
@@ -173,7 +226,7 @@ const projectCarouselLabel = showProjectCarousel
                 mediaSlot="grid"
                 fieldMarker={tinaField(tinaData.items[index], 'mediaId')}
               />
-              {item.title && <span data-tina-field={tinaField(tinaData.items[index], 'title')} class="text-[1.15rem] font-medium uppercase">{item.title}</span>}
+              {item.title && <span data-tina-field={tinaField(tinaData.items[index], 'title')} class="text-[1.15rem] font-medium uppercase">{item.title}{item.link && <span class="i-lucide-arrow-up-right ml-2 inline-block h-4 w-4" aria-hidden="true" />}</span>}
               {item.ctaText && <span data-tina-field={tinaField(tinaData.items[index], 'ctaText')} class="editorial-link">{item.ctaText}</span>}
             </a>
           ) : (
@@ -237,6 +290,7 @@ const projectCarouselLabel = showProjectCarousel
     background: #dedede;
     color: inherit;
     scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
 
   .showcase-project-carousel__media,
@@ -263,9 +317,14 @@ const projectCarouselLabel = showProjectCarousel
 
   .showcase-project-carousel__overlay {
     position: absolute;
-    inset: auto 0 0;
-    padding: clamp(1rem, 3vw, 2rem);
-    background: linear-gradient(0deg, rgb(0 0 0 / 68%), transparent);
+    inset: 0 0 auto;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 0.25rem 1rem;
+    padding: 1rem clamp(1rem, 3vw, 2rem) 0.75rem;
+    border-bottom: 1px solid #fff;
+    background: linear-gradient(180deg, rgb(0 0 0 / 68%), transparent);
     color: #fff;
   }
 
@@ -276,12 +335,70 @@ const projectCarouselLabel = showProjectCarousel
     text-transform: uppercase;
   }
 
+  .showcase-project-carousel__description {
+    grid-column: 1;
+    max-width: 42rem;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.01em !important;
+    line-height: 1.25;
+    text-transform: none !important;
+  }
+
+  .showcase-project-carousel__category {
+    grid-column: 2;
+    text-align: right;
+  }
+
+  .showcase-project-carousel__controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .showcase-project-carousel__controls button {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    font-size: 1.25rem;
+    cursor: pointer;
+  }
+
+  .showcase-project-carousel__controls button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .showcase-project-carousel__controls button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
   .showcase-project-carousel__overlay h3 {
     margin: 0.25rem 0 0;
     font-size: clamp(0.95rem, 1.2vw, 1.15rem);
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+
+  .showcase-project-carousel[data-visible-items="2"] .showcase-project-carousel__slide {
+    flex-basis: calc((100% - 1rem) / 2);
+  }
+
+  @media (max-width: 47.999rem) {
+    .showcase-project-carousel__overlay {
+      padding-bottom: 0.25rem;
+    }
+
+    .showcase-project-carousel__description {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
   }
 
   @media (min-width: 48rem) {

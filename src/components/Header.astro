@@ -92,7 +92,11 @@ const getLocalizedPath = (targetLang: string) => {
     x-bind:class={`appearance === '${scrollingAppearance}' ? '${initialAppearance}' : '${finalAppearanceClasses}'`}
     x-effect="appearance = scrolled ? finalAppearance : scrollingAppearance"
   >
-    <nav aria-label={t.nav.menu} class="w-full px-4 md:px-8 min-h-20 py-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 lg:h-20 lg:flex-nowrap lg:py-0">
+    <nav
+      aria-label={t.nav.menu}
+      data-homepage-nav={currentPath === "/" + lang + "/" || currentPath === "/" + lang ? "true" : undefined}
+      class="w-full px-4 md:px-8 min-h-20 py-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 lg:h-20 lg:flex-nowrap lg:py-0"
+    >
       <!-- Logo -->
       <a href={`/${lang}/`} class="flex-shrink-0" aria-label="Senshac home">
         <BrandMark kind="wordmark" size="header" />

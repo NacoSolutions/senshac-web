@@ -21,6 +21,7 @@ test("project showcases cap content and use responsive multi-card scroll snappin
 	assert.match(showcase, /data-project-carousel/);
 	assert.match(showcase, /data-visible-items=\{visibleProjectCount\}/);
 	assert.match(showcase, /scroll-snap-type:\s*x mandatory/);
+	assert.match(showcase, /scroll-snap-stop:\s*always/);
 	assert.match(showcase, /slide\.category/);
 	assert.match(showcase, /<h3[^>]*>\{slide\.title\}<\/h3>/);
 	assert.doesNotMatch(showcase, /x-data="carousel"/);

@@ -397,6 +397,7 @@ const editorialShowcaseBlock: TinaField = {
 		{ name: "ctaLink", label: "Link URL", type: "string" },
 		{ name: "limit", label: "Project Limit (1–3)", type: "number" },
 		{ name: "maxVisible", label: "Visible Projects (1–3)", type: "number" },
+		{ name: "scrollStep", label: "Slides Per Move (1–3)", type: "number" },
 		{
 			name: "items",
 			label: "Work Items",
