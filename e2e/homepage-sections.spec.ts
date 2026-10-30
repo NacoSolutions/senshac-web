@@ -105,16 +105,19 @@ test("Home follows the PDF block order and preserves the opening and final feed"
 	const openingSlideStyle = await projectCarousel.locator("[data-project-slide]").first().evaluate((slide) => {
 		const overlay = slide.querySelector(".showcase-project-carousel__overlay");
 		if (!overlay) return null;
+		const overlayStyle = getComputedStyle(overlay);
 		return {
 			overlayOffset: overlay.getBoundingClientRect().top - slide.getBoundingClientRect().top,
-			borderWidth: getComputedStyle(overlay).borderBottomWidth,
-			borderColor: getComputedStyle(overlay).borderBottomColor,
+			ruleWidth: overlayStyle.borderBottomWidth,
+			ruleColor: overlayStyle.borderBottomColor,
+			ruleRightInset: slide.getBoundingClientRect().right - overlay.getBoundingClientRect().right,
 		};
 	});
 	expect(openingSlideStyle).not.toBeNull();
 	expect(openingSlideStyle?.overlayOffset).toBeLessThanOrEqual(1);
-	expect(openingSlideStyle?.borderWidth).toBe("1px");
-	expect(openingSlideStyle?.borderColor).toBe("rgb(255, 255, 255)");
+	expect(openingSlideStyle?.ruleWidth).toBe("1px");
+	expect(openingSlideStyle?.ruleColor).toBe("rgb(255, 255, 255)");
+	expect(openingSlideStyle?.ruleRightInset).toBeGreaterThan(0);
 	const track = projectCarousel.locator("[data-project-carousel-track]");
 	const fullyVisibleSlideCount = () => track.evaluate((element) => {
 		const bounds = element.getBoundingClientRect();
