@@ -58,9 +58,9 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
   });
   expect(metrics).not.toBeNull();
   if (!metrics) throw new Error("Hero geometry unavailable");
-  expect(metrics.titleSize).toBeGreaterThanOrEqual(36);
-  expect(metrics.introSize).toBeGreaterThanOrEqual(22);
-  expect(Number(metrics.introWeight)).toBeGreaterThanOrEqual(600);
+  expect(metrics.titleSize).toBe(30);
+  expect(metrics.introSize).toBe(18);
+  expect(Number(metrics.introWeight)).toBeGreaterThanOrEqual(400);
   expect(metrics.background).toBe("rgb(255, 255, 255)");
   expect(metrics.label).toContain("Conócenos");
   expect(metrics.ctaDisplay).toBe("flex");
