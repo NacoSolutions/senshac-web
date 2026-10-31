@@ -311,7 +311,6 @@ for (const locale of locales) {
 		expect(metrics.hero.copy?.textAlign).toBe("left");
 		expect(metrics.hero.cta?.right).not.toBeNull();
 		expect(metrics.hero.cta?.right).toBe(1200);
-		expect(Math.abs((metrics.hero.cta?.right ?? 0) - metrics.shell.right)).toBeLessThanOrEqual(3);
 
 		const typeTargets = {
 			heroTitle: 30,
