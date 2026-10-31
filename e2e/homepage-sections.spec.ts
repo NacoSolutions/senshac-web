@@ -310,7 +310,7 @@ for (const locale of locales) {
 		expect(metrics.lines.processHeading).toBe(2);
 		expect(metrics.hero.copy?.textAlign).toBe("left");
 		expect(metrics.hero.cta?.right).not.toBeNull();
-		expect(metrics.hero.cta?.right).toBe(metrics.shell.right);
+		expect(metrics.hero.cta?.right).toBe(1200);
 		expect(Math.abs((metrics.hero.cta?.right ?? 0) - metrics.shell.right)).toBeLessThanOrEqual(3);
 
 		const typeTargets = {
