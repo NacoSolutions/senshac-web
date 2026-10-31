@@ -8,7 +8,7 @@ test("home inquiry links open the matching qualification path", async ({
 		page.getByRole("link", { name: /Quiero abrir mi primer espacio/ }),
 	).toHaveAttribute("href", "/es/contact?situation=first-space");
 	await expect(
-		page.getByRole("link", { name: /Mi local no funciona como debería/ }),
+		page.getByRole("link", { name: /Mi local necesita un cambio/ }),
 	).toHaveAttribute("href", "/es/contact?situation=existing-space");
 	await expect(
 		page.getByRole("link", { name: /Quiero escalar mi negocio/ }),
