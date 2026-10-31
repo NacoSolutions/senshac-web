@@ -56,9 +56,10 @@ const {
         </div>
       )}
       <h2 id={title ? "home-hero-title" : undefined} data-tina-field={tinaField(tinaData, 'title')} class="editorial-display home-hero__title">{title}</h2>
-      {ctaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link home-hero__cta" href={ctaLink}><span data-tina-field={tinaField(tinaData, 'ctaText')}>{ctaText}</span></a>}
+
     </div>
   </div>
+{ctaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link home-hero__cta" href={ctaLink}><span data-tina-field={tinaField(tinaData, 'ctaText')}>{ctaText}</span></a>}
 </section>
 
 <style>
@@ -66,13 +67,21 @@ const {
     position: relative;
     min-height: min(100svh, 60rem);
     overflow: hidden;
-    background: #050505;
+    background: #fff;
     color: #fff;
   }
 
   .home-hero__media {
     position: absolute;
-    inset: 0;
+    inset: 0 0 2.5rem;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .home-hero__media :global(> div) {
+    height: 100%;
+    min-height: 0;
+    aspect-ratio: auto;
   }
 
   .home-hero__media :global(picture),
@@ -90,17 +99,17 @@ const {
 
   .home-hero__scrim {
     position: absolute;
-    inset: 0;
+    inset: 0 0 2.5rem;
     background: linear-gradient(180deg, rgb(0 0 0 / 8%) 30%, rgb(0 0 0 / 64%) 100%);
   }
 
   .home-hero__content {
     position: relative;
     display: flex;
-    min-height: min(100svh, 60rem);
+    min-height: calc(min(100svh, 60rem) - 2.5rem);
     align-items: flex-end;
     padding-top: clamp(7rem, 14vh, 11rem);
-    padding-bottom: clamp(3rem, 8vh, 7rem);
+    padding-bottom: calc(clamp(3rem, 8vh, 7rem) + 2.5rem);
   }
 
   .home-hero__copy {
@@ -127,8 +136,17 @@ const {
   }
 
   .home-hero__cta {
-    margin-top: clamp(1.25rem, 3vw, 2rem);
-    color: inherit;
+    margin: 0;
+    width: 100%;
+    padding: 0.55em 6vw;
+    line-height: 1;
+    align-items: center;
+    color: #111;
+    background: #fff;
+  }
+
+  .home-hero__cta::after {
+    display: none;
   }
 
   @media (max-width: 47.99rem) {
@@ -137,7 +155,7 @@ const {
     }
 
     .home-hero__content {
-      min-height: inherit;
+      min-height: calc(min(100svh, 54rem) - 2.5rem);
       padding-top: 7rem;
       padding-bottom: 3rem;
     }
@@ -160,8 +178,17 @@ const {
       font-size: 0.95rem;
     }
 
+    .home-hero__media {
+      inset: 0 0 2.5rem;
+    }
+
+    .home-hero__scrim {
+      bottom: 2.5rem;
+    }
+
     .home-hero__cta {
-      margin-top: 1rem;
+      margin-top: 0;
+      padding-inline: 1rem;
     }
   }
 </style>
