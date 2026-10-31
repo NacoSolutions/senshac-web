@@ -30,6 +30,50 @@ test("home hero overlays its title on full-width media at desktop and mobile", a
 	}
 });
 
+test("Home hero typography and CTA white-strip placement follow feedback", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/es/");
+  const metrics = await page.evaluate(() => {
+    const hero = document.querySelector(".home-hero");
+    const image = document.querySelector(".home-hero__media");
+    const title = document.querySelector(".home-hero__title");
+    const intro = document.querySelector(".home-hero__intro");
+    const cta = document.querySelector(".home-hero__cta");
+    if (!hero || !image || !title || !intro || !cta) return null;
+    const box = (el: Element) => el.getBoundingClientRect();
+    const style = getComputedStyle(cta);
+    return {
+      hero: box(hero), image: box(image), title: box(title), intro: box(intro), cta: box(cta),
+      ctaDisplay: style.display,
+      ctaMarginTop: parseFloat(style.marginTop),
+      ctaArrowDisplay: getComputedStyle(cta, "::after").display,
+      titleSize: parseFloat(getComputedStyle(title).fontSize),
+      introSize: parseFloat(getComputedStyle(intro).fontSize),
+      introWeight: getComputedStyle(intro).fontWeight,
+      background: style.backgroundColor,
+      paddingTop: parseFloat(style.paddingTop),
+      paddingBottom: parseFloat(style.paddingBottom),
+      label: cta.textContent?.trim(),
+    };
+  });
+  expect(metrics).not.toBeNull();
+  if (!metrics) throw new Error("Hero geometry unavailable");
+  expect(metrics.titleSize).toBeGreaterThanOrEqual(36);
+  expect(metrics.introSize).toBeGreaterThanOrEqual(22);
+  expect(Number(metrics.introWeight)).toBeGreaterThanOrEqual(600);
+  expect(metrics.background).toBe("rgb(255, 255, 255)");
+  expect(metrics.label).toContain("Conócenos");
+  expect(metrics.ctaDisplay).toBe("flex");
+  expect(metrics.ctaMarginTop).toBe(0);
+  expect(metrics.ctaArrowDisplay).toBe("none");
+  expect(metrics.cta.top).toBeGreaterThanOrEqual(metrics.image.bottom);
+  expect(metrics.cta.top - metrics.image.bottom).toBeLessThanOrEqual(1);
+  expect(metrics.paddingTop).toBeGreaterThanOrEqual(8);
+  expect(metrics.paddingTop).toBeLessThanOrEqual(14);
+  expect(metrics.paddingBottom).toBeGreaterThanOrEqual(8);
+  expect(metrics.paddingBottom).toBeLessThanOrEqual(14);
+  expect(metrics.cta.bottom).toBeLessThanOrEqual(900);
+});
 test("home header uses light text over the dark full-bleed hero", async ({
 	page,
 }) => {
