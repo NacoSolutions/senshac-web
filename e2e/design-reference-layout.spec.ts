@@ -43,7 +43,7 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
     const box = (el: Element) => el.getBoundingClientRect();
     const style = getComputedStyle(cta);
     return {
-      hero: box(hero), image: box(image), title: box(title), intro: box(intro), cta: box(cta), ctaRight: box(cta).right,
+      hero: box(hero), image: box(image), title: box(title), intro: box(intro), cta: box(cta), shellRight: document.querySelector(".editorial-shell")?.getBoundingClientRect().right,
       ctaDisplay: style.display,
       ctaMarginTop: parseFloat(style.marginTop),
       ctaArrowDisplay: getComputedStyle(cta, "::after").display,
@@ -62,8 +62,8 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
   expect(metrics.introSize).toBe(18);
   expect(Number(metrics.introWeight)).toBeGreaterThanOrEqual(400);
   expect(metrics.background).toBe("rgb(255, 255, 255)");
-  expect(metrics.label).toContain("¿Quieres que tu espacio hable?");
-  expect(metrics.ctaRight).toBeGreaterThan(700);
+  expect(metrics.label).toContain("Conócenos");
+  expect(metrics.cta.right).toBeCloseTo(metrics.shellRight, 0);
   expect(metrics.ctaDisplay).toBe("flex");
   expect(metrics.ctaMarginTop).toBe(0);
   expect(metrics.ctaArrowDisplay).not.toBe("none");

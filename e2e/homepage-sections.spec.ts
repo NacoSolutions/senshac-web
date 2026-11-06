@@ -313,7 +313,7 @@ for (const locale of locales) {
 		expect(metrics.lines.processHeading).toBe(2);
 		expect(metrics.hero.copy?.textAlign).toBe("left");
 		expect(metrics.hero.cta?.right).not.toBeNull();
-		expect(metrics.hero.cta?.right).toBe(1200);
+		expect(metrics.hero.cta?.right).toBeCloseTo(metrics.shell.right, 0);
 
 		const typeTargets = {
 			heroTitle: 30,
