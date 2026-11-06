@@ -63,7 +63,7 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
   expect(Number(metrics.introWeight)).toBeGreaterThanOrEqual(400);
   expect(metrics.background).toBe("rgb(255, 255, 255)");
   expect(metrics.label).toContain("Conócenos");
-  expect(metrics.cta.right).toBeCloseTo(metrics.shellRight, 0);
+  expect(metrics.cta.right).toBeCloseTo(metrics.shellRight ?? 0, 0);
   expect(metrics.ctaDisplay).toBe("flex");
   expect(metrics.ctaMarginTop).toBe(0);
   expect(metrics.ctaArrowDisplay).not.toBe("none");
