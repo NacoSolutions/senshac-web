@@ -46,6 +46,16 @@ Use these focused guides for the corresponding Senshac web responsibility:
 - [`tina-astro-cloudflare`](.agents/skills/tina-astro-cloudflare/SKILL.md) — coordinate Tina editing, Astro builds, and Cloudflare Pages releases.
 - [`toolchain-bun-web`](.agents/skills/toolchain-bun-web/SKILL.md) — use the repository's Bun, Astro, Tina, and Cloudflare toolchain safely.
 
+## Playwright browser in Nix workspaces
+
+When Playwright cannot launch its cached browser (for example, `spawn .../chrome-headless-shell ... ENOENT`), use the Nix-provided headless shell instead of reinstalling system packages. Locate it with:
+
+```bash
+find /nix/store -maxdepth 3 -type f -name chrome-headless-shell 2>/dev/null | head
+```
+
+Set `PLAYWRIGHT_CHROMIUM_PATH` to that executable for `bunx playwright test`; `playwright.config.ts` honors this variable. E2E tests build and serve Pages output with Wrangler by default. Use `bun run dev:cms` only when Tina/Astro editorial preview is needed.
+
 ## Tina schema and lockfile workflow
 
 When changing `tina/config.ts`, run the real local Tina dev command before

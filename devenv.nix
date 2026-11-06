@@ -15,6 +15,7 @@
   ];
 
   env.NODE_ENV = "development";
+  env.PLAYWRIGHT_CHROMIUM_PATH = "/nix/store/klvpwn5lf7fgclqkkm89g86f38b9djak-playwright-chromium-headless-shell/chrome-headless-shell-linux64/chrome-headless-shell";
 
   enterShell = ''
     echo "senshac-web devenv: $(bun --version)"
