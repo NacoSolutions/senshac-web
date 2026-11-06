@@ -43,7 +43,7 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
     const box = (el: Element) => el.getBoundingClientRect();
     const style = getComputedStyle(cta);
     return {
-      hero: box(hero), image: box(image), title: box(title), intro: box(intro), cta: box(cta),
+      hero: box(hero), image: box(image), title: box(title), intro: box(intro), cta: box(cta), ctaRight: box(cta).right,
       ctaDisplay: style.display,
       ctaMarginTop: parseFloat(style.marginTop),
       ctaArrowDisplay: getComputedStyle(cta, "::after").display,
@@ -62,17 +62,18 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
   expect(metrics.introSize).toBe(18);
   expect(Number(metrics.introWeight)).toBeGreaterThanOrEqual(400);
   expect(metrics.background).toBe("rgb(255, 255, 255)");
-  expect(metrics.label).toContain("Conócenos");
+  expect(metrics.label).toContain("¿Quieres que tu espacio hable?");
+  expect(metrics.ctaRight).toBeGreaterThan(700);
   expect(metrics.ctaDisplay).toBe("flex");
   expect(metrics.ctaMarginTop).toBe(0);
-  expect(metrics.ctaArrowDisplay).toBe("none");
+  expect(metrics.ctaArrowDisplay).not.toBe("none");
   expect(metrics.cta.top).toBeGreaterThanOrEqual(metrics.image.bottom);
   expect(metrics.cta.top - metrics.image.bottom).toBeLessThanOrEqual(1);
   expect(metrics.paddingTop).toBeGreaterThanOrEqual(8);
   expect(metrics.paddingTop).toBeLessThanOrEqual(14);
   expect(metrics.paddingBottom).toBeGreaterThanOrEqual(8);
   expect(metrics.paddingBottom).toBeLessThanOrEqual(14);
-  expect(metrics.cta.bottom).toBeLessThanOrEqual(900);
+  expect(metrics.cta.bottom).toBeLessThanOrEqual(metrics.hero.bottom);
 });
 test("home header uses light text over the dark full-bleed hero", async ({
 	page,

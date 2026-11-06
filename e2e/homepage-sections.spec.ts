@@ -117,7 +117,7 @@ test("Home follows the PDF block order and preserves the opening and final feed"
 	expect(openingSlideStyle?.overlayOffset).toBeLessThanOrEqual(1);
 	expect(openingSlideStyle?.ruleWidth).toBe("1px");
 	expect(openingSlideStyle?.ruleColor).toBe("rgb(255, 255, 255)");
-	expect(openingSlideStyle?.ruleRightInset).toBeGreaterThan(0);
+	expect(openingSlideStyle?.ruleRightInset).toBe(0);
 	const track = projectCarousel.locator("[data-project-carousel-track]");
 	const fullyVisibleSlideCount = () => track.evaluate((element) => {
 		const bounds = element.getBoundingClientRect();
