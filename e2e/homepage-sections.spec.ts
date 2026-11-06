@@ -72,11 +72,6 @@ test("Home preserves current live block order and opening carousel", async ({
 			)
 			.filter((index) => index !== undefined),
 	);
-	const projectSlideCount = await page
-		.locator("#main > [data-tina-field]")
-		.nth(2)
-		.locator("[data-project-slide]")
-		.count();
 	const projectSlideCount = await page.locator("#main > [data-tina-field]").nth(2).locator("[data-project-slide]").count();
 	expect(projectSlideCount).toBeGreaterThan(2);
 	expect(renderedBlockIndexes).toEqual(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
