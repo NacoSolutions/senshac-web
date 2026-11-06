@@ -59,7 +59,7 @@ const {
 
     </div>
   </div>
-  {ctaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link home-hero__cta" href={ctaLink}><span data-tina-field={tinaField(tinaData, 'ctaText')}>{ctaText}</span></a>}
+  {ctaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link home-hero__cta" href={ctaLink}><span data-tina-field={tinaField(tinaData, 'ctaText')}>Conócenos</span></a>}
 </section>
 
 <style>
@@ -137,17 +137,23 @@ const {
 
   .home-hero__cta {
     display: flex;
-    justify-content: space-between;
-    margin: 0;
-    width: min(88vw, 100%);
+    justify-content: flex-end;
+    margin: 0 0 0 6vw;
+    width: 88vw;
     box-sizing: border-box;
-    padding: 0.55em 6vw;
+    padding: 0.55em 0;
     line-height: 1;
     align-items: center;
     color: #111;
-    background: #fff;
-    border-bottom: 0;
-  }
+    background: transparent;
+    border: 0;
+    text-decoration: none;
+    text-underline-offset: 0.15em;
+
+    & span {
+      border-bottom: 1px solid currentColor;
+      padding-bottom: 0.1em;
+    }
 
   .home-hero__cta::after {
     display: inline-block;
@@ -155,6 +161,9 @@ const {
     width: 1.1em;
     height: 1.1em;
     background-color: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27black%27 stroke-width=%271.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M12 19V5M5 12l7-7 7 7%27/%3E%3C/svg%3E") center / contain no-repeat;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27black%27 stroke-width=%271.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M12 19V5M5 12l7-7 7 7%27/%3E%3C/svg%3E") center / contain no-repeat;
+    text-decoration: none;
   }
 
   @media (max-width: 47.99rem) {
@@ -195,7 +204,7 @@ const {
     }
 
     .home-hero__cta {
-      margin-top: 0;
+      width: 100%;
       padding-inline: 1rem;
     }
   }

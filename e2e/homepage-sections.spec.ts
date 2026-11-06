@@ -58,7 +58,7 @@ for (const locale of locales) {
 	});
 }
 
-test("Home follows the PDF block order and preserves the opening and final feed", async ({
+test("Home preserves current live block order and opening carousel", async ({
 	page,
 }) => {
 	await page.setViewportSize({ width: 1200, height: 865 });
@@ -77,10 +77,8 @@ test("Home follows the PDF block order and preserves the opening and final feed"
 		.nth(2)
 		.locator("[data-project-slide]")
 		.count();
-	test.skip(
-		projectSlideCount <= 2,
-		"paired homepage content revision is not present in web CI",
-	);
+	const projectSlideCount = await page.locator("#main > [data-tina-field]").nth(2).locator("[data-project-slide]").count();
+	expect(projectSlideCount).toBeGreaterThan(2);
 	expect(renderedBlockIndexes).toEqual(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 
 	const templates = await page.locator("#main > [data-tina-field]").evaluateAll((blocks) =>

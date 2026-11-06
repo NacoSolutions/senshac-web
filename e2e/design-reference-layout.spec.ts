@@ -47,6 +47,8 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
       ctaDisplay: style.display,
       ctaMarginTop: parseFloat(style.marginTop),
       ctaArrowDisplay: getComputedStyle(cta, "::after").display,
+      ctaTextBorder: getComputedStyle(cta.querySelector("span")!).borderBottomWidth,
+      ctaTextDecoration: getComputedStyle(cta.querySelector("span")!).textDecorationLine,
       titleSize: parseFloat(getComputedStyle(title).fontSize),
       introSize: parseFloat(getComputedStyle(intro).fontSize),
       introWeight: getComputedStyle(intro).fontWeight,
@@ -61,12 +63,14 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
   expect(metrics.titleSize).toBe(30);
   expect(metrics.introSize).toBe(18);
   expect(Number(metrics.introWeight)).toBeGreaterThanOrEqual(400);
-  expect(metrics.background).toBe("rgb(255, 255, 255)");
+  expect(metrics.background).toBe("rgba(0, 0, 0, 0)");
   expect(metrics.label).toContain("Conócenos");
   expect(metrics.cta.right).toBeCloseTo(metrics.shellRight ?? 0, 0);
   expect(metrics.ctaDisplay).toBe("flex");
   expect(metrics.ctaMarginTop).toBe(0);
   expect(metrics.ctaArrowDisplay).not.toBe("none");
+  expect(metrics.ctaTextBorder).toBe("1px");
+  expect(metrics.ctaTextDecoration).toBe("none");
   expect(metrics.cta.top).toBeGreaterThanOrEqual(metrics.image.bottom);
   expect(metrics.cta.top - metrics.image.bottom).toBeLessThanOrEqual(1);
   expect(metrics.paddingTop).toBeGreaterThanOrEqual(8);
