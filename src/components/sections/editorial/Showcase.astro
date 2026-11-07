@@ -322,7 +322,6 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
     grid-template-columns: 1fr auto;
     align-items: start;
     gap: 0.25rem 1rem;
-    margin-right: clamp(1rem, 3vw, 2rem);
     padding: 1rem 0 0.75rem clamp(1rem, 3vw, 2rem);
     border-bottom: 1px solid #fff;
     background: linear-gradient(180deg, rgb(0 0 0 / 68%), transparent);
@@ -352,18 +351,18 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
 
   .showcase-project-carousel__controls {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 0.5rem;
     padding-top: 0.5rem;
   }
 
   .showcase-project-carousel__controls button {
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 1px solid currentColor;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0;
     background: transparent;
     color: inherit;
-    font-size: 1.25rem;
+    font-size: 1rem;
     cursor: pointer;
   }
 
