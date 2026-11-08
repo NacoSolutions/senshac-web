@@ -98,7 +98,7 @@ test("static home route stamps Tina metadata onto content blocks", async () => {
 	assert.match(homeRoute, /requestWithMetadata\(/);
 	assert.match(homeRoute, /query:\s*HomeDocument/);
 	assert.match(homeRoute, /data:\s*\{\s*home:\s*page\.data\s*\}/);
-	assert.match(homeRoute, /parentData=\{home\}/);
+	assert.match(homeRoute, /parentData=\{\{\s*\.\.\.home,\s*blocks\s*\}\}/);
 	const { data } = await requestWithMetadata({
 		data: { home: { blocks: [{ title: "Example" }] } },
 		query: "query home($relativePath: String!) { home(relativePath: $relativePath) { blocks { title } } }",
