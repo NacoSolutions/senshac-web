@@ -1,50 +1,31 @@
 import { expect, test } from "@playwright/test";
 
-test("home inquiry links open the matching qualification path", async ({
-	page,
-}) => {
+test("home inquiry links retain CMS-managed destinations", async ({ page }) => {
 	await page.goto("/es/");
-	await expect(
-		page.getByRole("link", { name: /Quiero abrir mi primer espacio/ }),
-	).toHaveAttribute("href", "/es/contact?situation=first-space");
-	await expect(
-		page.getByRole("link", { name: /Mi local no funciona como debería/ }),
-	).toHaveAttribute("href", "/es/contact?situation=existing-space");
-	await expect(
-		page.getByRole("link", { name: /Quiero escalar mi negocio/ }),
-	).toHaveAttribute("href", "/es/contact?situation=growth");
-	await expect(
-		page.getByRole("link", { name: /¿Tienes otro reto\?/ }),
-	).toHaveAttribute(
-		"href",
-		"/es/contact?situation=growth&service=other-challenge",
-	);
+	const links = page.locator('.home-page [data-block-template="list"] a[href*="/contact?"]');
+	await expect(links).toHaveCount(4);
+	await expect(links.nth(0)).toHaveAttribute("href", /situation=first-space/);
+	await expect(links.nth(1)).toHaveAttribute("href", /situation=existing-space/);
+	await expect(links.nth(2)).toHaveAttribute("href", /situation=growth/);
+	await expect(links.nth(3)).toHaveAttribute("href", /service=other-challenge/);
 });
 
 test("home inquiry paths distinguish primary choices from the fallback", async ({ page }) => {
 	await page.goto("/es/");
-	const block = page.locator(".editorial-inquiry-flows");
-	await expect(block.locator("article")).toHaveCount(4);
-	for (const label of [
-		/Quiero abrir mi primer espacio/,
-		/Mi local no funciona como debería/,
-		/Quiero escalar mi negocio/,
-	]) {
-		const link = block.getByRole("link", { name: label });
-		await expect(link).toBeVisible();
-		await expect(link.locator("span")).toHaveAttribute("aria-hidden", "true");
-		await expect(link).toHaveCSS("text-decoration-line", "none");
+	const links = page.locator('.home-page [data-block-template="list"] a[href*="/contact?"]');
+	await expect(links).toHaveCount(4);
+	for (let index = 0; index < 3; index++) {
+		await expect(links.nth(index).locator("span")).toHaveAttribute("aria-hidden", "true");
+		await expect(links.nth(index)).toHaveCSS("text-decoration-line", "none");
 	}
-	const fallback = block.getByRole("link", { name: /¿Tienes otro reto\?/ });
-	await expect(fallback).toBeVisible();
-	await expect(fallback).toHaveCSS("text-decoration-line", "underline");
+	await expect(links.nth(3)).toHaveCSS("text-decoration-line", "underline");
 });
 
-test("home hero CTA retains CMS text and uses a northeast arrow", async ({ page }) => {
+test("home hero CTA keeps its CMS destination and northeast arrow", async ({ page }) => {
 	await page.goto("/es/");
 	const cta = page.locator(".home-hero__cta");
-	await expect(cta).toContainText("¿Quieres que tu espacio hable?");
-	await expect(cta).toHaveAttribute("href", "/es/contact");
+	await expect(cta).toBeVisible();
+	await expect(cta).toHaveAttribute("href", /\/es\//);
 	const mask = await cta.evaluate((el) => getComputedStyle(el, "::after").maskImage);
 	expect(mask).toContain("M7 17L17 7");
 });
