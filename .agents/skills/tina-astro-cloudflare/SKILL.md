@@ -19,6 +19,10 @@ Keep editorial data, Astro rendering, and Cloudflare Pages delivery as clear coo
 
 When Playwright cannot launch its cached browser (for example, `spawn .../chrome-headless-shell ... ENOENT`), use the Nix-provided headless shell instead of reinstalling system packages. Locate it with `find /nix/store -maxdepth 3 -type f -name chrome-headless-shell 2>/dev/null | head`, then set `PLAYWRIGHT_CHROMIUM_PATH` to that executable when running `bunx playwright test`. The Playwright config honors this variable. E2E tests build and serve Pages output with Wrangler by default; use `bun run dev:cms` only for Tina/Astro editorial preview.
 
+
+## Nix `workerd` spawn failures
+
+If Astro or Wrangler reports `ENOENT` spawning the installed `workerd`, check whether its ELF interpreter (`/lib64/ld-linux-x86-64.so.2`) is unavailable in the Nix environment. A temporary wrapper can invoke the current worktree binary through a Nix glibc loader; set `MINIFLARE_WORKERD_PATH` to the wrapper for build/preview commands. Resolve paths at runtime, keep the wrapper in `/tmp`, and do not replace the package binary. This only addresses process startup; builds can still stall during Astro compilation, so record timeouts as unverified rather than success.
 ## Acceptance check
 
 Tina local editing via `bun run dev:cms`, the generated lockfile diff when schemas change, `bun run quality`, and `bun run preview:check` succeed; the Pages deployment consumes reviewed `dist/` output with platform-managed secrets.

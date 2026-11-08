@@ -56,6 +56,23 @@ find /nix/store -maxdepth 3 -type f -name chrome-headless-shell 2>/dev/null | he
 
 Set `PLAYWRIGHT_CHROMIUM_PATH` to that executable for `bunx playwright test`; `playwright.config.ts` honors this variable. E2E tests build and serve Pages output with Wrangler by default. Use `bun run dev:cms` only when Tina/Astro editorial preview is needed.
 
+
+## Local workerd in Nix workspaces
+
+When Wrangler or Astro fails to spawn the project-installed `workerd` with `ENOENT`, the ELF binary may require a dynamic loader absent at `/lib64/ld-linux-x86-64.so.2`. A prior local workaround used a wrapper that invokes the binary through the Nix glibc loader and set `MINIFLARE_WORKERD_PATH` to the wrapper. Resolve the active loader and project binary at runtime; do not copy a wrapper with another worktree's absolute paths. Example:
+
+```bash
+loader=$(find /nix/store -maxdepth 3 -path '*/lib64/ld-linux-x86-64.so.2' -type f -print -quit)
+workerd="$PWD/node_modules/@cloudflare/workerd-linux-64/bin/workerd"
+cat >/tmp/senshac-workerd <<EOF
+#!/usr/bin/env bash
+exec "$loader" "$workerd" "$@"
+EOF
+chmod +x /tmp/senshac-workerd
+MINIFLARE_WORKERD_PATH=/tmp/senshac-workerd bun run build
+```
+
+This can get past the spawn error, but does not guarantee a successful build; if Astro stalls after Vite starts, stop the attempt and report the timeout. Keep the wrapper outside the repository and never replace or modify the installed binary. For Wrangler preview, run Wrangler through Bun with the same `MINIFLARE_WORKERD_PATH`.
 ## Tina schema and lockfile workflow
 
 When changing `tina/config.ts`, run the real local Tina dev command before
