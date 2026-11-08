@@ -70,7 +70,7 @@ function mediaId(value?: string | null) {
   {template === 'hero' && <EditorialHero {...block} tinaData={block} eager={index === 0} />}
   {template === 'text' && !['brief', 'concept', 'strategy'].includes(block.variant) && <EditorialCopy {...block} tinaData={block} />}
   {template === 'accordion' && <EditorialAccordion {...block} tinaData={block} />}
-  {template === 'list' && <EditorialRows {...block} tinaData={block} />}
+  {template === 'list' && <EditorialRows {...block} tinaData={block} inquiryStyle={parentData?.blocks?.[index - 1]?._template === 'hero'} />}
   {template === 'callout' && <EditorialCta {...block} tinaData={block} />}
   {template === 'showcase' && (
     <EditorialShowcase

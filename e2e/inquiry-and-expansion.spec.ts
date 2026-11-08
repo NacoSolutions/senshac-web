@@ -8,7 +8,7 @@ test("home inquiry links open the matching qualification path", async ({
 		page.getByRole("link", { name: /Quiero abrir mi primer espacio/ }),
 	).toHaveAttribute("href", "/es/contact?situation=first-space");
 	await expect(
-		page.getByRole("link", { name: /Mi local necesita un cambio/ }),
+		page.getByRole("link", { name: /Mi local no funciona como debería/ }),
 	).toHaveAttribute("href", "/es/contact?situation=existing-space");
 	await expect(
 		page.getByRole("link", { name: /Quiero escalar mi negocio/ }),
@@ -19,6 +19,34 @@ test("home inquiry links open the matching qualification path", async ({
 		"href",
 		"/es/contact?situation=growth&service=other-challenge",
 	);
+});
+
+test("home inquiry paths distinguish primary choices from the fallback", async ({ page }) => {
+	await page.goto("/es/");
+	const block = page.locator(".editorial-inquiry-flows");
+	await expect(block.locator("article")).toHaveCount(4);
+	for (const label of [
+		/Quiero abrir mi primer espacio/,
+		/Mi local no funciona como debería/,
+		/Quiero escalar mi negocio/,
+	]) {
+		const link = block.getByRole("link", { name: label });
+		await expect(link).toBeVisible();
+		await expect(link.locator("span")).toHaveAttribute("aria-hidden", "true");
+		await expect(link).toHaveCSS("text-decoration-line", "none");
+	}
+	const fallback = block.getByRole("link", { name: /¿Tienes otro reto\?/ });
+	await expect(fallback).toBeVisible();
+	await expect(fallback).toHaveCSS("text-decoration-line", "underline");
+});
+
+test("home hero CTA retains CMS text and uses a northeast arrow", async ({ page }) => {
+	await page.goto("/es/");
+	const cta = page.locator(".home-hero__cta");
+	await expect(cta).toContainText("¿Quieres que tu espacio hable?");
+	await expect(cta).toHaveAttribute("href", "/es/contact");
+	const mask = await cta.evaluate((el) => getComputedStyle(el, "::after").maskImage);
+	expect(mask).toContain("M7 17L17 7");
 });
 
 test("homepage hero title exposes Tina metadata", async ({ page }) => {
