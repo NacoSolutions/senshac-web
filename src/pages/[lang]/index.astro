@@ -57,7 +57,7 @@ const site = await getSiteConfig();
   >
     <main id="main" class="home-page">
       {blocks && blocks.map((block: any, index: number) => (
-        <BlocksRenderer block={block} index={index} parentData={home} />
+        <BlocksRenderer block={block} index={index} parentData={{ ...home, blocks }} />
       ))}
     </main>
   </TinaIsland>

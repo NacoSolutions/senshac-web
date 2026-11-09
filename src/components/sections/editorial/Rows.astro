@@ -14,6 +14,7 @@ interface Item {
 
 interface Props {
 	variant?: "default" | "phase-scroll";
+	inquiryStyle?: boolean;
 	title?: string;
 	intro?: any;
 	items?: Item[] | null;
@@ -25,6 +26,7 @@ interface Props {
 
 const {
 	variant,
+	inquiryStyle,
 	title,
 	intro,
 	items: itemList,
@@ -112,7 +114,7 @@ const nextSlideLabel =
     </div>
   </section>
 ) : (
-  <section class="editorial-section">
+  <section class={`editorial-section${inquiryStyle ? " editorial-inquiry-flows" : ""}`}>
     <div class="editorial-shell">
       {title && <h2 data-tina-field={tinaField(tinaData, 'title')} class="editorial-heading editorial-heading--compact" x-reveal>{title}</h2>}
       {intro && (
@@ -124,9 +126,9 @@ const nextSlideLabel =
         {items.map((item, index) => (
           <article class="grid gap-4 py-6 border-b border-[#111] md:grid-cols-2 md:gap-8 md:py-10">
             {itemHeadingLevel === "h3" ? (
-              <h3 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class="underline-offset-4 hover:underline">{item.title} <span aria-hidden="true">↗</span></a> : item.title}</h3>
+              <h3 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class={inquiryStyle && index === 3 ? "underline underline-offset-4" : "underline-offset-4 hover:underline"}>{item.title} <span aria-hidden="true" class={inquiryStyle && index < 3 ? "editorial-inquiry-arrow" : undefined}>↗</span></a> : item.title}</h3>
             ) : (
-              <h2 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class="underline-offset-4 hover:underline">{item.title} <span aria-hidden="true">↗</span></a> : item.title}</h2>
+              <h2 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class={inquiryStyle && index === 3 ? "underline underline-offset-4" : "underline-offset-4 hover:underline"}>{item.title} <span aria-hidden="true" class={inquiryStyle && index < 3 ? "editorial-inquiry-arrow" : undefined}>↗</span></a> : item.title}</h2>
             )}
             <div>
               <div data-tina-field={tinaField(tinaData.items[index], 'text')} class="[&>p]:m-0 [&>p]:text-base [&>p]:leading-[1.45]"><RichText content={item.text} /></div>
@@ -152,6 +154,65 @@ const nextSlideLabel =
     font-size: clamp(1.25rem, 1.8vw, 1.75rem);
     font-weight: 400;
     line-height: 1.35;
+  }
+
+  .editorial-inquiry-flows .border-t {
+    border-top: 0;
+  }
+
+  .editorial-inquiry-flows .border-t > article {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .editorial-inquiry-flows article:nth-child(-n + 3) h2,
+  .editorial-inquiry-flows article:nth-child(-n + 3) h3 {
+    font-size: clamp(1.5rem, 3.2vw, 3rem);
+    font-weight: 400;
+    line-height: 1.1;
+    text-transform: none;
+  }
+
+  .editorial-inquiry-flows article:nth-child(-n + 3) a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    text-decoration: none;
+  }
+
+  .editorial-inquiry-flows article:nth-child(-n + 3) a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .editorial-inquiry-flows article:nth-child(-n + 3) a span {
+    font-size: 0.65em;
+    margin-left: 0.5em;
+  }
+
+
+  .editorial-inquiry-flows .editorial-inquiry-arrow {
+    display: inline-block;
+    font-style: normal;
+    font-weight: 400;
+    transform: translateY(-0.2em);
+  }
+
+  .editorial-inquiry-flows article:last-child {
+    margin-top: clamp(1rem, 3vw, 2.5rem);
+    padding-top: 1.25rem;
+    border-top: 1px solid #111;
+  }
+
+  .editorial-inquiry-flows article:last-child h2,
+  .editorial-inquiry-flows article:last-child h3 {
+    font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+    font-weight: 400;
+    line-height: 1.2;
+    text-transform: none;
+  }
+
+  .editorial-inquiry-flows article:last-child a {
+    text-underline-offset: 0.15em;
   }
 
   .editorial-phase-scroll__copy :global(p) {

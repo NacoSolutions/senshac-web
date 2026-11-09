@@ -1,24 +1,33 @@
 import { expect, test } from "@playwright/test";
 
-test("home inquiry links open the matching qualification path", async ({
-	page,
-}) => {
+test("home inquiry links retain CMS-managed destinations", async ({ page }) => {
 	await page.goto("/es/");
-	await expect(
-		page.getByRole("link", { name: /Quiero abrir mi primer espacio/ }),
-	).toHaveAttribute("href", "/es/contact?situation=first-space");
-	await expect(
-		page.getByRole("link", { name: /Mi local necesita un cambio/ }),
-	).toHaveAttribute("href", "/es/contact?situation=existing-space");
-	await expect(
-		page.getByRole("link", { name: /Quiero escalar mi negocio/ }),
-	).toHaveAttribute("href", "/es/contact?situation=growth");
-	await expect(
-		page.getByRole("link", { name: /¿Tienes otro reto\?/ }),
-	).toHaveAttribute(
-		"href",
-		"/es/contact?situation=growth&service=other-challenge",
-	);
+	const links = page.locator('.home-page [data-block-template="list"] a[href*="/contact?"]');
+	await expect(links).toHaveCount(4);
+	await expect(links.nth(0)).toHaveAttribute("href", /situation=first-space/);
+	await expect(links.nth(1)).toHaveAttribute("href", /situation=existing-space/);
+	await expect(links.nth(2)).toHaveAttribute("href", /situation=growth/);
+	await expect(links.nth(3)).toHaveAttribute("href", /service=other-challenge/);
+});
+
+test("home inquiry paths distinguish primary choices from the fallback", async ({ page }) => {
+	await page.goto("/es/");
+	const links = page.locator('.home-page [data-block-template="list"] a[href*="/contact?"]');
+	await expect(links).toHaveCount(4);
+	for (let index = 0; index < 3; index++) {
+		await expect(links.nth(index).locator("span")).toHaveAttribute("aria-hidden", "true");
+		await expect(links.nth(index)).toHaveCSS("text-decoration-line", "none");
+	}
+	await expect(links.nth(3)).toHaveCSS("text-decoration-line", "underline");
+});
+
+test("home hero CTA keeps its CMS destination and northeast arrow", async ({ page }) => {
+	await page.goto("/es/");
+	const cta = page.locator(".home-hero__cta");
+	await expect(cta).toBeVisible();
+	await expect(cta).toHaveAttribute("href", /\/es\//);
+	const mask = await cta.evaluate((el) => getComputedStyle(el, "::after").maskImage);
+	expect(mask).toContain("M7_17L17_7");
 });
 
 test("homepage hero title exposes Tina metadata", async ({ page }) => {
