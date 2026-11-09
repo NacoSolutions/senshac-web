@@ -126,9 +126,9 @@ const nextSlideLabel =
         {items.map((item, index) => (
           <article class="grid gap-4 py-6 border-b border-[#111] md:grid-cols-2 md:gap-8 md:py-10">
             {itemHeadingLevel === "h3" ? (
-              <h3 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class="underline-offset-4 hover:underline">{item.title} <span aria-hidden="true" class={inquiryStyle && index < 3 ? "editorial-inquiry-arrow" : undefined}>↗</span></a> : item.title}</h3>
+              <h3 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class={inquiryStyle && index === 3 ? "underline underline-offset-4" : "underline-offset-4 hover:underline"}>{item.title} <span aria-hidden="true" class={inquiryStyle && index < 3 ? "editorial-inquiry-arrow" : undefined}>↗</span></a> : item.title}</h3>
             ) : (
-              <h2 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class="underline-offset-4 hover:underline">{item.title} <span aria-hidden="true" class={inquiryStyle && index < 3 ? "editorial-inquiry-arrow" : undefined}>↗</span></a> : item.title}</h2>
+              <h2 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class={inquiryStyle && index === 3 ? "underline underline-offset-4" : "underline-offset-4 hover:underline"}>{item.title} <span aria-hidden="true" class={inquiryStyle && index < 3 ? "editorial-inquiry-arrow" : undefined}>↗</span></a> : item.title}</h2>
             )}
             <div>
               <div data-tina-field={tinaField(tinaData.items[index], 'text')} class="[&>p]:m-0 [&>p]:text-base [&>p]:leading-[1.45]"><RichText content={item.text} /></div>
@@ -212,7 +212,6 @@ const nextSlideLabel =
   }
 
   .editorial-inquiry-flows article:last-child a {
-    text-decoration: underline !important;
     text-underline-offset: 0.15em;
   }
 
