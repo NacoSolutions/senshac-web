@@ -135,12 +135,53 @@ test.describe("Senshac browser smoke contract", () => {
 		const phase = page.locator("[data-phase-scroll]");
 		test.skip((await phase.count()) === 0, "paired content revision is not present in web CI");
 		const track = phase.locator("[data-phase-track]");
+		const controls = phase.locator(".editorial-phase-scroll__controls");
+		await expect(controls.locator("button")).toHaveCount(2);
+		const previous = controls.getByRole("button").first();
+		await expect(previous).toHaveAttribute("aria-label", /.+/);
+		await expect(previous).toBeDisabled();
 		await expect(phase.locator("[data-phase-card]")).toHaveCount(5);
 		await expect(track).toHaveAttribute("tabindex", "0");
 		const desktopOverflow = await track.evaluate(
 			(element) => element.scrollWidth - element.clientWidth,
 		);
 		expect(desktopOverflow).toBeGreaterThan(0);
+		const phaseGeometry = await phase.evaluate((carousel) => {
+			const section = carousel.closest(".editorial-phase-scroll");
+			if (!section) return null;
+			const layout = section.querySelector(".editorial-phase-scroll__layout");
+			const image = section.querySelector(".editorial-phase-scroll__image > div");
+			const rail = section.querySelector("[data-phase-track]");
+			const controls = section.querySelector(".editorial-phase-scroll__controls");
+			if (!layout || !image || !rail || !controls) return null;
+			const layoutBounds = layout.getBoundingClientRect();
+			const imageBounds = image.getBoundingClientRect();
+			const railBounds = rail.getBoundingClientRect();
+			const controlsBounds = controls.getBoundingClientRect();
+			return {
+				imageTop: imageBounds.top,
+				imageBottom: imageBounds.bottom,
+				rightTop: railBounds.top,
+				rightBottom: controlsBounds.bottom,
+				topRule: layoutBounds.top + Number.parseFloat(getComputedStyle(layout, "::before").top),
+				bottomRule: layoutBounds.bottom - Number.parseFloat(getComputedStyle(layout, "::after").bottom),
+				topRuleColor: getComputedStyle(layout, "::before").backgroundColor,
+				bottomRuleColor: getComputedStyle(layout, "::after").backgroundColor,
+			};
+		});
+		expect(phaseGeometry).toBeTruthy();
+		expect(Math.abs(phaseGeometry!.imageTop - phaseGeometry!.rightTop)).toBeLessThanOrEqual(1);
+		expect(Math.abs(phaseGeometry!.imageBottom - phaseGeometry!.rightBottom)).toBeLessThanOrEqual(1);
+		expect(Math.abs(phaseGeometry!.imageTop - phaseGeometry!.topRule)).toBeLessThanOrEqual(1);
+		expect(Math.abs(phaseGeometry!.imageBottom - phaseGeometry!.bottomRule)).toBeLessThanOrEqual(1);
+		const heightDelta = Math.abs(
+			phaseGeometry!.rightBottom -
+				phaseGeometry!.rightTop -
+				(phaseGeometry!.imageBottom - phaseGeometry!.imageTop),
+		);
+		expect(heightDelta).toBeLessThanOrEqual(1);
+		expect(phaseGeometry!.topRuleColor).toBe("rgb(17, 17, 17)");
+		expect(phaseGeometry!.bottomRuleColor).toBe("rgb(17, 17, 17)");
 
 		const next = phase.getByRole("button", { name: "Siguiente diapositiva" });
 		await expect(next).toBeEnabled();
@@ -158,6 +199,22 @@ test.describe("Senshac browser smoke contract", () => {
 				return cardBounds.left >= railBounds.left - 1 && cardBounds.right <= railBounds.right + 1;
 			}))
 			.toBe(true);
+		await expect(previous).toBeEnabled();
+		await previous.click();
+		await expect
+			.poll(() => track.evaluate((element) => element.scrollLeft))
+			.toBe(0);
+		await expect(next).toBeEnabled();
+		await next.click();
+		await expect
+			.poll(() => track.evaluate((element) => element.scrollLeft))
+			.toBeGreaterThan(0);
+		const scrollBeforeNext = await track.evaluate((element) => element.scrollLeft);
+		await expect(next).toBeEnabled();
+		await next.click();
+		await expect
+			.poll(() => track.evaluate((element) => element.scrollLeft))
+			.toBeGreaterThan(scrollBeforeNext);
 		await expect(next).toBeEnabled();
 		await next.click();
 		const fifthCard = phase.locator("[data-phase-card]").nth(4);
@@ -178,6 +235,12 @@ test.describe("Senshac browser smoke contract", () => {
 			(element) => element.scrollWidth - element.clientWidth,
 		);
 		expect(mobileOverflow).toBeGreaterThan(0);
+		await expect(controls.locator("button")).toHaveCount(2);
+		const mobileTrackBox = await track.boundingBox();
+		const mobileControlsBox = await controls.boundingBox();
+		expect(mobileControlsBox!.y).toBeGreaterThanOrEqual(
+			mobileTrackBox!.y + mobileTrackBox!.height - 1,
+		);
 	});
 
 });

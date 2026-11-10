@@ -38,10 +38,9 @@ const {
 const items = itemList ?? [];
 const itemHeadingLevel = title ? "h3" : "h2";
 const lang = Astro.url.pathname.split("/")[1] || "es";
-const nextSlideLabel =
-	variant === "phase-scroll"
-		? (await getTranslations(lang)).accessibility.nextSlide
-		: "";
+const translations = variant === "phase-scroll" ? await getTranslations(lang) : null;
+const previousSlideLabel = translations?.accessibility.previousSlide ?? "";
+const nextSlideLabel = translations?.accessibility.nextSlide ?? "";
 ---
 
 {variant === "phase-scroll" ? (
@@ -66,24 +65,26 @@ const nextSlideLabel =
           class="editorial-phase-scroll__carousel"
           data-phase-scroll
           x-data={`{
-            canAdvance: true,
+            canGoBack: false,
+            canGoForward: false,
             updateScrollState() {
               const track = this.$refs.track;
-              this.canAdvance = track.scrollLeft + track.clientWidth < track.scrollWidth - 1;
+              this.canGoBack = track.scrollLeft > 1;
+              this.canGoForward = track.scrollLeft + track.clientWidth < track.scrollWidth - 1;
             },
-            advance() {
+            move(direction) {
               const track = this.$refs.track;
-              const trackBounds = track.getBoundingClientRect();
-              const nextCard = Array.from(track.querySelectorAll("[data-phase-card]")).find(
-                (card) => card.getBoundingClientRect().right > trackBounds.right + 1,
-              );
-              if (!nextCard) return;
-              const left = track.scrollLeft + nextCard.getBoundingClientRect().left - trackBounds.left;
+              const cards = Array.from(track.querySelectorAll("[data-phase-card]"));
+              if (cards.length < 2) return;
+              const step = cards[1].getBoundingClientRect().left - cards[0].getBoundingClientRect().left;
+              const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+              const left = Math.max(0, Math.min(track.scrollLeft + direction * step, maxScroll));
               const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
               track.scrollTo({ left, behavior });
             },
           }`}
           x-init="updateScrollState()"
+          x-on:resize.window="updateScrollState()"
         >
           <div
             class="editorial-phase-scroll__track"
@@ -102,13 +103,20 @@ const nextSlideLabel =
               </article>
             ))}
           </div>
-          <button
-            type="button"
-            class="editorial-phase-scroll__next"
-            aria-label={nextSlideLabel}
-            x-bind:disabled="!canAdvance"
-            x-on:click="advance()"
-          >→</button>
+          <div class="editorial-phase-scroll__controls">
+            <button
+              type="button"
+              aria-label={previousSlideLabel}
+              x-bind:disabled="!canGoBack"
+              x-on:click="move(-1)"
+            ><span class="i-lucide-arrow-left h-4 w-4" aria-hidden="true" /></button>
+            <button
+              type="button"
+              aria-label={nextSlideLabel}
+              x-bind:disabled="!canGoForward"
+              x-on:click="move(1)"
+            ><span class="i-lucide-arrow-right h-4 w-4" aria-hidden="true" /></button>
+          </div>
         </div>
       </div>
     </div>
@@ -226,10 +234,30 @@ const nextSlideLabel =
   }
 
   .editorial-phase-scroll__layout {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.85fr);
     gap: clamp(1.5rem, 3vw, 3rem);
-    border-block: 1px solid #111;
+    border: 0;
+  }
+
+  .editorial-phase-scroll__layout::before,
+  .editorial-phase-scroll__layout::after {
+    position: absolute;
+    z-index: 1;
+    inset-inline: 0;
+    height: 1px;
+    background: #111;
+    content: "";
+    pointer-events: none;
+  }
+
+  .editorial-phase-scroll__layout::before {
+    top: 1rem;
+  }
+
+  .editorial-phase-scroll__layout::after {
+    bottom: 1rem;
   }
 
   .editorial-phase-scroll__image {
@@ -243,16 +271,19 @@ const nextSlideLabel =
   }
 
   .editorial-phase-scroll__carousel {
-    position: relative;
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     padding: 1.25rem 0;
   }
 
   .editorial-phase-scroll__track {
     display: flex;
+    flex: 1;
     gap: clamp(1.5rem, 3vw, 3rem);
+    min-height: 0;
     overflow-x: auto;
-    width: calc(100% - 3.5rem);
+    width: 100%;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
   }
@@ -298,30 +329,31 @@ const nextSlideLabel =
     margin: 0;
   }
 
-  .editorial-phase-scroll__next {
-    position: absolute;
-    z-index: 1;
-    top: 50%;
-    right: 0;
+  .editorial-phase-scroll__controls {
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: center;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .editorial-phase-scroll__controls button {
     display: grid;
-    width: 3rem;
-    height: 3rem;
+    width: 1.5rem;
+    height: 1.5rem;
     place-items: center;
-    transform: translateY(-50%);
     border: 0;
-    background: white;
-    color: #111;
-    font-size: 2.25rem;
-    line-height: 1;
+    background: transparent;
+    color: inherit;
     cursor: pointer;
   }
 
-  .editorial-phase-scroll__next:disabled {
-    opacity: 0.25;
+  .editorial-phase-scroll__controls button:disabled {
+    opacity: 0.35;
     cursor: not-allowed;
   }
 
-  .editorial-phase-scroll__next:focus-visible {
+  .editorial-phase-scroll__controls button:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 3px;
   }
@@ -329,6 +361,14 @@ const nextSlideLabel =
   @media (min-width: 768px) {
     .editorial-phase-scroll__card {
       flex-basis: calc(50% - 1.5rem);
+    }
+
+    .editorial-phase-scroll__layout::before {
+      top: 1.25rem;
+    }
+
+    .editorial-phase-scroll__layout::after {
+      bottom: 1.25rem;
     }
   }
 
@@ -349,6 +389,10 @@ const nextSlideLabel =
 
     .editorial-phase-scroll__carousel {
       padding-top: 0.5rem;
+    }
+
+    .editorial-phase-scroll__track {
+      flex: 0 0 auto;
     }
   }
 

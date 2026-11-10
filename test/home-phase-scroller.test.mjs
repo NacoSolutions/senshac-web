@@ -24,5 +24,9 @@ test("phase-scroll renders an accessible horizontal image-and-card rail", () => 
 	assert.match(rows, /data-phase-track/);
 	assert.match(rows, /role="region"/);
 	assert.match(rows, /aria-label=\{nextSlideLabel\}/);
+	assert.match(rows, /aria-label={previousSlideLabel}/);
+	assert.match(rows, /class="editorial-phase-scroll__controls"/);
+	assert.match(rows, /\.editorial-phase-scroll__layout::before/);
+	assert.match(rows, /\.editorial-phase-scroll__layout::after/);
 	assert.match(rows, /tinaField\(tinaData\.items\[index\], "number"\)/);
 });
