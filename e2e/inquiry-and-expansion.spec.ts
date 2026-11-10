@@ -19,6 +19,17 @@ test("home inquiry paths distinguish primary choices from the fallback", async (
 		await expect(links.nth(index)).toHaveCSS("text-decoration-line", "none");
 	}
 	await expect(links.nth(3)).toHaveCSS("text-decoration-line", "underline");
+	const fallbackRules = await links.nth(3).evaluate((link) => {
+		const article = link.closest("article")!;
+		const style = getComputedStyle(article);
+		const previous = article.previousElementSibling;
+		return {
+			previousBottom: previous ? getComputedStyle(previous).borderBottomWidth : "missing",
+			top: style.borderTopWidth,
+			bottom: style.borderBottomWidth,
+		};
+	});
+	expect(fallbackRules).toEqual({ previousBottom: "0px", top: "0px", bottom: "0px" });
 });
 
 test("home hero CTA keeps its CMS destination and northeast arrow", async ({ page }) => {
