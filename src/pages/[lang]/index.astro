@@ -64,7 +64,6 @@ const site = await getSiteConfig();
   <style is:global>
     .home-page > [data-block-template="hero"] .home-hero__title { text-transform: none; white-space: pre-line; }
 
-    .home-page > [data-block-template="showcase"]:nth-child(3) .showcase-project-carousel__overlay { inset: 0 0 auto; background: linear-gradient(180deg, rgb(0 0 0 / 68%), transparent); }
     @media (min-width: 768px) {
       .home-page .editorial-shell { width: 88vw; max-width: none; }
       .home-page > [data-block-template="hero"] .home-hero__copy { width: 59%; max-width: none; margin-left: 41%; text-align: left; }
@@ -77,9 +76,9 @@ const site = await getSiteConfig();
       .home-page > [data-block-template="text"] .editorial-body { font-size: 18px; }
       .home-page > [data-block-template="showcase"] .editorial-shell { display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); column-gap: 0; }
       .home-page > [data-block-template="showcase"] .editorial-shell > :not(.showcase-project-carousel) { grid-column: 3; }
-      .home-page > [data-block-template="showcase"]:nth-child(5) .editorial-shell > [data-showcase-items] { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); gap: 0; }
-      .home-page > [data-block-template="showcase"]:nth-child(5) [data-showcase-items] > :first-child { grid-column: 1; }
-      .home-page > [data-block-template="showcase"]:nth-child(5) [data-showcase-items] > :nth-child(2) { grid-column: 3; }
+      .home-page > [data-block-template="showcase"] .editorial-shell > [data-showcase-items].rude-feature { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 7fr) minmax(0, 59fr); gap: 0; min-height: clamp(24rem, 42vw, 40rem); }
+      .home-page > [data-block-template="showcase"] [data-showcase-items].rude-feature > :first-child { grid-column: 1; }
+      .home-page > [data-block-template="showcase"] [data-showcase-items].rude-feature > :nth-child(2) { grid-column: 3; }
       .home-page > [data-block-template="showcase"]:nth-child(7) .editorial-shell > [data-tina-field] { grid-column: 1 / -1; }
       .home-page > [data-block-template="showcase"] .showcase-project-carousel { grid-column: 1 / -1; width: 100vw; margin-left: calc((88vw - 100vw) / 2); }
       .home-page > [data-block-template="showcase"] .showcase-project-carousel__track { gap: 0 !important; }

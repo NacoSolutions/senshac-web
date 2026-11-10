@@ -1,5 +1,6 @@
 ---
 import { tinaField } from "@tinacms/astro/tina-field";
+import { getTranslations } from "../../../utils/translations";
 import RichText from "./RichText.astro";
 
 interface Props {
@@ -40,6 +41,10 @@ try {
 
 const displayPosts = posts.slice(0, limit);
 const isCarousel = displayPosts.length > maxVisible;
+const lang = Astro.url.pathname.split("/")[1] || "es";
+const translations = await getTranslations(lang);
+const previousSlideLabel = translations.accessibility.previousSlide;
+const nextSlideLabel = translations.accessibility.nextSlide;
 const imageVariant = (url: string | undefined, width: number) =>
 	url?.replace(
 		/\/(?:320|412|480|640|768|1024|1200|1280|1920)\.webp$/,
@@ -71,7 +76,19 @@ const carouselSlides = (urls: string[]) =>
     </div>
 
     <div
+      class="w-full"
+      data-instagram-carousel
+      data-visible-items={Math.min(maxVisible, displayPosts.length)}
+      data-available-items={displayPosts.length}
+      x-data="{ canGoBack: false, canGoForward: false, update() { const track = this.$refs.track; this.canGoBack = track.scrollLeft > 1; this.canGoForward = track.scrollLeft + track.clientWidth < track.scrollWidth - 1; }, move(direction) { const track = this.$refs.track; track.scrollBy({ left: direction * track.clientWidth, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); } }"
+      x-init="update()"
+      x-on:resize.window="update()"
+    >
+    <div
       class={`flex gap-4 pb-4 ${isCarousel ? 'overflow-x-auto snap-x snap-mandatory no-scrollbar flex-nowrap -mx-4 px-4 md:mx-0 md:px-0' : 'flex-wrap justify-center'}`}
+      data-instagram-track
+      x-ref="track"
+      x-on:scroll.debounce.100ms="update()"
       style={`--desktop-w: calc((100% - (${maxVisible} - 1) * 1rem) / ${maxVisible});`}
     >
       {displayPosts.map((post, i) => (
@@ -158,6 +175,13 @@ const carouselSlides = (urls: string[]) =>
           </div>
         </Fragment>
       ))}
+      </div>
+      {isCarousel && (
+        <div class="instagram-carousel__controls flex justify-center gap-2 pt-2">
+          <button type="button" aria-label={previousSlideLabel} class="grid h-6 w-6 place-items-center border-0 bg-transparent text-inherit disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2" x-bind:disabled="!canGoBack" x-on:click="move(-1)"><span class="i-lucide-arrow-left h-4 w-4" aria-hidden="true" /></button>
+          <button type="button" aria-label={nextSlideLabel} class="grid h-6 w-6 place-items-center border-0 bg-transparent text-inherit disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2" x-bind:disabled="!canGoForward" x-on:click="move(1)"><span class="i-lucide-arrow-right h-4 w-4" aria-hidden="true" /></button>
+        </div>
+      )}
     </div>
 
     {!disableLinks && (
