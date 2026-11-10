@@ -124,7 +124,7 @@ const nextSlideLabel =
       )}
       <div class="border-t border-[#111]">
         {items.map((item, index) => (
-          <article class="grid gap-4 py-6 border-b border-[#111] md:grid-cols-2 md:gap-8 md:py-10">
+          <article class={`grid gap-4 py-6 border-b border-[#111] md:grid-cols-2 md:gap-8 md:py-10${inquiryStyle && index < 3 ? " editorial-inquiry-primary" : ""}${inquiryStyle && index === 3 ? " editorial-inquiry-fallback" : ""}`}>
             {itemHeadingLevel === "h3" ? (
               <h3 data-tina-field={tinaField(tinaData.items[index], 'title')} class="m-0 text-[clamp(1.15rem,2.3vw,2rem)] font-medium leading-[1.05] uppercase">{item.href ? <a href={item.href} class={inquiryStyle && index === 3 ? "underline underline-offset-4" : "underline-offset-4 hover:underline"}>{item.title} <span aria-hidden="true" class={inquiryStyle && index < 3 ? "editorial-inquiry-arrow" : undefined}>↗</span></a> : item.title}</h3>
             ) : (
@@ -164,27 +164,27 @@ const nextSlideLabel =
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .editorial-inquiry-flows article:nth-child(-n + 3) h2,
-  .editorial-inquiry-flows article:nth-child(-n + 3) h3 {
+  .editorial-inquiry-flows article.editorial-inquiry-primary h2,
+  .editorial-inquiry-flows article.editorial-inquiry-primary h3 {
     font-size: clamp(1.5rem, 3.2vw, 3rem);
     font-weight: 400;
     line-height: 1.1;
     text-transform: none;
   }
 
-  .editorial-inquiry-flows article:nth-child(-n + 3) a {
+  .editorial-inquiry-flows article.editorial-inquiry-primary a {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     text-decoration: none;
   }
 
-  .editorial-inquiry-flows article:nth-child(-n + 3) a:hover {
+  .editorial-inquiry-flows article.editorial-inquiry-primary a:hover {
     text-decoration: underline;
     text-underline-offset: 0.12em;
   }
 
-  .editorial-inquiry-flows article:nth-child(-n + 3) a span {
+  .editorial-inquiry-flows article.editorial-inquiry-primary a span {
     font-size: 0.65em;
     margin-left: 0.5em;
   }
@@ -197,21 +197,21 @@ const nextSlideLabel =
     transform: translateY(-0.2em);
   }
 
-  .editorial-inquiry-flows article:last-child {
+  .editorial-inquiry-flows article.editorial-inquiry-fallback {
     margin-top: clamp(1rem, 3vw, 2.5rem);
     padding-top: 1.25rem;
     border-top: 1px solid #111;
   }
 
-  .editorial-inquiry-flows article:last-child h2,
-  .editorial-inquiry-flows article:last-child h3 {
+  .editorial-inquiry-flows article.editorial-inquiry-fallback h2,
+  .editorial-inquiry-flows article.editorial-inquiry-fallback h3 {
     font-size: clamp(1.125rem, 1.6vw, 1.5rem);
     font-weight: 400;
     line-height: 1.2;
     text-transform: none;
   }
 
-  .editorial-inquiry-flows article:last-child a {
+  .editorial-inquiry-flows article.editorial-inquiry-fallback a {
     text-underline-offset: 0.15em;
   }
 
