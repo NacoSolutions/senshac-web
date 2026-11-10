@@ -85,22 +85,22 @@ const carouselSlides = (urls: string[]) =>
       x-on:resize.window="update()"
     >
     <div
-      class={`flex gap-4 pb-4 ${isCarousel ? 'overflow-x-auto snap-x snap-mandatory no-scrollbar flex-nowrap -mx-4 px-4 md:mx-0 md:px-0' : 'flex-wrap justify-center'}`}
+      class={`pb-4 gap-4 ${
+        isCarousel
+          ? 'flex overflow-x-auto snap-x snap-mandatory no-scrollbar flex-nowrap -mx-4 px-4 md:mx-0 md:px-0'
+          : 'grid grid-cols-3'
+      }`}
       data-instagram-track
       x-ref="track"
       x-on:scroll.debounce.100ms="update()"
       style={`--desktop-w: calc((100% - (${maxVisible} - 1) * 1rem) / ${maxVisible});`}
     >
-      {displayPosts.map((post, i) => (
-        <Fragment>
-          {i > 0 && !isCarousel && <div class="w-px bg-gray-200 hidden md:block"></div>}
-          <div
-            class={`aspect-[4/5] bg-transparent flex items-center justify-center group relative overflow-hidden transition-transform hover:scale-[1.02] ${
-              isCarousel
-                ? 'flex-none snap-start w-[85%] md:w-[var(--desktop-w)]'
-                : 'w-[calc(50%-0.5rem)] md:w-[var(--desktop-w)]'
-            }`}
-          >
+      {displayPosts.map((post) => (
+        <div
+          class={`instagram-feed__item aspect-[4/5] bg-transparent flex items-center justify-center group relative overflow-hidden transition-transform hover:scale-[1.02] ${
+            isCarousel ? 'flex-none snap-start w-[85%]' : 'w-full'
+          }`}
+        >
           {post.media_type === 'CAROUSEL_ALBUM' && post.children && post.children.length > 0 ? (
             <div
               class="absolute inset-0 w-full h-full"
@@ -172,8 +172,7 @@ const carouselSlides = (urls: string[]) =>
                 <span class="i-lucide-pause block w-4 h-4"></span>
               </button>
             )}
-          </div>
-        </Fragment>
+        </div>
       ))}
       </div>
       {isCarousel && (
@@ -276,3 +275,11 @@ const carouselSlides = (urls: string[]) =>
     });
   </script>
 )}
+
+<style>
+  @media (min-width: 768px) {
+    .instagram-feed__item {
+      width: var(--desktop-w);
+    }
+  }
+</style>

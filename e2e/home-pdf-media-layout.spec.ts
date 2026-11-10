@@ -45,19 +45,22 @@ test("Home carousel headers and RUDE feature follow the PDF image layout", async
   await expect(rude.locator(":scope > :nth-child(2) .rude-feature__overlay")).toBeVisible();
 });
 
-test("Home Instagram feed shows three and only adds controls when more are available", async ({ page }) => {
+test("Home Instagram feed shows three posts in one row on desktop and mobile", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/es/");
   const instagram = page.locator('.home-page [data-block-template="feed"] [data-instagram-carousel]');
   await expect(instagram).toBeVisible();
   await expect(instagram).toHaveAttribute("data-visible-items", "3");
   const available = Number(await instagram.getAttribute("data-available-items"));
-  expect(available).toBeGreaterThanOrEqual(3);
-  const controls = instagram.locator(".instagram-carousel__controls");
-  if (available > 3) {
-    await expect(controls).toBeVisible();
-    await expect(controls.getByRole("button")).toHaveCount(2);
-  } else {
-    await expect(controls).toHaveCount(0);
+  expect(available).toBe(3);
+  const items = instagram.locator("[data-instagram-track] > .instagram-feed__item");
+  await expect(items).toHaveCount(3);
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    const tops = await items.evaluateAll((cards) =>
+      cards.map((card) => card.getBoundingClientRect().top),
+    );
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1);
   }
+  await expect(instagram.locator(".instagram-carousel__controls")).toHaveCount(0);
 });
