@@ -99,20 +99,31 @@ test("Home preserves current live block order and opening carousel", async ({
 		const overlay = slide.querySelector(".showcase-project-carousel__overlay");
 		if (!overlay) return null;
 		const overlayStyle = getComputedStyle(overlay);
+		const smokeStyle = getComputedStyle(slide, "::before");
 		return {
 			overlayOffset: overlay.getBoundingClientRect().top - slide.getBoundingClientRect().top,
-			ruleWidth: overlayStyle.borderTopWidth,
-			ruleColor: overlayStyle.borderTopColor,
+			ruleWidth: overlayStyle.borderBottomWidth,
+			ruleColor: overlayStyle.borderBottomColor,
+			ruleTopWidth: overlayStyle.borderTopWidth,
 			ruleLeftInset: overlay.getBoundingClientRect().left - slide.getBoundingClientRect().left,
 			ruleRightInset: slide.getBoundingClientRect().right - overlay.getBoundingClientRect().right,
+			headerBackground: overlayStyle.backgroundImage,
+			smokeBackground: smokeStyle.backgroundImage,
+			smokeLeft: smokeStyle.left,
+			smokeRight: smokeStyle.right,
 		};
 	});
 	expect(openingSlideStyle).not.toBeNull();
 	expect(openingSlideStyle?.overlayOffset).toBeGreaterThan(0);
 	expect(openingSlideStyle?.ruleWidth).toBe("1px");
 	expect(openingSlideStyle?.ruleColor).toBe("rgb(255, 255, 255)");
+	expect(openingSlideStyle?.ruleTopWidth).toBe("0px");
 	expect(openingSlideStyle?.ruleLeftInset).toBeGreaterThan(0);
 	expect(openingSlideStyle?.ruleRightInset).toBeGreaterThan(0);
+	expect(openingSlideStyle?.headerBackground).toBe("none");
+	expect(openingSlideStyle?.smokeBackground).toContain("linear-gradient");
+	expect(openingSlideStyle?.smokeLeft).toBe("0px");
+	expect(openingSlideStyle?.smokeRight).toBe("0px");
 	const track = projectCarousel.locator("[data-project-carousel-track]");
 	const fullyVisibleSlideCount = () => track.evaluate((element) => {
 		const bounds = element.getBoundingClientRect();
