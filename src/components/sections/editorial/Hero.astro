@@ -59,7 +59,7 @@ const {
 
     </div>
   </div>
-  {ctaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link home-hero__cta" href={ctaLink}><span data-tina-field={tinaField(tinaData, 'ctaText')}>{ctaText}</span></a>}
+  {ctaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link home-hero__cta" href={ctaLink}><span class="home-hero__cta-label" data-tina-field={tinaField(tinaData, 'ctaText')}>{ctaText}</span><span class="home-hero__cta-arrow" aria-hidden="true">↗</span></a>}
 </section>
 
 <style>
@@ -150,20 +150,16 @@ const {
     text-decoration: none;
     text-underline-offset: 0.15em;
 
-    & span {
+    & .home-hero__cta-label {
       border-bottom: 1px solid currentColor;
       padding-bottom: 0.1em;
     }
+  }
 
-  .home-hero__cta::after {
-    display: inline-block;
-    flex: 0 0 1.1em;
-    width: 1.1em;
-    height: 1.1em;
-    background-color: currentColor;
-    mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27black%27 stroke-width=%271.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M7 17L17 7M7 7h10v10%27/%3E%3C/svg%3E") center / contain no-repeat;
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27black%27 stroke-width=%271.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M7 17L17 7M7 7h10v10%27/%3E%3C/svg%3E") center / contain no-repeat;
-    text-decoration: none;
+  .home-hero__cta-arrow {
+    margin-left: 0.4em;
+    font-size: 0.8em;
+    line-height: 1;
   }
   @media (max-width: 47.99rem) {
     .home-hero {

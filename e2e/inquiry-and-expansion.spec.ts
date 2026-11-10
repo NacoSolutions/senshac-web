@@ -37,8 +37,9 @@ test("home hero CTA keeps its CMS destination and northeast arrow", async ({ pag
 	const cta = page.locator(".home-hero__cta");
 	await expect(cta).toBeVisible();
 	await expect(cta).toHaveAttribute("href", /\/es\//);
-	const mask = await cta.evaluate((el) => getComputedStyle(el, "::after").maskImage);
-	expect(mask).toContain("M7_17L17_7");
+	const arrow = cta.locator(".home-hero__cta-arrow");
+	await expect(arrow).toBeVisible();
+	await expect(arrow).toHaveText("↗");
 });
 
 test("homepage hero title exposes Tina metadata", async ({ page }) => {

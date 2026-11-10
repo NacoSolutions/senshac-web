@@ -237,8 +237,10 @@ for (const locale of locales) {
 			const headerLinks = document.querySelector("[data-homepage-nav] > ul");
 			const mediaCarousel = block(2)?.querySelector(".showcase-project-carousel");
 			const slides = [...(block(2)?.querySelectorAll("[data-project-slide]") ?? [])];
+			const processCopy = block(7)?.querySelector(".editorial-phase-scroll__copy");
 			return {
 				viewportWidth: document.documentElement.clientWidth,
+				processCopyMarginLeft: processCopy ? getComputedStyle(processCopy).marginLeft : null,
 				headerLinksLeft: headerLinks?.getBoundingClientRect().left ?? null,
 				shell: {
 					left: shellRect.left,
@@ -296,6 +298,7 @@ for (const locale of locales) {
 		expect(metrics).not.toBeNull();
 		if (!metrics) throw new Error("Home layout metrics could not be measured");
 
+		expect(metrics.processCopyMarginLeft).toBe("0px");
 		for (const [name, left] of Object.entries(metrics.alignment)) {
 			if ((name === "feedSection" || name === "feedTitle") && left === null) continue;
 			expect(left, `${name} should have a measurable left edge`).not.toBeNull();
