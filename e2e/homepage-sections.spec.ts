@@ -99,7 +99,6 @@ test("Home preserves current live block order and opening carousel", async ({
 		const overlay = slide.querySelector(".showcase-project-carousel__overlay");
 		if (!overlay) return null;
 		const overlayStyle = getComputedStyle(overlay);
-		const smokeStyle = getComputedStyle(slide, "::before");
 		return {
 			overlayOffset: overlay.getBoundingClientRect().top - slide.getBoundingClientRect().top,
 			ruleWidth: overlayStyle.borderBottomWidth,
@@ -108,9 +107,7 @@ test("Home preserves current live block order and opening carousel", async ({
 			ruleLeftInset: overlay.getBoundingClientRect().left - slide.getBoundingClientRect().left,
 			ruleRightInset: slide.getBoundingClientRect().right - overlay.getBoundingClientRect().right,
 			headerBackground: overlayStyle.backgroundImage,
-			smokeBackground: smokeStyle.backgroundImage,
-			smokeLeft: smokeStyle.left,
-			smokeRight: smokeStyle.right,
+			smokeBackground: getComputedStyle(slide, "::before").backgroundImage,
 		};
 	});
 	expect(openingSlideStyle).not.toBeNull();
@@ -121,9 +118,7 @@ test("Home preserves current live block order and opening carousel", async ({
 	expect(openingSlideStyle?.ruleLeftInset).toBeGreaterThan(0);
 	expect(openingSlideStyle?.ruleRightInset).toBeGreaterThan(0);
 	expect(openingSlideStyle?.headerBackground).toBe("none");
-	expect(openingSlideStyle?.smokeBackground).toContain("linear-gradient");
-	expect(openingSlideStyle?.smokeLeft).toBe("0px");
-	expect(openingSlideStyle?.smokeRight).toBe("0px");
+	expect(openingSlideStyle?.smokeBackground).toBe("none");
 	const track = projectCarousel.locator("[data-project-carousel-track]");
 	const fullyVisibleSlideCount = () => track.evaluate((element) => {
 		const bounds = element.getBoundingClientRect();

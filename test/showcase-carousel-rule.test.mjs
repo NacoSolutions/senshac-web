@@ -7,11 +7,10 @@ const showcase = await readFile(
 	"utf8",
 );
 
-test("carousel smoke is separate from the inset header and its white rule is below", () => {
-	const slideSmoke = showcase.match(/\.showcase-project-carousel__slide::before\s*\{([^}]+)\}/s)?.[1];
+test("carousel header has inset margins and a bottom rule, without a smoke gradient", () => {
 	const header = showcase.match(/\.showcase-project-carousel__overlay\s*\{([^}]+)\}/s)?.[1];
-	assert.ok(slideSmoke?.includes("background: linear-gradient"));
-	assert.ok(slideSmoke?.includes("inset: 0 0 auto"));
+	assert.ok(!showcase.includes(".showcase-project-carousel__slide::before"));
+	assert.ok(!showcase.includes("linear-gradient"));
 	assert.ok(header?.includes("border-bottom: 1px solid #fff"));
 	assert.ok(header?.includes("background: transparent"));
 	assert.ok(!header?.includes("border-top"));

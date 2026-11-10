@@ -299,16 +299,6 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
     scroll-snap-stop: always;
   }
 
-  .showcase-project-carousel__slide::before {
-    position: absolute;
-    z-index: 1;
-    inset: 0 0 auto;
-    height: 45%;
-    background: linear-gradient(180deg, rgb(0 0 0 / 68%), transparent);
-    content: "";
-    pointer-events: none;
-  }
-
   .showcase-project-carousel__media,
   .showcase-project-carousel__media > .showcase-project-carousel__placeholder,
   .showcase-project-carousel__media :global(picture),
@@ -339,7 +329,6 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
     align-items: start;
     gap: 0.25rem 1rem;
     padding: 0.75rem 0;
-    z-index: 2;
     border-bottom: 1px solid #fff;
     background: transparent;
     color: #fff;
