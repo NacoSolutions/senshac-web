@@ -146,7 +146,9 @@ test.describe("Senshac browser smoke contract", () => {
 			(element) => element.scrollWidth - element.clientWidth,
 		);
 		expect(desktopOverflow).toBeGreaterThan(0);
-		const phaseGeometry = await phase.evaluate((section) => {
+		const phaseGeometry = await phase.evaluate((carousel) => {
+			const section = carousel.closest(".editorial-phase-scroll");
+			if (!section) return null;
 			const layout = section.querySelector(".editorial-phase-scroll__layout");
 			const image = section.querySelector(".editorial-phase-scroll__image > div");
 			const rail = section.querySelector("[data-phase-track]");
