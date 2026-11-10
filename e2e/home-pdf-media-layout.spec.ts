@@ -13,13 +13,28 @@ test("Home carousel headers and RUDE feature follow the PDF image layout", async
     const slide = element.getBoundingClientRect();
     const rule = overlay.getBoundingClientRect();
     const style = getComputedStyle(overlay);
-    return { leftInset: rule.left - slide.left, rightInset: slide.right - rule.right, topInset: rule.top - slide.top, borderTop: style.borderTopWidth };
+    const smoke = getComputedStyle(element, "::before");
+    return {
+      leftInset: rule.left - slide.left,
+      rightInset: slide.right - rule.right,
+      topInset: rule.top - slide.top,
+      borderBottom: style.borderBottomWidth,
+      borderTop: style.borderTopWidth,
+      headerBackground: style.backgroundImage,
+      smokeBackground: smoke.backgroundImage,
+      smokeLeft: smoke.left,
+      smokeRight: smoke.right,
+    };
   });
   expect(header.leftInset).toBeGreaterThan(0);
   expect(header.rightInset).toBeGreaterThan(0);
   expect(header.topInset).toBeGreaterThan(0);
-  expect(header.borderTop).toBe("1px");
-
+  expect(header.borderBottom).toBe("1px");
+  expect(header.borderTop).toBe("0px");
+  expect(header.headerBackground).toBe("none");
+  expect(header.smokeBackground).toContain("linear-gradient");
+  expect(header.smokeLeft).toBe("0px");
+  expect(header.smokeRight).toBe("0px");
   const rude = page.locator('.home-page [data-block-template="showcase"] [data-showcase-items].rude-feature');
   await expect(rude.locator(":scope > *")).toHaveCount(2);
   const leftImage = rude.locator(":scope > :first-child");
