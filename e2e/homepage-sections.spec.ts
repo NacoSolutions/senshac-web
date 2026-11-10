@@ -101,18 +101,24 @@ test("Home preserves current live block order and opening carousel", async ({
 		const overlayStyle = getComputedStyle(overlay);
 		return {
 			overlayOffset: overlay.getBoundingClientRect().top - slide.getBoundingClientRect().top,
-			ruleWidth: overlayStyle.borderTopWidth,
-			ruleColor: overlayStyle.borderTopColor,
+			ruleWidth: overlayStyle.borderBottomWidth,
+			ruleColor: overlayStyle.borderBottomColor,
+			ruleTopWidth: overlayStyle.borderTopWidth,
 			ruleLeftInset: overlay.getBoundingClientRect().left - slide.getBoundingClientRect().left,
 			ruleRightInset: slide.getBoundingClientRect().right - overlay.getBoundingClientRect().right,
+			headerBackground: overlayStyle.backgroundImage,
+			smokeBackground: getComputedStyle(slide, "::before").backgroundImage,
 		};
 	});
 	expect(openingSlideStyle).not.toBeNull();
 	expect(openingSlideStyle?.overlayOffset).toBeGreaterThan(0);
 	expect(openingSlideStyle?.ruleWidth).toBe("1px");
 	expect(openingSlideStyle?.ruleColor).toBe("rgb(255, 255, 255)");
+	expect(openingSlideStyle?.ruleTopWidth).toBe("0px");
 	expect(openingSlideStyle?.ruleLeftInset).toBeGreaterThan(0);
 	expect(openingSlideStyle?.ruleRightInset).toBeGreaterThan(0);
+	expect(openingSlideStyle?.headerBackground).toBe("none");
+	expect(openingSlideStyle?.smokeBackground).toBe("none");
 	const track = projectCarousel.locator("[data-project-carousel-track]");
 	const fullyVisibleSlideCount = () => track.evaluate((element) => {
 		const bounds = element.getBoundingClientRect();
