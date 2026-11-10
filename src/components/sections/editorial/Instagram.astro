@@ -87,7 +87,7 @@ const carouselSlides = (urls: string[]) =>
     <div
       class={`pb-4 gap-4 ${
         isCarousel
-          ? 'flex overflow-x-auto snap-x snap-mandatory no-scrollbar flex-nowrap -mx-4 px-4 md:mx-0 md:px-0'
+          ? 'instagram-feed__track--carousel flex overflow-x-auto snap-x snap-mandatory no-scrollbar flex-nowrap -mx-4 px-4 md:mx-0 md:px-0'
           : 'grid grid-cols-3'
       }`}
       data-instagram-track
@@ -278,7 +278,7 @@ const carouselSlides = (urls: string[]) =>
 
 <style>
   @media (min-width: 768px) {
-    .instagram-feed__item {
+    .instagram-feed__track--carousel > .instagram-feed__item {
       width: var(--desktop-w);
     }
   }

@@ -45,7 +45,7 @@ test("Home carousel headers and RUDE feature follow the PDF image layout", async
   await expect(rude.locator(":scope > :nth-child(2) .rude-feature__overlay")).toBeVisible();
 });
 
-test("Home Instagram feed shows three posts in one row on desktop and mobile", async ({ page }) => {
+test("Home Instagram feed fills the three-post row at desktop and mobile sizes", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/es/");
   const instagram = page.locator('.home-page [data-block-template="feed"] [data-instagram-carousel]');
@@ -57,10 +57,17 @@ test("Home Instagram feed shows three posts in one row on desktop and mobile", a
   await expect(items).toHaveCount(3);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
-    const tops = await items.evaluateAll((cards) =>
-      cards.map((card) => card.getBoundingClientRect().top),
+    const cards = await items.evaluateAll((elements) =>
+      elements.map((element) => {
+        const { top, left, right } = element.getBoundingClientRect();
+        return { top, left, right };
+      }),
     );
-    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1);
+    const trackBox = await instagram.locator("[data-instagram-track]").boundingBox();
+    const rowHeight = Math.max(...cards.map(({ top }) => top)) - Math.min(...cards.map(({ top }) => top));
+    expect(rowHeight).toBeLessThanOrEqual(1);
+    const coverage = cards.at(-1)!.right - cards[0].left;
+    expect(coverage).toBeGreaterThanOrEqual(trackBox!.width - 2);
   }
   await expect(instagram.locator(".instagram-carousel__controls")).toHaveCount(0);
 });
