@@ -27,6 +27,7 @@ interface Props {
 	maxVisible?: number;
 	scrollStep?: number;
 	items?: Item[] | null;
+	rudeFeature?: boolean;
 	tinaData?: any;
 }
 
@@ -43,6 +44,7 @@ const {
 	maxVisible = 1,
 	scrollStep = 1,
 	items: itemList,
+	rudeFeature,
 	tinaData,
 } = Astro.props;
 const items = itemList ?? [];
@@ -214,10 +216,11 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
         )}
       </div>
     ) : items.length > 0 ? (
-      <div data-showcase-items class="grid gap-8 grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]">
+      <div data-showcase-items class:list={["grid gap-8 grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]", { "rude-feature": rudeFeature }]}>
         {items.map((item, index) =>
           item.link ? (
-            <a data-tina-field={tinaField(tinaData.items[index], 'link')} href={item.link} class="flex flex-col gap-4 decoration-none text-inherit">
+            <a data-tina-field={tinaField(tinaData.items[index], 'link')} href={item.link} class:list={["flex flex-col gap-4 decoration-none text-inherit", { "rude-feature__item": rudeFeature }]}>
+              <div class={rudeFeature ? "rude-feature__media" : undefined}>
               <MediaPlaceholder
                 mediaId={item.mediaId}
                 alt={item.imageAlt}
@@ -226,11 +229,13 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
                 mediaSlot="grid"
                 fieldMarker={tinaField(tinaData.items[index], 'mediaId')}
               />
-              {item.title && <span data-tina-field={tinaField(tinaData.items[index], 'title')} class="text-[1.15rem] font-medium uppercase">{item.title}{item.link && <span class="i-lucide-arrow-up-right ml-2 inline-block h-4 w-4" aria-hidden="true" />}</span>}
+              </div>
+              {item.title && <span data-tina-field={tinaField(tinaData.items[index], 'title')} class:list={["text-[1.15rem] font-medium uppercase", { "rude-feature__overlay": rudeFeature && index === 1 }]}>{item.title}{item.link && <span class="i-lucide-arrow-up-right ml-2 inline-block h-4 w-4" aria-hidden="true" />}</span>}
               {item.ctaText && <span data-tina-field={tinaField(tinaData.items[index], 'ctaText')} class="editorial-link">{item.ctaText}</span>}
             </a>
           ) : (
-            <div class="flex flex-col gap-4 decoration-none text-inherit">
+            <div class:list={["flex flex-col gap-4 decoration-none text-inherit", { "rude-feature__item": rudeFeature }]}>
+              <div class={rudeFeature ? "rude-feature__media" : undefined}>
               <MediaPlaceholder
                 mediaId={item.mediaId}
                 alt={item.imageAlt}
@@ -239,7 +244,8 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
                 mediaSlot="grid"
                 fieldMarker={tinaField(tinaData.items[index], 'mediaId')}
               />
-              {item.title && <span data-tina-field={tinaField(tinaData.items[index], 'title')} class="text-[1.15rem] font-medium uppercase">{item.title}</span>}
+              </div>
+              {item.title && <span data-tina-field={tinaField(tinaData.items[index], 'title')} class:list={["text-[1.15rem] font-medium uppercase", { "rude-feature__overlay": rudeFeature && index === 1 }]}>{item.title}</span>}
             </div>
           ),
         )}
@@ -317,13 +323,13 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
 
   .showcase-project-carousel__overlay {
     position: absolute;
-    inset: 0 0 auto;
+    inset: clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) auto;
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: start;
     gap: 0.25rem 1rem;
-    padding: 1rem 0 0.75rem clamp(1rem, 3vw, 2rem);
-    border-bottom: 1px solid #fff;
+    padding: 0.75rem 0;
+    border-top: 1px solid #fff;
     background: linear-gradient(180deg, rgb(0 0 0 / 68%), transparent);
     color: #fff;
   }
@@ -413,6 +419,31 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
     .showcase-project-carousel[data-visible-items="3"] .showcase-project-carousel__slide {
       flex-basis: calc((100% - 2rem) / 3);
     }
+  }
+
+  .rude-feature__item {
+    position: relative;
+    display: block;
+    min-height: 20rem;
+  }
+
+  .rude-feature__media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .rude-feature__media :global(> div) {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .rude-feature__overlay {
+    position: absolute;
+    z-index: 1;
+    right: clamp(1rem, 2vw, 2rem);
+    bottom: clamp(1rem, 2vw, 2rem);
+    left: clamp(1rem, 2vw, 2rem);
+    color: #fff;
   }
 
   @media (prefers-reduced-motion: reduce) {

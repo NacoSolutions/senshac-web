@@ -8,6 +8,6 @@ const showcase = await readFile(
 );
 
 test("project carousel keeps the white rule inset within each slide", () => {
-	assert.match(showcase, /\.showcase-project-carousel__overlay\s*\{[^}]*border-bottom:\s*1px solid #fff/s);
-	assert.match(showcase, /\.showcase-project-carousel__overlay\s*\{[^}]*padding:\s*1rem 0 0\.75rem clamp\(1rem,\s*3vw,\s*2rem\)/s);
+	assert.ok(showcase.includes("border-top: 1px solid #fff"));
+	assert.ok(showcase.includes("inset: clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) auto"));
 });

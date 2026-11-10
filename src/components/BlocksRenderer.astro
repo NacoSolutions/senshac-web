@@ -77,11 +77,12 @@ function mediaId(value?: string | null) {
       {...block}
       items={block.items}
       tinaData={block}
+      rudeFeature={block.items?.length === 2 && block.items.some((item: any) => /rude/i.test(item.mediaId ?? ""))}
     />
   )}
   {template === 'statement' && <EditorialMission {...block} />}
   {template === 'carousel' && <EditorialCarousel {...block} eagerFirst={index === 0} />}
-  {template === 'feed' && <EditorialInstagram {...block} tinaData={block} />}
+  {template === 'feed' && <EditorialInstagram {...block} tinaData={block} maxVisible={3} />}
   {template === 'gallery' && block.images && (
     <section class="max-w-7xl mx-auto px-4 my-16">
       <div class={`grid gap-4 grid-cols-1 md:grid-cols-${block.cols || 2}`}>
