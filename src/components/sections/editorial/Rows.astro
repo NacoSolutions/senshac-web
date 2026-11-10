@@ -74,13 +74,11 @@ const nextSlideLabel = translations?.accessibility.nextSlide ?? "";
             },
             move(direction) {
               const track = this.$refs.track;
-              const trackBounds = track.getBoundingClientRect();
               const cards = Array.from(track.querySelectorAll("[data-phase-card]"));
-              const target = direction > 0
-                ? cards.find((card) => card.getBoundingClientRect().right > trackBounds.right + 1)
-                : cards.reverse().find((card) => card.getBoundingClientRect().left < trackBounds.left - 1);
-              if (!target) return;
-              const left = track.scrollLeft + target.getBoundingClientRect().left - trackBounds.left;
+              if (cards.length < 2) return;
+              const step = cards[1].getBoundingClientRect().left - cards[0].getBoundingClientRect().left;
+              const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+              const left = Math.max(0, Math.min(track.scrollLeft + direction * step, maxScroll));
               const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
               track.scrollTo({ left, behavior });
             },
