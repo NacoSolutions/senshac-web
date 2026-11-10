@@ -6,7 +6,7 @@ const renderer = await readFile(new URL("../src/components/BlocksRenderer.astro"
 test("three available Instagram posts stay in a three-column row", () => {
   assert.ok(instagram.includes("grid-cols-3"));
   assert.ok(instagram.includes("instagram-feed__item"));
-  assert.match(instagram, /\.instagram-feed__item \{[^}]*width: var\(--desktop-w\);/s);
+  assert.match(instagram, /\.instagram-feed__track--carousel > \.instagram-feed__item \{[^}]*width: var\(--desktop-w\);/s);
 });
 
 test("Instagram carousel shows three posts and has matching conditional controls", () => {
