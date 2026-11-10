@@ -209,6 +209,12 @@ test.describe("Senshac browser smoke contract", () => {
 		await expect
 			.poll(() => track.evaluate((element) => element.scrollLeft))
 			.toBeGreaterThan(0);
+		const scrollBeforeNext = await track.evaluate((element) => element.scrollLeft);
+		await expect(next).toBeEnabled();
+		await next.click();
+		await expect
+			.poll(() => track.evaluate((element) => element.scrollLeft))
+			.toBeGreaterThan(scrollBeforeNext);
 		await expect(next).toBeEnabled();
 		await next.click();
 		const fifthCard = phase.locator("[data-phase-card]").nth(4);
