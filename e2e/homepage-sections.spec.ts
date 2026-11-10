@@ -101,16 +101,18 @@ test("Home preserves current live block order and opening carousel", async ({
 		const overlayStyle = getComputedStyle(overlay);
 		return {
 			overlayOffset: overlay.getBoundingClientRect().top - slide.getBoundingClientRect().top,
-			ruleWidth: overlayStyle.borderBottomWidth,
-			ruleColor: overlayStyle.borderBottomColor,
+			ruleWidth: overlayStyle.borderTopWidth,
+			ruleColor: overlayStyle.borderTopColor,
+			ruleLeftInset: overlay.getBoundingClientRect().left - slide.getBoundingClientRect().left,
 			ruleRightInset: slide.getBoundingClientRect().right - overlay.getBoundingClientRect().right,
 		};
 	});
 	expect(openingSlideStyle).not.toBeNull();
-	expect(openingSlideStyle?.overlayOffset).toBeLessThanOrEqual(1);
+	expect(openingSlideStyle?.overlayOffset).toBeGreaterThan(0);
 	expect(openingSlideStyle?.ruleWidth).toBe("1px");
 	expect(openingSlideStyle?.ruleColor).toBe("rgb(255, 255, 255)");
-	expect(openingSlideStyle?.ruleRightInset).toBe(0);
+	expect(openingSlideStyle?.ruleLeftInset).toBeGreaterThan(0);
+	expect(openingSlideStyle?.ruleRightInset).toBeGreaterThan(0);
 	const track = projectCarousel.locator("[data-project-carousel-track]");
 	const fullyVisibleSlideCount = () => track.evaluate((element) => {
 		const bounds = element.getBoundingClientRect();

@@ -26,8 +26,8 @@ test("Home carousel headers and RUDE feature follow the PDF image layout", async
   const media = leftImage.locator(".rude-feature__media");
   const fill = await media.evaluate((element) => {
     const box = element.getBoundingClientRect();
-    const image = element.querySelector("img")?.getBoundingClientRect();
-    return image && { widthDelta: Math.abs(box.width - image.width), heightDelta: Math.abs(box.height - image.height) };
+    const inner = element.firstElementChild?.getBoundingClientRect();
+    return inner && { widthDelta: Math.abs(box.width - inner.width), heightDelta: Math.abs(box.height - inner.height) };
   });
   expect(fill).toBeTruthy();
   expect(fill!.widthDelta).toBeLessThanOrEqual(2);
