@@ -1,7 +1,7 @@
 // src/utils/site-config.ts
 import { getEntry } from "astro:content";
 
-type SiteConfig = Awaited<ReturnType<typeof getSiteConfig>>;
+export type SiteConfig = Awaited<ReturnType<typeof getSiteConfig>>;
 
 export async function getSiteConfig() {
 	const entry = await getEntry("site-config", "site");

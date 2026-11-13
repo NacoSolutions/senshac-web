@@ -1,5 +1,6 @@
 // tina/config.ts
 import { defineConfig, type TinaField } from "tinacms";
+import { DEFAULT_TYPOGRAPHY_PRESET, TYPOGRAPHY_PRESET_OPTIONS } from "../src/utils/typography.mjs";
 
 // ============================================================================
 // SHARED FIELD DEFINITIONS
@@ -34,6 +35,7 @@ const appearancePresets = [
 	"opaque-light",
 	"opaque-dark",
 ];
+const SAFE_RICH_TEXT_TOOLBAR = ["heading", "bold", "italic", "strikethrough", "link", "ul", "ol", "quote"] as const;
 
 const chromeFields: TinaField = {
 	type: "object",
@@ -65,6 +67,25 @@ const chromeFields: TinaField = {
 				},
 			],
 		})),
+	],
+};
+
+
+const typographyFields: TinaField = {
+	type: "object",
+	name: "typography",
+	label: "Typography",
+	description: "Choose an approved sitewide font pairing. Text size and layout remain controlled by the design system.",
+	fields: [
+		{
+			type: "string",
+			name: "preset",
+			label: "Sitewide font pairing",
+			description: "Updates body and heading fonts using approved Senshac typefaces.",
+			options: [...TYPOGRAPHY_PRESET_OPTIONS],
+			ui: { defaultValue: DEFAULT_TYPOGRAPHY_PRESET },
+			required: true,
+		},
 	],
 };
 
@@ -100,6 +121,7 @@ const pageChromeFields: TinaField = {
 const siteConfigFields: TinaField[] = [
 	{ type: "string" as const, name: "siteUrl", label: "Site URL" },
 	chromeFields,
+	typographyFields,
 	{ type: "string" as const, name: "locales", label: "Locales", list: true },
 	{ type: "string" as const, name: "defaultLocale", label: "Default Locale" },
 	{
@@ -207,7 +229,7 @@ const editorialHeroBlock: TinaField = {
 			type: "string",
 			ui: { component: "textarea" },
 		},
-		{ name: "intro", label: "Introduction", type: "rich-text" },
+		{ name: "intro", label: "Introduction", type: "rich-text", overrides: { toolbar: [...SAFE_RICH_TEXT_TOOLBAR] } },
 		{ name: "ctaText", label: "Link Text", type: "string" },
 		{ name: "ctaLink", label: "Link URL", type: "string" },
 		{
@@ -282,7 +304,7 @@ const editorialCopyBlock: TinaField = {
 			type: "string",
 			options: ["brief", "concept", "strategy"],
 		},
-		{ name: "body", label: "Body", type: "rich-text" },
+		{ name: "body", label: "Body", type: "rich-text", overrides: { toolbar: [...SAFE_RICH_TEXT_TOOLBAR] } },
 		{ name: "showStar", label: "Show Star Graphic", type: "boolean" },
 	],
 };
@@ -292,7 +314,7 @@ const editorialAccordionBlock: TinaField = {
 	label: "Accordion",
 	type: "object",
 	fields: [
-		{ name: "intro", label: "Introduction", type: "rich-text" },
+		{ name: "intro", label: "Introduction", type: "rich-text", overrides: { toolbar: [...SAFE_RICH_TEXT_TOOLBAR] } },
 		{
 			name: "items",
 			label: "Accordion Items",
@@ -321,7 +343,7 @@ const editorialAccordionBlock: TinaField = {
 					ui: { itemProps: (item) => ({ label: item?.label }) },
 					fields: [
 						{ name: "label", label: "Label", type: "string" },
-						{ name: "text", label: "Text", type: "rich-text" },
+						{ name: "text", label: "Text", type: "rich-text", overrides: { toolbar: [...SAFE_RICH_TEXT_TOOLBAR] } },
 					],
 				},
 			],
@@ -344,7 +366,7 @@ const editorialRowsBlock: TinaField = {
 			type: "string",
 			ui: { component: "textarea" },
 		},
-		{ name: "intro", label: "Introduction", type: "rich-text" },
+		{ name: "intro", label: "Introduction", type: "rich-text", overrides: { toolbar: [...SAFE_RICH_TEXT_TOOLBAR] } },
 		{
 			name: "items",
 			label: "Rows",
@@ -354,7 +376,7 @@ const editorialRowsBlock: TinaField = {
 			fields: [
 				{ name: "number", label: "Number", type: "string" },
 				{ name: "title", label: "Title", type: "string" },
-				{ name: "text", label: "Text", type: "rich-text" },
+				{ name: "text", label: "Text", type: "rich-text", overrides: { toolbar: [...SAFE_RICH_TEXT_TOOLBAR] } },
 				{ name: "href", label: "Optional Link", type: "string" },
 				{ name: "ctaText", label: "Action Text", type: "string" },
 			],
@@ -426,7 +448,7 @@ const editorialMissionBlock: TinaField = {
 	type: "object",
 	fields: [
 		{ name: "label", label: "Label", type: "string" },
-		{ name: "content", label: "Content", type: "rich-text" },
+		{ name: "content", label: "Content", type: "rich-text", overrides: { toolbar: [...SAFE_RICH_TEXT_TOOLBAR] } },
 		{
 			name: "statement",
 			label: "Closing Statement",
@@ -464,7 +486,7 @@ const editorialInstagramBlock: TinaField = {
 	type: "object",
 	fields: [
 		{ name: "title", label: "Title", type: "string" },
-		{ name: "description", label: "Description", type: "rich-text" },
+		{ name: "description", label: "Description", type: "rich-text", overrides: { toolbar: [...SAFE_RICH_TEXT_TOOLBAR] } },
 		{
 			name: "tag",
 			label: "Instagram Tag (Optional)",
@@ -727,7 +749,7 @@ const legalPageFields: TinaField[] = [
 	},
 	{ type: "datetime" as const, name: "lastUpdated", label: "Last Updated" },
 	pageChromeFields,
-	{ type: "rich-text" as const, name: "body", label: "Content", isBody: true },
+	{ type: "rich-text" as const, name: "body", label: "Content", isBody: true, overrides: { toolbar: [...SAFE_RICH_TEXT_TOOLBAR] } },
 ];
 
 // ============================================================================

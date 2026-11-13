@@ -55,6 +55,22 @@ repeatable list of `{ label, name }` pairs. Each displayed value has its own
 Tina marker, so owners can add, remove, reorder, or rename credits without
 changing the renderer for a particular role.
 
+
+## Typography presets and rich text
+
+The global Site Configuration form exposes one approved sitewide font pairing:
+
+- **Senshac** (default): Sinteca body text and Jozsika headings.
+- **Sinteca**: Sinteca for body text and headings.
+- **Editorial**: Jozsika body text and Sinteca headings.
+
+The preset changes font families only. Font size, weight, color, spacing, and layout
+remain controlled by the design system; custom CSS and font uploads are not
+available. Long-form rich-text fields offer headings, bold, italic,
+strikethrough, links, ordered/unordered lists, and quotes. Navigation, actions,
+form labels, and accessibility copy remain constrained semantic fields rather
+than rich-text HTML.
+
 ## Local Tina verification
 
 With the sibling checkout available and `TINA_CLIENT_ID` and `TINA_TOKEN`
