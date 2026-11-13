@@ -65,8 +65,8 @@ export default defineConfig({
 			},
 		},
 		fontFamily: {
-			sans: "Sinteca, system-ui, sans-serif",
-			jozsika: "Jozsika, serif",
+			sans: "var(--site-font-body, 'Sinteca', system-ui, sans-serif)",
+			jozsika: "var(--site-font-display, 'Jozsika', serif)",
 		},
 		fontSize: {
 			// Match WordPress theme sizes but made fluid responsive with clamp()

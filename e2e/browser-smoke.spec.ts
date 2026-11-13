@@ -51,6 +51,32 @@ test.describe("Senshac browser smoke contract", () => {
 		expect(await page.locator("footer").count()).toBeGreaterThan(0);
 	});
 
+
+	test("site typography presets map approved font roles across layouts and viewports", async ({ page }) => {
+		const presets = [
+			{ name: "senshac", body: "Sinteca", display: "Jozsika" },
+			{ name: "sinteca", body: "Sinteca", display: "Sinteca" },
+			{ name: "editorial", body: "Jozsika", display: "Sinteca" },
+		];
+		for (const width of [1280, 390]) {
+			await page.setViewportSize({ width, height: 844 });
+			for (const route of ["/es/", "/en/works"]) {
+				await expectPage(page, route);
+				const html = page.locator("html");
+				await expect(html).toHaveAttribute("data-typography-preset", "senshac");
+				for (const preset of presets) {
+					await html.evaluate((element, name) => element.setAttribute("data-typography-preset", name), preset.name);
+					const roles = await html.evaluate((element) => {
+						const styles = getComputedStyle(element);
+						return { body: styles.getPropertyValue("--site-font-body"), display: styles.getPropertyValue("--site-font-display") };
+					});
+					expect(roles.body).toContain(preset.body);
+					expect(roles.display).toContain(preset.display);
+				}
+			}
+		}
+	});
+
 	test("editorial navigation and grids adapt to desktop and mobile", async ({ page }) => {
 		const headerNav = page.locator("header nav > ul");
 		const footerGrid = page.locator("footer .grid").first();
@@ -204,29 +230,25 @@ test.describe("Senshac browser smoke contract", () => {
 		await expect
 			.poll(() => track.evaluate((element) => element.scrollLeft))
 			.toBe(0);
-		await expect(next).toBeEnabled();
-		await next.click();
-		await expect
-			.poll(() => track.evaluate((element) => element.scrollLeft))
-			.toBeGreaterThan(0);
-		const scrollBeforeNext = await track.evaluate((element) => element.scrollLeft);
-		await expect(next).toBeEnabled();
-		await next.click();
-		await expect
-			.poll(() => track.evaluate((element) => element.scrollLeft))
-			.toBeGreaterThan(scrollBeforeNext);
-		await expect(next).toBeEnabled();
-		await next.click();
 		const fifthCard = phase.locator("[data-phase-card]").nth(4);
-		await expect
-			.poll(() => fifthCard.evaluate((card) => {
+		const fifthCardVisible = () =>
+			fifthCard.evaluate((card) => {
 				const rail = card.closest("[data-phase-track]");
 				if (!rail) return false;
 				const cardBounds = card.getBoundingClientRect();
 				const railBounds = rail.getBoundingClientRect();
 				return cardBounds.left >= railBounds.left - 1 && cardBounds.right <= railBounds.right + 1;
-			}))
-			.toBe(true);
+			});
+		for (let attempt = 0; attempt < 5; attempt += 1) {
+			if (await fifthCardVisible()) break;
+			await expect(next).toBeEnabled();
+			const scrollBeforeNext = await track.evaluate((element) => element.scrollLeft);
+			await next.click();
+			await expect
+				.poll(() => track.evaluate((element) => element.scrollLeft))
+				.toBeGreaterThan(scrollBeforeNext);
+		}
+		await expect.poll(fifthCardVisible).toBe(true);
 		await expect(next).toBeDisabled();
 
 		await page.setViewportSize({ width: 390, height: 844 });

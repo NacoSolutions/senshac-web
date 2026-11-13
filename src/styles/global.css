@@ -1,23 +1,7 @@
 /* src/styles/global.css — global resets only; all component styles live in their component files */
 
-html:root {
-	--font-sans: "Sinteca", system-ui, sans-serif;
-	--font-jozsika: "Jozsika", serif;
-}
-
 body {
-	font-family: "Sinteca", system-ui, sans-serif;
 	font-size: 1.25rem;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	font-family: "Jozsika", serif;
-	font-weight: 300;
 }
 
 b,
@@ -65,7 +49,7 @@ textarea {
 	border-bottom: solid 1px #000;
 	box-shadow: none;
 	background: transparent;
-	font-family: "Sinteca", system-ui, sans-serif;
+	font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
 	font-size: 1.25rem;
 }
 
@@ -114,7 +98,7 @@ input[type="radio"]:checked {
 
 input[type="submit"],
 button[type="submit"] {
-	font-family: "Jozsika", serif;
+	font-family: var(--site-font-display, "Jozsika", serif);
 	text-transform: lowercase;
 	font-size: 1.125rem;
 	font-weight: 300;

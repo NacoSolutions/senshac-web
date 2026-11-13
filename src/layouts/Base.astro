@@ -7,9 +7,11 @@ import TinaIsland from "@tinacms/astro/TinaIsland.astro";
 import SEO from "../components/SEO.astro";
 import "virtual:uno.css";
 import globalStyles from "../styles/global.css?url";
-import { getSiteConfig } from "../utils/site-config";
+import typographyStyles from "../styles/typography.css?url";
+import { getSiteConfig, type SiteConfig } from "../utils/site-config";
 import { resolvePageChrome } from "../utils/page-chrome.mjs";
 import { getBrandFontFaceCss, getFontAssets } from "../utils/font-assets.mjs";
+import { resolveTypographyPreset } from "../utils/typography.mjs";
 import { getTranslations as getPublicTranslations } from "../utils/translations";
 
 interface Props {
@@ -33,7 +35,7 @@ interface Props {
 	headerStyle?: "default" | "transparent";
 	preloadImage?: string;
 	translationsData?: unknown;
-	siteData?: unknown;
+	siteData?: SiteConfig;
 	aot?: boolean;
 }
 
@@ -57,9 +59,10 @@ const [translationsData, siteData] = await Promise.all([
 	providedTranslationsData ?? getPublicTranslations(lang),
 	providedSiteData ?? getSiteConfig(),
 ]);
+const typographyPreset = resolveTypographyPreset(siteData.typography?.preset);
 
 const headerStyle = pageChrome?.header?.style ?? defaultHeaderStyle;
-const globalChrome = (siteData as any).chrome ?? {
+const globalChrome = siteData.chrome ?? {
 	header: {
 		mode: "fixed",
 		atFinal: "opaque-light",
@@ -87,7 +90,7 @@ const deferredFontScript = `window.addEventListener('load',()=>{const style=docu
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} data-typography-preset={typographyPreset}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -110,6 +113,7 @@ const deferredFontScript = `window.addEventListener('load',()=>{const style=docu
 
     <style is:inline set:html={fontCss}></style>
     <script is:inline set:html={deferredFontScript}></script>
+    <link rel="stylesheet" href={typographyStyles} />
     <link rel="preload" href={globalStyles} as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href={globalStyles} /></noscript>
     <link rel="preconnect" href={mediaBaseUrl} crossorigin />

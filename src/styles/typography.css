@@ -1,0 +1,30 @@
+:root {
+	--site-font-body: "Sinteca", system-ui, sans-serif;
+	--site-font-display: "Jozsika", serif;
+	--font-sans: var(--site-font-body, "Sinteca", system-ui, sans-serif);
+	--font-jozsika: var(--site-font-display, "Jozsika", serif);
+}
+
+:root[data-typography-preset="sinteca"] {
+	--site-font-body: "Sinteca", system-ui, sans-serif;
+	--site-font-display: "Sinteca", system-ui, sans-serif;
+}
+
+:root[data-typography-preset="editorial"] {
+	--site-font-body: "Jozsika", serif;
+	--site-font-display: "Sinteca", system-ui, sans-serif;
+}
+
+body {
+	font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--site-font-display, "Jozsika", serif);
+	font-weight: 300;
+}

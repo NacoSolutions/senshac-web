@@ -1,6 +1,9 @@
 ---
 import BrandMark from "../components/BrandMark.astro";
 import { getBrandFontFaceCss, getFontAssets } from "../utils/font-assets.mjs";
+import typographyStyles from "../styles/typography.css?url";
+import { getSiteConfig } from "../utils/site-config";
+import { resolveTypographyPreset } from "../utils/typography.mjs";
 
 interface Props {
   title: string;
@@ -8,23 +11,33 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+const siteData = await getSiteConfig();
+const typographyPreset = resolveTypographyPreset(siteData.typography?.preset);
 const mediaBaseUrl = (
   import.meta.env.PUBLIC_MEDIA_BASE_URL || "https://media.senshac.com"
 ).replace(/\/$/, "");
 const fonts = getFontAssets(mediaBaseUrl);
 const brandFontCss = getBrandFontFaceCss(fonts);
+const layoutFontCss = `
+@font-face{font-family:'Jozsika';src:url('${fonts.jozsikaLight}') format('woff2');font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:'Sinteca';src:url('${fonts.sintecaRegular}') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+`;
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-typography-preset={typographyPreset}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
     <title>{title}</title>
     <style is:inline set:html={brandFontCss}></style>
+    <style is:inline set:html={layoutFontCss}></style>
+    <link rel="stylesheet" href={typographyStyles} />
     <link rel="preconnect" href={mediaBaseUrl} crossorigin />
     <link rel="preload" href={fonts.sintecaSemibold} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={fonts.spaceMonoBold} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fonts.jozsikaLight} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fonts.sintecaRegular} as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -42,9 +55,9 @@ const brandFontCss = getBrandFontFaceCss(fonts);
     </footer>
   </body>
   <style is:global>
-    :root { color-scheme: light; font-family: Arial, sans-serif; background: #f7f7f5; color: #111; }
+    :root { color-scheme: light; font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif); background: #f7f7f5; color: #111; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-width: 320px; }
+    body { margin: 0; min-width: 320px; font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif); }
     a { color: inherit; }
     .skip-link { position: absolute; left: 1rem; top: -4rem; padding: .75rem 1rem; background: #111; color: #fff; z-index: 10; }
     .skip-link:focus { top: 1rem; }

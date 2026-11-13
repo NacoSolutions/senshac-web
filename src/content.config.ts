@@ -2,6 +2,7 @@
 import { defineCollection } from "astro:content";
 import { z } from "astro:schema";
 import { glob } from "astro/loaders";
+import { DEFAULT_TYPOGRAPHY_PRESET } from "./utils/typography.mjs";
 
 const appearancePreset = z.enum([
 	"transparent-adaptive",
@@ -10,6 +11,9 @@ const appearancePreset = z.enum([
 	"opaque-light",
 	"opaque-dark",
 ]);
+
+
+const typographyPreset = z.enum(["senshac", "sinteca", "editorial"]);
 
 const chromePart = z.object({
 	mode: z.enum(["fixed", "scrolling"]),
@@ -296,6 +300,9 @@ const siteConfig = defineCollection({
 	loader: glob({ pattern: "site.json", base: "src/content/config" }),
 	schema: z.object({
 		chrome: z.object({ header: chromePart, footer: chromePart }).optional(),
+		typography: z.object({
+			preset: typographyPreset.default(DEFAULT_TYPOGRAPHY_PRESET),
+		}).default({ preset: DEFAULT_TYPOGRAPHY_PRESET }),
 		siteUrl: z.string(),
 		locales: z.array(z.string()),
 		defaultLocale: z.string(),
