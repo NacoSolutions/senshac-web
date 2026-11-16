@@ -1116,28 +1116,13 @@ export default defineConfig({
 
 	schema: {
 		collections: [
-			// ========================================
-			// SITE CONFIG (single file)
-			// ========================================
-			{
-				name: "siteConfig",
-				label: "Site Configuration",
-				path: "config",
-				format: "json",
-				match: { include: "site" },
-				fields: siteConfigFields,
-				ui: {
-					allowedActions: { create: false, delete: false },
-					global: true,
-				},
-			},
 
 			// ========================================
 			// PAGE SINGLETONS (JSON)
 			// ========================================
 			{
 				name: "home",
-				label: "Pages / Home",
+				label: "Pages · Home",
 				path: "pages",
 				format: "json",
 				match: { include: "*/home" },
@@ -1149,7 +1134,7 @@ export default defineConfig({
 			},
 			{
 				name: "about",
-				label: "Pages / Studio",
+				label: "Pages · Studio",
 				path: "pages",
 				format: "json",
 				match: { include: "*/about" },
@@ -1161,7 +1146,7 @@ export default defineConfig({
 			},
 			{
 				name: "services",
-				label: "Pages / Methods",
+				label: "Pages · Methods",
 				path: "pages",
 				format: "json",
 				match: { include: "*/services" },
@@ -1173,7 +1158,7 @@ export default defineConfig({
 			},
 			{
 				name: "contact",
-				label: "Pages / Contact",
+				label: "Pages · Contact",
 				path: "pages",
 				format: "json",
 				match: { include: "*/contact" },
@@ -1189,7 +1174,7 @@ export default defineConfig({
 			// ========================================
 			{
 				name: "legal",
-				label: "Legal / Pages",
+				label: "Pages · Legal",
 				path: "legal",
 				format: "mdx",
 				fields: legalPageFields,
@@ -1204,7 +1189,7 @@ export default defineConfig({
 			// ========================================
 			{
 				name: "projects",
-				label: "Portfolio / Projects",
+				label: "Portfolio · Projects",
 				path: "projects",
 				format: "json",
 				fields: projectFields,
@@ -1259,11 +1244,27 @@ export default defineConfig({
 			},
 
 			// ========================================
+			// GLOBAL SETTINGS
+			// ========================================
+			{
+				name: "siteConfig",
+				label: "Site Settings",
+				path: "config",
+				format: "json",
+				match: { include: "site" },
+				fields: siteConfigFields,
+				ui: {
+					allowedActions: { create: false, delete: false },
+					global: true,
+				},
+			},
+
+			// ========================================
 			// TRANSLATIONS
 			// ========================================
 			{
 				name: "translations",
-				label: "System / Translations",
+				label: "Translations",
 				path: "translations",
 				format: "json",
 				fields: translationFields,
