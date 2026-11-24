@@ -46,7 +46,7 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
       hero: box(hero), image: box(image), title: box(title), intro: box(intro), cta: box(cta), shellRight: document.querySelector(".editorial-shell")?.getBoundingClientRect().right,
       ctaDisplay: style.display,
       ctaMarginTop: parseFloat(style.marginTop),
-      ctaArrowDisplay: getComputedStyle(cta, "::after").display,
+      ctaArrowDisplay: getComputedStyle(cta.querySelector(".home-hero__cta-arrow") ?? cta, cta.querySelector(".home-hero__cta-arrow") ? undefined : "::after").display,
       ctaTextBorder: getComputedStyle(cta.querySelector("span")!).borderBottomWidth,
       ctaTextDecoration: getComputedStyle(cta.querySelector("span")!).textDecorationLine,
       titleSize: parseFloat(getComputedStyle(title).fontSize),

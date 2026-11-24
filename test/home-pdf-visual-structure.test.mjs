@@ -12,6 +12,7 @@ test("carousel header has a bottom rule and no smoke gradient", () => {
 });
 test("RUDE two-image feature fills its split and overlays the right-side label", () => {
   assert.ok(home.includes("rude-feature"));
+  assert.match(home, /\.rude-feature > :first-child \{ grid-column: 1 \/ 3; \}/);
   assert.ok(showcase.includes("rude-feature__media"));
   assert.ok(showcase.includes("rude-feature__overlay"));
 });
