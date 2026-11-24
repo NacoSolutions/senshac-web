@@ -61,8 +61,8 @@ const socialLinks = site.socialLinks;
   x-bind:class={`scrolled ? '${appearanceClasses[finalAppearance]}' : '${appearanceClasses[scrollingAppearance]}'`}
 >
   <div class="editorial-shell px-4 md:px-8 pt-16 pb-12 font-sans text-sm leading-tight">
-    <div class="grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-12">
-      <div class="md:col-span-1">
+    <div class="grid grid-cols-1 items-start gap-x-6 gap-y-8 md:grid-cols-12">
+      <div class="md:col-span-2">
         <h2 class="mb-2 font-sans text-sm font-bold uppercase leading-tight" data-tina-field={tinaField(t.nav, 'menu')}>{t.nav.menu}</h2>
         <ul class="m-0 list-none space-y-1 p-0">
           {menuLinks.map((link: { href: string; label: string }) => {
@@ -82,7 +82,7 @@ const socialLinks = site.socialLinks;
         </ul>
       </div>
 
-      <div class="md:col-span-1">
+      <div class="md:col-span-2">
         <h2 class="mb-2 font-sans text-sm font-bold uppercase leading-tight" data-tina-field={tinaField(t.nav, 'social')}>{t.nav.social}</h2>
         <ul class="m-0 list-none space-y-1 p-0">
           {socialLinks.map((link: any, index: number) => (
@@ -124,7 +124,7 @@ const socialLinks = site.socialLinks;
         </a>
       </div>
 
-      <div class="col-span-full md:col-span-9 flex items-start justify-end pt-4 md:pt-0">
+      <div class="col-span-full md:col-span-6 flex items-start justify-end pt-4 md:pt-0">
         <a href={`/${lang}/`} aria-label="Senshac home" class="footer-star-link block leading-none">
           <span x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(scrolled ? finalAppearance : scrollingAppearance)">
             <BrandMark kind="symbol" size="footer" />
