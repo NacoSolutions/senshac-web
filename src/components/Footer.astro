@@ -63,7 +63,7 @@ const socialLinks = site.socialLinks;
   <div class="max-w-7xl mx-auto px-4 md:px-8 pt-16 pb-12 font-sans text-sm leading-tight">
     <div class="grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-12">
       <div class="md:col-span-1">
-        <h2 class="mb-2 text-sm font-normal leading-tight" data-tina-field={tinaField(t.nav, 'menu')}>{t.nav.menu}</h2>
+        <h2 class="mb-2 font-sans text-sm font-bold uppercase leading-tight" data-tina-field={tinaField(t.nav, 'menu')}>{t.nav.menu}</h2>
         <ul class="m-0 list-none space-y-1 p-0">
           {menuLinks.map((link: { href: string; label: string }) => {
             const index = footerLinks.indexOf(link);
@@ -83,7 +83,7 @@ const socialLinks = site.socialLinks;
       </div>
 
       <div class="md:col-span-1">
-        <h2 class="mb-2 text-sm font-normal leading-tight" data-tina-field={tinaField(t.nav, 'social')}>{t.nav.social}</h2>
+        <h2 class="mb-2 font-sans text-sm font-bold uppercase leading-tight" data-tina-field={tinaField(t.nav, 'social')}>{t.nav.social}</h2>
         <ul class="m-0 list-none space-y-1 p-0">
           {socialLinks.map((link: any, index: number) => (
             <li>
@@ -103,7 +103,7 @@ const socialLinks = site.socialLinks;
 
       <div class="md:col-span-1">
         {contactLink && (
-          <h2 class="mb-2 text-sm font-normal leading-tight">
+          <h2 class="mb-2 font-sans text-sm font-bold uppercase leading-tight">
             <a
               href={contactLink.href}
               class="text-current hover:opacity-70 transition-opacity"
@@ -124,8 +124,8 @@ const socialLinks = site.socialLinks;
         </a>
       </div>
 
-      <div class="col-span-full md:col-span-12 flex items-start justify-start pt-4">
-        <a href={`/${lang}/`} aria-label="Senshac home" class="footer-star-link block w-full leading-none">
+      <div class="col-span-full md:col-span-9 flex items-start justify-end pt-4 md:pt-0">
+        <a href={`/${lang}/`} aria-label="Senshac home" class="footer-star-link block leading-none">
           <span x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(scrolled ? finalAppearance : scrollingAppearance)">
             <BrandMark kind="symbol" size="footer" />
           </span>

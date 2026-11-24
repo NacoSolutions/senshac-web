@@ -212,8 +212,10 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
               </div>
               <div class="showcase-project-carousel__overlay">
                 {slide.description && <p class="showcase-project-carousel__description">{slide.description}</p>}
-                {slide.category && <p class="showcase-project-carousel__category">{slide.category}</p>}
-                <h3>{slide.title}</h3>
+                <div class="showcase-project-carousel__meta">
+                  {slide.category && <p class="showcase-project-carousel__category">{slide.category}</p>}
+                  <h3>{slide.title}</h3>
+                </div>
               </div>
             </a>
           ))}
@@ -354,14 +356,22 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
   .showcase-project-carousel__description {
     grid-column: 1;
     max-width: 42rem;
+    font-family: "Sinteca", system-ui, sans-serif;
     font-size: 0.75rem !important;
     letter-spacing: 0.01em !important;
     line-height: 1.25;
     text-transform: none !important;
+    white-space: normal;
+  }
+
+  .showcase-project-carousel__meta {
+    grid-column: 2;
+    font-family: var(--font-jozsika, "Jozsika", serif);
+    text-align: right;
   }
 
   .showcase-project-carousel__category {
-    grid-column: 2;
+    font-family: var(--font-jozsika, "Jozsika", serif);
     text-align: right;
   }
 
@@ -394,6 +404,7 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
 
   .showcase-project-carousel__overlay h3 {
     margin: 0.25rem 0 0;
+    font-family: var(--font-jozsika, "Jozsika", serif);
     font-size: clamp(0.95rem, 1.2vw, 1.15rem);
     font-weight: 500;
     letter-spacing: 0.08em;

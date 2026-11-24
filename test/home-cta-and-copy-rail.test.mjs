@@ -6,9 +6,9 @@ const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 const hero = await read("../src/components/sections/editorial/Hero.astro");
 const home = await read("../src/pages/[lang]/index.astro");
 
-test("Home hero CTA uses editorial-link SVG arrow without hiding ::after", () => {
+test("Home hero CTA renders an inline SVG up-to-right arrow", () => {
   assert.match(hero, /class="editorial-link home-hero__cta"/);
-  assert.doesNotMatch(hero, /\.home-hero__cta::after\s*\{\s*display:\s*none;/);
+  assert.match(hero, /class="editorial-link home-hero__cta"[^>]*>.*<svg[^>]*aria-hidden="true"[^>]*>.*M7 17L17 7.*<\/svg>/s);
 });
 
 test("Home process copy starts at the shared rail without an auto left margin", () => {
