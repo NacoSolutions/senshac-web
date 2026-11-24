@@ -29,7 +29,7 @@ test("header keeps four localized links visible without a menu drawer", () => {
 
 test("footer uses a 12-column responsive grid and keeps text links and editable legal content", () => {
 	assert.match(footer, /grid grid-cols-1[^"]*md:grid-cols-12/);
-	assert.match(footer, /md:col-span-9/);
+	assert.match(footer, /md:col-span-6/);
 	assert.match(footer, /font-sans text-sm font-bold uppercase/);
 	assert.match(footer, /footerLinks\.filter/);
 	assert.match(footer, /footerLinks\.indexOf\(link\)/);
