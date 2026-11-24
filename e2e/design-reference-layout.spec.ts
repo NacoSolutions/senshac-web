@@ -43,7 +43,7 @@ test("Home hero typography and CTA white-strip placement follow feedback", async
     const box = (el: Element) => el.getBoundingClientRect();
     const style = getComputedStyle(cta);
     return {
-      hero: box(hero), image: box(image), title: box(title), intro: box(intro), cta: box(cta), shellRight: document.querySelector(".editorial-shell")?.getBoundingClientRect().right,
+      hero: box(hero), image: box(image), title: box(title), intro: box(intro), cta: box(cta), shellRight: document.querySelector("#main .editorial-shell")?.getBoundingClientRect().right,
       ctaDisplay: style.display,
       ctaMarginTop: parseFloat(style.marginTop),
       ctaArrowDisplay: getComputedStyle(cta.querySelector(".home-hero__cta-arrow") ?? cta, cta.querySelector(".home-hero__cta-arrow") ? undefined : "::after").display,
