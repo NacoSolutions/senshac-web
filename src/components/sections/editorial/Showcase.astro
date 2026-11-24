@@ -128,7 +128,17 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
           canGoForward: true,
           currentIndex: 0,
           pendingIndex: null,
+          syncOverlayHeights() {
+            const overlays = Array.from(this.$refs.track.querySelectorAll(".showcase-project-carousel__overlay"));
+            if (!overlays.length) return;
+            overlays.forEach((el) => { el.style.minHeight = ""; });
+            const maxHeight = Math.max(...overlays.map((el) => el.getBoundingClientRect().height));
+            if (maxHeight > 0) {
+              overlays.forEach((el) => { el.style.minHeight = Math.ceil(maxHeight) + 'px'; });
+            }
+          },
           updateScrollState() {
+            this.syncOverlayHeights();
             const track = this.$refs.track;
             const bounds = track.getBoundingClientRect();
             const slides = Array.from(track.querySelectorAll("[data-project-slide]"));

@@ -104,7 +104,7 @@ test.describe("Senshac browser smoke contract", () => {
 					getComputedStyle(element).gridTemplateColumns.split(" ").length,
 				),
 			)
-			.toBe(4);
+			.toBe(12);
 		await expect
 			.poll(() =>
 				worksGrid.evaluate((element) =>

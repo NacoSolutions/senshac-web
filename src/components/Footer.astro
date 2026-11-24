@@ -60,11 +60,11 @@ const socialLinks = site.socialLinks;
   data-tina-field={pageChromeTarget ? tinaField(pageChromeTarget.data, pageChromeTarget.field) : undefined}
   x-bind:class={`scrolled ? '${appearanceClasses[finalAppearance]}' : '${appearanceClasses[scrollingAppearance]}'`}
 >
-  <div class="max-w-7xl mx-auto px-4 md:px-8 pt-16 pb-12">
-    <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-      <div>
-        <h2 class="mb-4 text-xs uppercase tracking-wider" data-tina-field={tinaField(t.nav, 'menu')}>{t.nav.menu}</h2>
-        <ul class="m-0 list-none space-y-2 p-0">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 pt-16 pb-12 font-sans text-sm leading-tight">
+    <div class="grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-12">
+      <div class="md:col-span-1">
+        <h2 class="mb-2 text-sm font-normal leading-tight" data-tina-field={tinaField(t.nav, 'menu')}>{t.nav.menu}</h2>
+        <ul class="m-0 list-none space-y-1 p-0">
           {menuLinks.map((link: { href: string; label: string }) => {
             const index = footerLinks.indexOf(link);
             return (
@@ -82,9 +82,9 @@ const socialLinks = site.socialLinks;
         </ul>
       </div>
 
-      <div>
-        <h2 class="mb-4 text-xs uppercase tracking-wider" data-tina-field={tinaField(t.nav, 'social')}>{t.nav.social}</h2>
-        <ul class="m-0 list-none space-y-2 p-0">
+      <div class="md:col-span-1">
+        <h2 class="mb-2 text-sm font-normal leading-tight" data-tina-field={tinaField(t.nav, 'social')}>{t.nav.social}</h2>
+        <ul class="m-0 list-none space-y-1 p-0">
           {socialLinks.map((link: any, index: number) => (
             <li>
               <a
@@ -101,9 +101,9 @@ const socialLinks = site.socialLinks;
         </ul>
       </div>
 
-      <div>
+      <div class="md:col-span-1">
         {contactLink && (
-          <h2 class="mb-4 text-xs uppercase tracking-wider">
+          <h2 class="mb-2 text-sm font-normal leading-tight">
             <a
               href={contactLink.href}
               class="text-current hover:opacity-70 transition-opacity"
@@ -118,14 +118,14 @@ const socialLinks = site.socialLinks;
         </a>
         <a
           href={`tel:${site.contact.phoneLink || site.contact.phone.replace(/\s/g, "")}`}
-          class="mt-2 block text-current hover:opacity-70 transition-opacity"
+          class="mt-1 block text-current hover:opacity-70 transition-opacity"
         >
           <span data-tina-field={tinaField(site.contact, 'phone')}>{site.contact.phone}</span>
         </a>
       </div>
 
-      <div class="flex items-start lg:justify-end">
-        <a href={`/${lang}/`} aria-label="Senshac home">
+      <div class="col-span-full md:col-span-12 flex items-start justify-start pt-4">
+        <a href={`/${lang}/`} aria-label="Senshac home" class="footer-star-link block w-full leading-none">
           <span x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(scrolled ? finalAppearance : scrollingAppearance)">
             <BrandMark kind="symbol" size="footer" />
           </span>
@@ -168,3 +168,12 @@ const socialLinks = site.socialLinks;
     </div>
   </div>
 </footer>
+
+<style>
+  .footer-star-link :global(.brand-mark--footer) {
+    display: block;
+    width: 100%;
+    font-size: clamp(8rem, 24vw, 22rem);
+    line-height: 0.8;
+  }
+</style>

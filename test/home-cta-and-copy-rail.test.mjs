@@ -6,8 +6,9 @@ const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 const hero = await read("../src/components/sections/editorial/Hero.astro");
 const home = await read("../src/pages/[lang]/index.astro");
 
-test("Home hero CTA renders a visible northeast arrow glyph", () => {
-  assert.match(hero, /class="home-hero__cta-arrow"[^>]*>↗<\/span>/);
+test("Home hero CTA uses editorial-link SVG arrow without hiding ::after", () => {
+  assert.match(hero, /class="editorial-link home-hero__cta"/);
+  assert.doesNotMatch(hero, /\.home-hero__cta::after\s*\{\s*display:\s*none;/);
 });
 
 test("Home process copy starts at the shared rail without an auto left margin", () => {

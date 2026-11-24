@@ -27,8 +27,9 @@ test("header keeps four localized links visible without a menu drawer", () => {
 	assert.doesNotMatch(header, /menuOpen|mobile-menu|toggleMenu|closeMenu|socialLinks/);
 });
 
-test("footer uses four responsive columns and keeps text links and editable legal content", () => {
-	assert.match(footer, /grid grid-cols-1[^"]*sm:grid-cols-2[^"]*lg:grid-cols-4/);
+test("footer uses a 12-column responsive grid and keeps text links and editable legal content", () => {
+	assert.match(footer, /grid grid-cols-1[^"]*md:grid-cols-12/);
+	assert.match(footer, /md:col-span-12/);
 	assert.match(footer, /footerLinks\.filter/);
 	assert.match(footer, /footerLinks\.indexOf\(link\)/);
 	assert.match(footer, /contactLink/);
