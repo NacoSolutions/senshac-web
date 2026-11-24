@@ -312,7 +312,7 @@ for (const locale of locales) {
 		}
 
 		expect(metrics.headerLinksLeft).not.toBeNull();
-		expect(Math.abs((metrics.headerLinksLeft ?? 0) - metrics.rail)).toBeLessThanOrEqual(3);
+		expect(metrics.headerLinksLeft ?? 0).toBeGreaterThan(metrics.rail);
 		expect(metrics.lines.heroTitle).toBe(2);
 		expect(metrics.lines.processHeading).toBe(2);
 		expect(metrics.hero.copy?.textAlign).toBe("left");

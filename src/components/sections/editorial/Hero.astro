@@ -30,6 +30,8 @@ const {
 	eager = false,
 	tinaData,
 } = Astro.props;
+
+const displayCtaText = ctaText?.replace(/\s*↗[\uFE0E\uFE0F]?$/u, "");
 ---
 
 <section class="home-hero" aria-labelledby={title ? "home-hero-title" : undefined}>
@@ -59,7 +61,7 @@ const {
 
     </div>
   </div>
-  {ctaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link home-hero__cta" href={ctaLink}><span class="home-hero__cta-label" data-tina-field={tinaField(tinaData, 'ctaText')}>{ctaText}</span><span class="home-hero__cta-arrow" aria-hidden="true">↗</span></a>}
+  {displayCtaText && ctaLink && <a data-tina-field={tinaField(tinaData, 'ctaLink')} class="editorial-link home-hero__cta" href={ctaLink}><span class="home-hero__cta-label" data-tina-field={tinaField(tinaData, 'ctaText')}>{displayCtaText}</span></a>}
 </section>
 
 <style>
@@ -156,11 +158,6 @@ const {
     }
   }
 
-  .home-hero__cta-arrow {
-    margin-left: 0.4em;
-    font-size: 0.8em;
-    line-height: 1;
-  }
   @media (max-width: 47.99rem) {
     .home-hero {
       min-height: min(100svh, 54rem);
