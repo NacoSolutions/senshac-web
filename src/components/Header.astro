@@ -95,14 +95,14 @@ const getLocalizedPath = (targetLang: string) => {
     <nav
       aria-label={t.nav.menu}
       data-homepage-nav={currentPath === "/" + lang + "/" || currentPath === "/" + lang ? "true" : undefined}
-      class="editorial-shell min-h-20 py-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 lg:grid lg:grid-cols-12 lg:items-center lg:h-20 lg:py-0"
+      class="editorial-shell header-nav min-h-20 py-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2"
     >
       <!-- Logo -->
-      <a href={`/${lang}/`} class="flex-shrink-0 lg:col-start-1 lg:col-span-2 lg:row-start-1 lg:justify-self-start" aria-label="Senshac home">
+      <a href={`/${lang}/`} class="header-brand flex-shrink-0" aria-label="Senshac home">
         <BrandMark kind="wordmark" size="header" />
       </a>
 
-      <ul class="order-3 flex w-full list-none items-center justify-between gap-4 overflow-x-auto p-0 sm:gap-6 lg:order-2 lg:col-start-6 lg:col-span-5 lg:row-start-1 lg:w-full lg:justify-between lg:gap-6 lg:overflow-visible">
+      <ul class="header-links order-3 flex w-full list-none items-center justify-between gap-4 overflow-x-auto p-0 sm:gap-6 lg:order-2">
         {navItems.map((item: any, index: number) => (
           <li>
             <a
@@ -121,7 +121,7 @@ const getLocalizedPath = (targetLang: string) => {
         ))}
       </ul>
       <!-- Right side controls -->
-      <div class="order-2 ml-auto flex items-center gap-4 lg:order-3 lg:col-start-12 lg:row-start-1 lg:ml-0 lg:justify-self-end">
+      <div class="header-controls order-2 ml-auto flex items-center gap-4 lg:order-3">
         <!-- Language Dropdown -->
         <div class="relative" x-on:click.away="langOpen = false">
           <button
@@ -167,5 +167,38 @@ const getLocalizedPath = (targetLang: string) => {
 <style>
   [x-cloak] {
     display: none !important;
+  }
+</style>
+
+<style>
+  @media (min-width: 64rem) {
+    .header-nav {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      align-items: center;
+      height: 5rem;
+      padding-block: 0;
+    }
+
+    .header-brand {
+      grid-column: 1 / 3;
+      grid-row: 1;
+      justify-self: start;
+    }
+
+    .header-links {
+      grid-column: 6 / 11;
+      grid-row: 1;
+      width: 100%;
+      justify-content: space-between;
+      overflow: visible;
+    }
+
+    .header-controls {
+      grid-column: 12;
+      grid-row: 1;
+      margin-left: 0;
+      justify-self: end;
+    }
   }
 </style>
