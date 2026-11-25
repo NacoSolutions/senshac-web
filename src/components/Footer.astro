@@ -60,7 +60,7 @@ const socialLinks = site.socialLinks;
   data-tina-field={pageChromeTarget ? tinaField(pageChromeTarget.data, pageChromeTarget.field) : undefined}
   x-bind:class={`scrolled ? '${appearanceClasses[finalAppearance]}' : '${appearanceClasses[scrollingAppearance]}'`}
 >
-  <div class="editorial-shell px-4 md:px-8 pt-16 pb-12 font-sans text-sm leading-tight">
+  <div class="editorial-shell pt-16 pb-12 font-sans text-sm leading-tight">
     <div class="grid grid-cols-1 items-start gap-x-6 gap-y-8 md:grid-cols-12">
       <div class="md:col-span-2">
         <h2 class="mb-2 font-sans text-sm font-bold uppercase leading-tight" data-tina-field={tinaField(t.nav, 'menu')}>{t.nav.menu}</h2>
@@ -134,7 +134,7 @@ const socialLinks = site.socialLinks;
     </div>
   </div>
 
-  <div class="editorial-shell border-t border-current/20 px-4 md:px-8">
+  <div class="editorial-shell border-t border-current/20">
     <div class="flex flex-wrap justify-between gap-4 py-4">
       <div class="text-sm text-current opacity-70">
         {attributions.map((credit: { label: string; name: string }, index: number) => (
