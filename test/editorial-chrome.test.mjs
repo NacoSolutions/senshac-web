@@ -39,6 +39,8 @@ test("footer uses a 12-column responsive grid and keeps text links and editable 
 	assert.match(footer, /t\.nav\.social/);
 	assert.match(footer, /site\.contact\.email/);
 	assert.match(footer, /site\.contact\.phone/);
+	assert.match(footer, /whitespace-nowrap/);
+	assert.doesNotMatch(footer, /col-span-full/);
 	assert.match(footer, /t\.footer\.privacy/);
 	assert.match(footer, /t\.footer\.legal/);
 	assert.match(footer, /attributions\.map/);

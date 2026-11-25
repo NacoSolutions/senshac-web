@@ -101,7 +101,7 @@ const socialLinks = site.socialLinks;
         </ul>
       </div>
 
-      <div class="md:col-span-1">
+      <div class="md:col-span-2">
         {contactLink && (
           <h2 class="mb-2 font-sans text-sm font-bold uppercase leading-tight">
             <a
@@ -118,13 +118,13 @@ const socialLinks = site.socialLinks;
         </a>
         <a
           href={`tel:${site.contact.phoneLink || site.contact.phone.replace(/\s/g, "")}`}
-          class="mt-1 block text-current hover:opacity-70 transition-opacity"
+          class="mt-1 block whitespace-nowrap text-current hover:opacity-70 transition-opacity"
         >
           <span data-tina-field={tinaField(site.contact, 'phone')}>{site.contact.phone}</span>
         </a>
       </div>
 
-      <div class="col-span-full md:col-span-6 flex items-start justify-end pt-4 md:pt-0">
+      <div class="md:col-span-6 flex items-start justify-end pt-4 md:pt-0">
         <a href={`/${lang}/`} aria-label="Senshac home" class="footer-star-link block leading-none">
           <span x-show="['transparent-adaptive', 'transparent-light', 'opaque-dark'].includes(scrolled ? finalAppearance : scrollingAppearance)">
             <BrandMark kind="symbol" size="footer" />

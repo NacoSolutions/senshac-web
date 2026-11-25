@@ -214,6 +214,7 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
                 {slide.description && <p class="showcase-project-carousel__description">{slide.description}</p>}
                 <div class="showcase-project-carousel__meta">
                   {slide.category && <p class="showcase-project-carousel__category">{slide.category}</p>}
+                  {slide.category && <span aria-hidden="true">/</span>}
                   <h3>{slide.title}</h3>
                 </div>
               </div>
@@ -337,7 +338,7 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
     position: absolute;
     inset: clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) auto;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
     gap: 0.25rem 1rem;
     padding: 0.75rem 0;
@@ -355,7 +356,7 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
 
   .showcase-project-carousel__description {
     grid-column: 1;
-    max-width: 42rem;
+    width: 100%;
     font-family: "Sinteca", system-ui, sans-serif;
     font-size: 0.75rem !important;
     letter-spacing: 0.01em !important;
@@ -366,13 +367,25 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
 
   .showcase-project-carousel__meta {
     grid-column: 2;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0.4em;
     font-family: var(--font-jozsika, "Jozsika", serif);
+    font-size: clamp(1rem, 1.35vw, 1.25rem);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
     text-align: right;
   }
 
   .showcase-project-carousel__category {
-    font-family: var(--font-jozsika, "Jozsika", serif);
-    text-align: right;
+    font-family: inherit;
+    font-size: inherit !important;
+    font-weight: inherit;
+    letter-spacing: inherit !important;
+    text-transform: inherit;
   }
 
   .showcase-project-carousel__controls {
@@ -403,12 +416,12 @@ const nextSlideLabel = carouselTranslations?.accessibility.nextSlide ?? "Next sl
   }
 
   .showcase-project-carousel__overlay h3 {
-    margin: 0.25rem 0 0;
-    font-family: var(--font-jozsika, "Jozsika", serif);
-    font-size: clamp(0.95rem, 1.2vw, 1.15rem);
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
   }
 
   .showcase-project-carousel[data-visible-items="2"] .showcase-project-carousel__slide {
