@@ -312,3 +312,66 @@ test("bounds multipart request bodies before parsing fields", async () => {
 		"body-too-large",
 	);
 });
+
+test("validates alternate-challenge timeline and investment fields when configured", async () => {
+	const extendedPaths = {
+		...paths,
+		alternate: {
+			fields: [
+				{ name: "website", kind: "text", required: false },
+				{ name: "challenge", kind: "textarea", required: true },
+				{
+					name: "timeline",
+					kind: "select",
+					required: true,
+					options: [{ value: "urgent", label: "Urgente" }],
+				},
+				{
+					name: "investment",
+					kind: "select",
+					required: true,
+					options: [{ value: "under-10k", label: "Menos de 10.000 €" }],
+				},
+			],
+		},
+	};
+	const ok = await validateInquiryPayload(
+		extendedPaths,
+		payload({
+			businessSituation: "growth",
+			desiredService: "other-challenge",
+			challenge: "Stand de 100m²",
+			timeline: "urgent",
+			investment: "under-10k",
+		}),
+	);
+	assert.equal(ok.ok, true);
+	assert.deepEqual(ok.values, {
+		website: "",
+		challenge: "Stand de 100m²",
+		timeline: "urgent",
+		investment: "under-10k",
+	});
+	const missingBudget = await validateInquiryPayload(
+		extendedPaths,
+		payload({
+			businessSituation: "growth",
+			desiredService: "other-challenge",
+			challenge: "Stand de 100m²",
+			timeline: "urgent",
+		}),
+	);
+	assert.equal(missingBudget.error, "missing-field");
+});
+
+test("ContactForm locks the preselected service when entering from a service CTA", async () => {
+	const { readFile } = await import("node:fs/promises");
+	const source = await readFile(
+		new URL("../src/components/ContactForm.astro", import.meta.url),
+		"utf8",
+	);
+	assert.match(source, /const serviceLocked = Boolean\(/);
+	assert.match(source, /name="locked" value="service"/);
+	assert.match(source, /disabled=\{serviceLocked\}/);
+	assert.match(source, /data-service-locked=\{serviceLocked \? "true" : undefined\}/);
+});

@@ -38,6 +38,7 @@ for (const path of paths) {
 const services = [...serviceCatalog.values()];
 const requestedSituation = Astro.url.searchParams.get("situation") ?? "";
 const requestedService = Astro.url.searchParams.get("service") ?? "";
+const lockedParam = Astro.url.searchParams.get("locked") ?? "";
 const selectedPath = paths.find((path: any) => path.value === requestedSituation) ?? null;
 const selectedService = services.find((service) => service.value === requestedService) ?? null;
 const selectedServiceOption = selectedPath?.serviceOptions.find(
@@ -54,6 +55,11 @@ const invalidQuery =
 	(requestedSituation && !selectedPath) ||
 	(requestedService && !selectedService) ||
 	(Boolean(selectedPath && selectedService && !selectedServiceOption));
+const serviceLocked = Boolean(
+	selectedService &&
+		!invalidQuery &&
+		(lockedParam === "service" || !requestedSituation),
+);
 const validSelection = Boolean(selectedPath && selectedServiceOption);
 const questions = requestedService === "other-challenge"
 	? inquiry.alternate
@@ -77,24 +83,30 @@ const siteKey =
 	<div id="contact-form-container" class="contact-form">
 		{feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert" data-tina-field={tinaField(f, invalidQuery ? "invalidSelection" : inquiryError ?? "error")}>{feedback}</p>}
 		<h2 class="mb-4 text-2xl font-semibold" data-tina-field={tinaField(inquiry, "heading")}>{inquiry.heading}</h2>
-		<form id="inquiry-selection" class="contact-form__selection mt-6 space-y-6" action={`/${lang}/contact`} method="GET">
+		<form id="inquiry-selection" class="contact-form__selection mt-6 space-y-6" action={`/${lang}/contact`} method="GET" data-service-locked={serviceLocked ? "true" : undefined}>
 			<label class="contact-form__field text-sm font-medium" for="business-situation" data-tina-field={tinaField(inquiry, "situationLabel")}>
 				{inquiry.situationLabel}
 				<select id="business-situation" name="situation" class="contact-form__control w-full">
 					<option value="" data-tina-field={tinaField(inquiry, "selectPlaceholder")}>{inquiry.selectPlaceholder}</option>
 					{paths.map((path: any, index: number) => (
-						<option value={path.value} selected={path.value === requestedSituation} data-service-ids={JSON.stringify(path.serviceOptions.map((option: any) => option.value))} data-tina-field={tinaField(path, "title")}>{path.title}</option>
+						<option value={path.value} selected={path.value === requestedSituation} disabled={Boolean(serviceLocked && !path.serviceOptions.some((option: any) => option.value === requestedService))} data-service-ids={JSON.stringify(path.serviceOptions.map((option: any) => option.value))} data-tina-field={tinaField(path, "title")}>{path.title}</option>
 					))}
 				</select>
 			</label>
 			<label class="contact-form__field text-sm font-medium" for="desired-service" data-tina-field={tinaField(inquiry, "serviceLabel")}>
 				{inquiry.serviceLabel}
-				<select id="desired-service" name="service" class="contact-form__control w-full">
+				<select id="desired-service" name="service" disabled={serviceLocked} aria-disabled={serviceLocked ? "true" : undefined} class="contact-form__control w-full">
 					<option value="" data-tina-field={tinaField(inquiry, "selectPlaceholder")}>{inquiry.selectPlaceholder}</option>
 					{services.map((service) => (
 						<option value={service.value} selected={service.value === requestedService} disabled={Boolean(selectedPath && !selectedPath.serviceOptions.some((option: any) => option.value === service.value))} data-descriptions={JSON.stringify(service.descriptions)} data-tina-field={tinaField(service.sourcePath.serviceOptions[service.sourceIndex], "label")}>{service.label}</option>
 					))}
 				</select>
+				{serviceLocked && (
+					<>
+						<input type="hidden" name="service" value={requestedService} />
+						<input type="hidden" name="locked" value="service" />
+					</>
+				)}
 				<span id="desired-service-description" class="contact-form__description mt-2 block text-gray-600" aria-live="polite" data-tina-field={selectedServiceOption ? tinaField(selectedPath.serviceOptions, selectedServiceOptionIndex) : undefined}>{selectedServiceOption?.description}</span>
 			</label>
 			<p id="selection-change-feedback" class="text-sm text-red-800" role="status" hidden data-tina-field={tinaField(f, "invalidSelection")}>{f.invalidSelection}</p>
@@ -103,7 +115,7 @@ const siteKey =
 
 		{validSelection && (
 			<>
-				<p class="mt-8 text-gray-600" data-tina-field={tinaField(selectedPath, "description")}>{selectedPath.description}</p>
+				<p class="mt-8 text-gray-600" data-tina-field={requestedService === "other-challenge" ? tinaField(inquiry.alternate, "description") : tinaField(selectedPath, "description")}>{questions.description}</p>
 				<form id="contact-form" class="mt-6 space-y-8" action={`/${lang}/api/contact`} method="POST" enctype="multipart/form-data">
 					<input type="hidden" name="businessSituation" value={selectedPath.value} />
 					<input type="hidden" name="desiredService" value={requestedService} />
@@ -160,18 +172,23 @@ const siteKey =
 		const renderedService = form?.querySelector('[name="desiredService"]')?.getAttribute('value');
 		const description = document.getElementById('desired-service-description');
 		const selectionFeedback = document.getElementById('selection-change-feedback');
+		const serviceLocked = selection.dataset.serviceLocked === 'true';
 		const updateServiceOptions = () => {
 			const active = Array.from(situation.options).find((option) => option.value === situation.value);
 			const allowed = active ? JSON.parse(active.dataset.serviceIds || '[]') : null;
 			const selected = service.value;
-			for (const option of service.options) {
-				if (!option.value) continue;
-				option.disabled = Boolean(allowed && !allowed.includes(option.value));
-			}
-			if (selected && allowed && !allowed.includes(selected)) {
-				service.value = '';
-				selectionFeedback.hidden = false;
-			} else if (service.value) {
+			if (!serviceLocked) {
+				for (const option of service.options) {
+					if (!option.value) continue;
+					option.disabled = Boolean(allowed && !allowed.includes(option.value));
+				}
+				if (selected && allowed && !allowed.includes(selected)) {
+					service.value = '';
+					selectionFeedback.hidden = false;
+				} else if (service.value) {
+					selectionFeedback.hidden = true;
+				}
+			} else {
 				selectionFeedback.hidden = true;
 			}
 			if (form) {
