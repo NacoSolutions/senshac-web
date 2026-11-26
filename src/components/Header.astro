@@ -35,7 +35,11 @@ const isTransparent = headerStyle === "transparent";
 const header = propChrome?.header;
 const mode = header?.mode ?? "fixed";
 const scrollingAppearance = header?.scrolling ?? (isTransparent ? "transparent-adaptive" : "opaque-light");
-const finalAppearance = header?.atFinal ?? "opaque-light";
+const rawFinalAppearance = header?.atFinal ?? "opaque-light";
+const finalAppearance: Appearance =
+	mode === "fixed" && rawFinalAppearance.startsWith("transparent-")
+		? "opaque-light"
+		: rawFinalAppearance;
 const appearanceClasses: Record<Appearance, string> = {
 	"transparent-adaptive": "bg-transparent text-white",
 	"transparent-light": "bg-transparent text-white",
@@ -80,7 +84,7 @@ const getLocalizedPath = (targetLang: string) => {
     scrollingAppearance: '${scrollingAppearance}',
     finalAppearance: '${finalAppearance}'
   }`}
-  x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 50 })"
+  x-init="scrolled = window.scrollY > 50; window.addEventListener('scroll', () => { scrolled = window.scrollY > 50 }, { passive: true })"
 >
   <header
     class:list={[mode === "fixed" ? "fixed" : "relative", "top-0 left-0 right-0 z-50 transition-all duration-300"]}
