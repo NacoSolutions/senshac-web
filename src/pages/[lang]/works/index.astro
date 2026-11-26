@@ -79,7 +79,10 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
           );
           return (
             <article class="works-index__item">
-              <p class="works-index__label">{work.category} / {work.title}</p>
+              <div class="works-index__meta">
+                <p class="works-index__summary">{work.summary}</p>
+                <p class="works-index__label">{work.category} / {work.title}</p>
+              </div>
               {work.href ? (
                 <a href={work.href} class="works-index__media">
                   {content}
@@ -89,7 +92,6 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
                   {content}
                 </div>
               )}
-              <p class="works-index__summary">{work.summary}</p>
             </article>
           );
         })}
@@ -102,32 +104,42 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
 <style>
 .works-index {
   padding-top: clamp(7rem, 12vw, 11rem);
+  padding-bottom: clamp(4rem, 8vw, 7rem);
 }
 
 .works-index__title {
   margin: 0;
   font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 500;
-  line-height: 0.78;
+  font-size: clamp(2.25rem, 3.6vw, 3.25rem);
+  font-weight: 600;
+  line-height: 0.94;
   text-transform: uppercase;
 }
 
 .works-index__title em {
-  font-weight: 500;
+  font-style: italic;
+  font-weight: 600;
 }
 
 .works-index__list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(3rem, 6vw, 6rem) 1.5rem;
-  padding-top: clamp(5rem, 10vw, 9rem);
+  gap: clamp(3rem, 6vw, 5.5rem) 1.5rem;
+  padding-top: clamp(4.5rem, 8vw, 7.5rem);
 }
 
 .works-index__item {
   display: flex;
   min-width: 0;
   flex-direction: column;
+}
+
+.works-index__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .works-index__media {
@@ -139,21 +151,32 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
   height: 100%;
 }
 
-.works-index__label,
 .works-index__summary {
   margin: 0;
-  font-size: clamp(0.85rem, 1.2vw, 1rem);
-  line-height: 1.35;
+  max-width: 34ch;
+  font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
+  font-size: clamp(0.875rem, 1vw, 1rem);
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 .works-index__label {
-  margin-bottom: 0.75rem;
-  font-weight: 600;
+  margin: 0;
+  flex-shrink: 0;
+  font-family: var(--site-font-display, "Jozsika", serif);
+  font-size: clamp(1rem, 1.35vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: right;
   text-transform: uppercase;
 }
 
-.works-index__summary {
-  margin-top: 0.75rem;
+@media (min-width: 48rem) {
+  .works-index :global(.editorial-shell) {
+    width: 88vw;
+    max-width: none;
+    margin-inline: auto;
+  }
 }
 
 @media (max-width: 47.99rem) {
@@ -162,13 +185,23 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
   }
 
   .works-index__title {
-    font-size: clamp(2.4rem, 13vw, 3.4rem);
+    font-size: clamp(2.25rem, 11vw, 3.25rem);
   }
 
   .works-index__list {
     grid-template-columns: 1fr;
     gap: 4rem;
-    padding-top: 5rem;
+    padding-top: 4rem;
+  }
+
+  .works-index__meta {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .works-index__label {
+    text-align: left;
   }
 }
 </style>

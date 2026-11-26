@@ -152,9 +152,7 @@ test("Home preserves current live block order and opening carousel", async ({
 
 	const rudeLink = block(4).locator('[data-showcase-items] a[href="/es/works/rude"]');
 	await expect(rudeLink).toHaveCount(1);
-	await expect(
-		block(4).locator("[data-showcase-items]").getByText("Imagen pendiente de confirmar", { exact: true }),
-	).toHaveCount(1);
+	await expect(block(4).locator("[data-showcase-items] img")).toHaveCount(2);
 	const highlightGeometry = await block(4).locator("[data-showcase-items] > *").evaluateAll((items) => ({
 		left: items[0].getBoundingClientRect().left,
 		rude: items[1].getBoundingClientRect().left,
