@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 {
+  imports = [ /workspace/common/main/devenv.nix ];
+
   # Keep the local toolchain explicit and reproducible. Application dependencies
   # remain in bun.lock; these packages provide the tools used by repository
   # scripts and quality gates.
