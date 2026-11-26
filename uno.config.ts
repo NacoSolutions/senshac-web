@@ -86,7 +86,19 @@ export default defineConfig({
 		// Structural
 		"container-content": "max-w-[1440px] mx-auto px-[15px]",
 		"editorial-shell": "w-[min(100%-3rem,1440px)] mx-auto",
+		"editorial-shell-wide": "w-[calc(100%-3rem)] md:w-[88vw] max-w-none mx-auto",
 		"editorial-section": "py-[clamp(4rem,8vw,8rem)]",
+
+		// Canonical 12-column editorial grid (2000pt artboard, 120pt/6vw margins -> 88vw shell, 24pt/gap-6 gutter)
+		"editorial-grid-12": "grid grid-cols-1 md:grid-cols-12 gap-y-8 md:gap-x-6",
+		"editorial-rail-left": "col-span-full md:col-[1/5] min-w-0",
+		"editorial-rail-main": "col-span-full md:col-[6/13] min-w-0",
+		"editorial-rail-full": "col-span-full md:col-[1/13] min-w-0",
+		"editorial-split-left": "col-span-full md:col-[1/6] min-w-0",
+		"editorial-split-right": "col-span-full md:col-[6/13] min-w-0",
+		"editorial-half-left": "col-span-full md:col-[1/7] min-w-0",
+		"editorial-half-right": "col-span-full md:col-[7/13] min-w-0",
+		"editorial-bleed": "col-span-full w-screen ml-[calc(50%-50vw)]",
 
 		// Backgrounds
 		"bg-section-light": "bg-bg-light",
@@ -118,6 +130,14 @@ export default defineConfig({
 			"m-0 font-sans text-[clamp(1.2rem,2vw,1.75rem)] leading-[1.45] whitespace-pre-line max-w-[31rem]",
 		"editorial-body":
 			"m-0 font-sans text-[clamp(1rem,1.5vw,1.25rem)] leading-[1.45] whitespace-pre-line",
+		"editorial-rail-heading":
+			"m-0 font-sans text-[clamp(1.5rem,1.8vw,1.875rem)] font-bold leading-[1.15] normal-case whitespace-pre-line",
+		"editorial-rail-subhead":
+			"m-0 font-sans text-[clamp(1.125rem,1.35vw,1.375rem)] font-bold leading-[1.25] normal-case",
+		"editorial-rail-body":
+			"m-0 font-sans text-[1.125rem] font-normal leading-[1.45] whitespace-pre-line",
+		"editorial-rail-kicker":
+			"m-0 font-sans text-[0.875rem] font-semibold uppercase tracking-[0.04em]",
 
 		// Link
 		"editorial-link":
