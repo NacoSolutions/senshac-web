@@ -172,7 +172,9 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
 }
 
 @media (min-width: 48rem) {
-  .works-index :global(.editorial-shell) {
+  .works-index :global(.editorial-shell),
+  :global(body:has(.works-index) header .editorial-shell),
+  :global(body:has(.works-index) footer .editorial-shell) {
     width: 88vw;
     max-width: none;
     margin-inline: auto;

@@ -64,6 +64,10 @@ export default defineConfig({
 				light: "rgba(255, 255, 255, 0.2)",
 			},
 		},
+		font: {
+			sans: "var(--site-font-body, 'Sinteca', system-ui, sans-serif)",
+			jozsika: "var(--site-font-display, 'Jozsika', serif)",
+		},
 		fontFamily: {
 			sans: "var(--site-font-body, 'Sinteca', system-ui, sans-serif)",
 			jozsika: "var(--site-font-display, 'Jozsika', serif)",
