@@ -47,7 +47,9 @@ const menuLinks = footerLinks.filter((link: { href: string }) => !link.href.ends
 const contactLinkIndex = footerLinks.findIndex((link: { href: string }) => link.href.endsWith("/contact"));
 const contactLink = footerLinks[contactLinkIndex];
 const attributions = footerData.attributions || [];
-const socialLinks = site.socialLinks;
+const socialLinks = (site.socialLinks || []).filter(
+	(link: { name?: string }) => link.name?.toLowerCase() !== "houzz",
+);
 ---
 
 <footer
