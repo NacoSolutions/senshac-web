@@ -77,12 +77,14 @@ test("the two inquiry selectors prefill, filter services, and adapt the question
 		"/es/contact?situation=existing-space&service=decorative-restyling",
 	);
 	const situation = page.getByLabel("¿Cuál es la situación de tu negocio?");
-	const service = page.getByLabel("¿Qué servicio necesitas?");
+	const service = page.getByLabel("¿Qué alcance de servicio necesitas?");
 	await expect(page.locator("#inquiry-selection select")).toHaveCount(2);
 	await expect(situation).toHaveValue("existing-space");
 	await expect(service).toHaveValue("decorative-restyling");
 	await expect(page.locator("#contact-form")).toBeVisible();
-	await expect(page.getByLabel(/¿Qué no está funcionando/)).toBeEnabled();
+	await expect(
+		page.getByLabel(/¿Quieres darnos algún detalle más sobre tu caso/),
+	).toBeEnabled();
 	await expect(page.getByLabel("Alcance que buscas")).toHaveCount(0);
 	await expect(page.locator('#contact-form input[type="file"]')).toHaveAttribute(
 		"accept",
@@ -100,19 +102,44 @@ test("the two inquiry selectors prefill, filter services, and adapt the question
 
 	await service.selectOption("decorative-restyling");
 	await page.getByRole("button", { name: "Continuar" }).click();
-	await expect(page.getByLabel("¿Qué tienes previsto?")).toBeEnabled();
-	await expect(page.locator("#contact-form")).toContainText("Preparar el crecimiento");
+	await expect(page.getByLabel("¿Vas a abrir un nuevo espacio?")).toBeEnabled();
+	await expect(page.locator("#contact-form")).toContainText("Quiero escalar mi negocio");
 
 	await service.selectOption("other-challenge");
 	await page.getByRole("button", { name: "Continuar" }).click();
-	await expect(page.getByLabel("¿Qué situación o reto quieres resolver?")).toBeEnabled();
-	await expect(page.locator("#contact-form")).toContainText("Tengo otra situación");
+	await expect(
+		page.getByLabel("¿En qué consiste tu proyecto o reto?"),
+	).toBeEnabled();
+	await expect(page.locator("#contact-form")).toContainText(
+		"¿Tienes un reto diferente?",
+	);
 
 	await situation.selectOption("first-space");
 	await service.selectOption("integral");
 	await page.getByRole("button", { name: "Continuar" }).click();
-	await expect(page.getByLabel("Situación del local")).toBeEnabled();
-	await expect(page.locator("#contact-form")).toContainText("Abrir un nuevo espacio");
+	await expect(
+		page.getByLabel("¿Ya has elegido un local o estás buscando?"),
+	).toBeEnabled();
+	await expect(page.locator("#contact-form")).toContainText(
+		"Quiero abrir mi primer espacio",
+	);
+});
+
+test("service CTAs lock the preselected service across the dynamic questionnaire", async ({
+	page,
+}) => {
+	await page.goto("/es/contact?service=decorative-restyling");
+	const situation = page.getByLabel("¿Cuál es la situación de tu negocio?");
+	const service = page.getByLabel("¿Qué alcance de servicio necesitas?");
+	await expect(service).toHaveValue("decorative-restyling");
+	await expect(service).toBeDisabled();
+	await situation.selectOption("first-space");
+	await page.getByRole("button", { name: "Continuar" }).click();
+	await expect(page).toHaveURL(
+		/situation=first-space&service=decorative-restyling&locked=service/,
+	);
+	await expect(service).toBeDisabled();
+	await expect(page.locator("#contact-form")).toBeVisible();
 });
 
 test("homepage accordion toggles with keyboard activation", async ({
