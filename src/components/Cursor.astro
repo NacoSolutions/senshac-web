@@ -1,10 +1,89 @@
 ---
 // src/components/Cursor.astro
 ---
-<div
-  id="cursor-circle"
-  x-data="cursor"
-  @mousemove.window="onMouseMove"
-  @mouseenter.window="onMouseEnter"
-  @mouseleave.window="onMouseLeave"
-></div>
+<div id="cursor-circle" aria-hidden="true"></div>
+
+<script is:inline>
+  (() => {
+    const INTERACTIVE_SELECTOR =
+      'a, button, input, select, textarea, summary, [role="button"]';
+    const INACTIVITY_MS = 2200;
+
+    const cleanupKey = "__senshacCursorCleanup";
+
+    const initCursor = () => {
+      if (typeof window[cleanupKey] === "function") {
+        window[cleanupKey]();
+        window[cleanupKey] = undefined;
+      }
+
+      const cursor = document.getElementById("cursor-circle");
+      if (!cursor || !window.matchMedia("(hover: hover)").matches) return;
+
+      let isHovering = false;
+      let hideTimer;
+
+      const onMouseMove = (event) => {
+        cursor.style.left = `${event.clientX}px`;
+        cursor.style.top = `${event.clientY}px`;
+        cursor.style.opacity = "1";
+
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+          cursor.style.opacity = "0";
+        }, INACTIVITY_MS);
+
+        const target = event.target instanceof Element ? event.target : null;
+        const interactive = Boolean(target?.closest(INTERACTIVE_SELECTOR));
+        if (interactive !== isHovering) {
+          isHovering = interactive;
+          cursor.style.transform = `translate(-50%, -50%) scale(${isHovering ? 1.5 : 1})`;
+        }
+      };
+
+      const onMouseLeave = () => {
+        clearTimeout(hideTimer);
+        cursor.style.opacity = "0";
+      };
+
+      window.addEventListener("mousemove", onMouseMove, { passive: true });
+      document.addEventListener("mouseleave", onMouseLeave);
+
+      window[cleanupKey] = () => {
+        clearTimeout(hideTimer);
+        window.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseleave", onMouseLeave);
+      };
+    };
+
+    initCursor();
+    if (!window.__senshacCursorPageLoadBound) {
+      window.__senshacCursorPageLoadBound = true;
+      document.addEventListener("astro:page-load", initCursor);
+    }
+  })();
+</script>
+
+<style is:global>
+  #cursor-circle {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    background: #f7f8fa;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999999;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    mix-blend-mode: difference;
+  }
+
+  @media (hover: none) {
+    #cursor-circle {
+      display: none;
+    }
+  }
+</style>
