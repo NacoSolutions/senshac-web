@@ -2,6 +2,7 @@
 export { getLanguagePaths as getStaticPaths } from "../../../lib/static-paths";
 export const prerender = true;
 
+import R2Picture from "../../../components/R2Picture.astro";
 import Base from "../../../layouts/Base.astro";
 import { getSiteConfig } from "../../../utils/site-config";
 
@@ -29,7 +30,8 @@ const siteKey =
 
 const pageChrome = {
 	header: {
-		scrolling: "transparent-dark" as const,
+		mode: "fixed" as const,
+		scrolling: "transparent-light" as const,
 		atFinal: "opaque-light" as const,
 	},
 };
@@ -334,134 +336,153 @@ const copy = content[lang];
 	pageChrome={pageChrome}
 	aot
 >
-	<main id="main" class="consultation-page min-h-screen pt-28 pb-20">
-		<div class="editorial-shell consultation-page__grid">
-			<aside class="consultation-page__left space-y-8">
-				<a
-					href={`/${lang}/methods`}
-					class="inline-flex items-center text-sm tracking-wide text-neutral-600 underline-offset-4 hover:text-black hover:underline"
-				>
-					{copy.backLabel}
-				</a>
+	<main id="main" class="min-h-screen">
+		<section class="consultation-page relative w-full min-h-[calc(100vh-5rem)] overflow-clip py-24 md:py-32">
+			<div class="consultation-page__backdrop absolute inset-0 overflow-hidden">
+				<R2Picture
+					id="reference-intake/contact/background"
+					alt=""
+					class="w-full h-full object-cover"
+					eager
+					mediaSlot="full"
+				/>
+				<div class="absolute inset-0" style="background: rgba(0, 0, 0, 0.49);" aria-hidden="true"></div>
+			</div>
 
-				<div class="space-y-4">
-					<h1 class="m-0 text-[clamp(1.75rem,2.6vw,2.4rem)] font-semibold leading-[1.15] tracking-wide uppercase">
-						{copy.title}
-					</h1>
-					<p class="m-0 text-base font-medium text-neutral-800">
-						{copy.subtitle}
-					</p>
-					<p class="m-0 text-[clamp(1.5rem,2vw,1.85rem)] font-semibold text-black">
-						{copy.price}
-					</p>
-					<p class="m-0 text-base leading-relaxed text-neutral-700">
-						{copy.intro}
-					</p>
-				</div>
+			<div class="relative z-10 editorial-shell-wide">
+				<div class="editorial-grid-12 items-start">
+					<!-- Left Rail (cols 1-4): Back Link + Heading + Offer Summary + Guarantee -->
+					<aside class="editorial-rail-left text-white space-y-8 md:sticky md:top-28">
+						<a
+							href={`/${lang}/methods`}
+							class="inline-flex items-center text-sm tracking-wide text-white/85 no-underline hover:opacity-75 transition-opacity"
+						>
+							{copy.backLabel}
+						</a>
 
-				<section class="border-t border-neutral-300 pt-6 space-y-2">
-					<h2 class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600">
-						{copy.guaranteeHeading}
-					</h2>
-					<p class="m-0 text-sm leading-relaxed text-neutral-700">
-						{copy.guaranteeBody}
-					</p>
-				</section>
-			</aside>
-
-			<div class="consultation-page__right space-y-10">
-				<section class="rounded-xl border border-neutral-300 p-6 md:p-8 space-y-8">
-					<div class="space-y-4">
-						<h2 class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600">
-							{copy.includesHeading}
-						</h2>
-						<ul class="m-0 list-none p-0 space-y-4">
-							{copy.includes.map((item) => (
-								<li class="text-sm md:text-base leading-relaxed text-neutral-800">
-									<strong class="block font-semibold text-black">{item.label}</strong>
-									<span>{item.text}</span>
-								</li>
-							))}
-						</ul>
-					</div>
-
-					<div class="border-t border-neutral-200 pt-6 space-y-4">
-						<h2 class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600">
-							{copy.needsHeading}
-						</h2>
-						<ul class="m-0 list-none p-0 space-y-4">
-							{copy.needs.map((item) => (
-								<li class="text-sm md:text-base leading-relaxed text-neutral-800">
-									<strong class="block font-semibold text-black">{item.label}</strong>
-									<span>{item.text}</span>
-								</li>
-							))}
-						</ul>
-					</div>
-				</section>
-
-				<section class="space-y-4" aria-labelledby="consultation-calendar-heading">
-					<h2
-						id="consultation-calendar-heading"
-						class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600"
-					>
-						{copy.calendarHeading}
-					</h2>
-					{bookingUrl ? (
-						<div class="overflow-hidden rounded-xl border border-neutral-300 bg-white">
-							<iframe
-								src={bookingUrl}
-								title={copy.calendarTitle}
-								loading="lazy"
-								class="min-h-[680px] w-full border-0"
-							/>
+						<div class="space-y-4">
+							<h1 class="m-0 font-sans font-semibold uppercase text-white text-[clamp(2.25rem,3.6vw,3.75rem)] leading-[1.05] tracking-[0.01em]">
+								{copy.title}
+							</h1>
+							<p class="m-0 text-base font-medium text-white/90">
+								{copy.subtitle}
+							</p>
+							<p class="m-0 font-sans font-semibold text-white text-[clamp(1.5rem,2vw,2rem)] leading-tight">
+								{copy.price}
+							</p>
+							<p class="m-0 text-base leading-relaxed text-white/85">
+								{copy.intro}
+							</p>
 						</div>
-					) : (
-						<div class="rounded-xl border border-neutral-300 bg-neutral-50 p-6 text-sm md:text-base leading-relaxed text-neutral-700">
-							{copy.calendarFallback}
-						</div>
-					)}
-				</section>
 
-				<section class="space-y-4" aria-labelledby="consultation-form-heading">
-					<h2
-						id="consultation-form-heading"
-						class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600"
-					>
-						{copy.formHeading}
-					</h2>
+						<section class="border-t border-white/25 pt-6 space-y-2">
+							<h2 class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-white/75">
+								{copy.guaranteeHeading}
+							</h2>
+							<p class="m-0 text-sm leading-relaxed text-white/85">
+								{copy.guaranteeBody}
+							</p>
+						</section>
+					</aside>
 
-					<div
-						id="consultation-success"
-						class="rounded-xl border border-green-300 bg-green-50 p-6 text-green-900"
-						role="status"
-						hidden
-					>
-						<p class="m-0 text-base font-medium">{copy.successMessage}</p>
-					</div>
+					<!-- Right Rail (cols 6-12): Frosted-glass Cards -->
+					<div class="editorial-rail-main space-y-6">
+						<section class="rounded-[2rem] bg-white/85 backdrop-blur-md p-6 sm:p-8 lg:p-10 text-black shadow-sm space-y-8">
+							<div class="space-y-4">
+								<h2 class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600">
+									{copy.includesHeading}
+								</h2>
+								<ul class="m-0 list-none p-0 space-y-4">
+									{copy.includes.map((item) => (
+										<li class="text-sm md:text-base leading-relaxed text-neutral-800">
+											<strong class="block font-semibold text-black">{item.label}</strong>
+											<span>{item.text}</span>
+										</li>
+									))}
+								</ul>
+							</div>
 
-					<p
-						id="consultation-error"
-						class="m-0 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900"
-						role="alert"
-						hidden
-					></p>
+							<div class="border-t border-black/15 pt-6 space-y-4">
+								<h2 class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600">
+									{copy.needsHeading}
+								</h2>
+								<ul class="m-0 list-none p-0 space-y-4">
+									{copy.needs.map((item) => (
+										<li class="text-sm md:text-base leading-relaxed text-neutral-800">
+											<strong class="block font-semibold text-black">{item.label}</strong>
+											<span>{item.text}</span>
+										</li>
+									))}
+								</ul>
+							</div>
+						</section>
 
-					<form
-						id="consultation-form"
-						class="space-y-6"
-						action={`/${lang}/api/contact`}
-						method="POST"
-						enctype="multipart/form-data"
-						data-error-messages={JSON.stringify(copy.errorMessages)}
-					>
-						<input type="hidden" name="mode" value="consultation" />
-						<div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
-						<input type="hidden" name="cf-turnstile-response" id="consultation-turnstile-response" />
+						<section
+							class="rounded-[2rem] bg-white/90 backdrop-blur-md p-4 sm:p-6 text-black shadow-sm space-y-4"
+							aria-labelledby="consultation-calendar-heading"
+						>
+							<h2
+								id="consultation-calendar-heading"
+								class="m-0 px-2 pt-1 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600"
+							>
+								{copy.calendarHeading}
+							</h2>
+							{bookingUrl ? (
+								<div class="overflow-hidden rounded-[1.25rem] border border-black/10 bg-white">
+									<iframe
+										src={bookingUrl}
+										title={copy.calendarTitle}
+										loading="lazy"
+										class="min-h-[680px] w-full border-0"
+									/>
+								</div>
+							) : (
+								<div class="rounded-[1.25rem] border border-black/10 bg-white/70 p-6 text-sm md:text-base leading-relaxed text-neutral-700">
+									{copy.calendarFallback}
+								</div>
+							)}
+						</section>
 
-						<div class="rounded-xl border border-neutral-900 p-6 md:p-8 space-y-5 bg-white">
-							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-								<label class="block text-sm font-medium text-neutral-900">
+						<section
+							class="rounded-[2rem] bg-white/85 backdrop-blur-md p-6 sm:p-8 lg:p-10 text-black shadow-sm space-y-6"
+							aria-labelledby="consultation-form-heading"
+						>
+							<h2
+								id="consultation-form-heading"
+								class="m-0 text-2xl font-semibold leading-tight"
+							>
+								{copy.formHeading}
+							</h2>
+
+							<div
+								id="consultation-success"
+								class="border border-green-300 bg-green-50/80 p-6 text-green-900"
+								role="status"
+								hidden
+							>
+								<p class="m-0 text-lg font-medium">{copy.successMessage}</p>
+							</div>
+
+							<p
+								id="consultation-error"
+								class="m-0 border border-red-300 bg-red-50/80 p-4 text-sm text-red-900"
+								role="alert"
+								hidden
+							></p>
+
+							<form
+								id="consultation-form"
+								class="consultation-form space-y-5"
+								action={`/${lang}/api/contact`}
+								method="POST"
+								enctype="multipart/form-data"
+								data-error-messages={JSON.stringify(copy.errorMessages)}
+							>
+								<input type="hidden" name="mode" value="consultation" />
+								<div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
+								<input type="hidden" name="cf-turnstile-response" id="consultation-turnstile-response" />
+
+								<label class="consultation-form__field text-sm font-medium">
 									<span>{copy.nameLabel} *</span>
 									<input
 										type="text"
@@ -470,11 +491,23 @@ const copy = content[lang];
 										maxlength="200"
 										autocomplete="name"
 										placeholder={copy.namePlaceholder}
-										class="consultation-input mt-1.5 w-full"
+										class="consultation-form__control w-full"
 									/>
 								</label>
 
-								<label class="block text-sm font-medium text-neutral-900">
+								<label class="consultation-form__field text-sm font-medium">
+									<span>{copy.companyLabel}</span>
+									<input
+										type="text"
+										name="company"
+										maxlength="200"
+										autocomplete="organization"
+										placeholder={copy.companyPlaceholder}
+										class="consultation-form__control w-full"
+									/>
+								</label>
+
+								<label class="consultation-form__field text-sm font-medium">
 									<span>{copy.emailLabel} *</span>
 									<input
 										type="email"
@@ -483,11 +516,11 @@ const copy = content[lang];
 										maxlength="254"
 										autocomplete="email"
 										placeholder={copy.emailPlaceholder}
-										class="consultation-input mt-1.5 w-full"
+										class="consultation-form__control w-full"
 									/>
 								</label>
 
-								<label class="block text-sm font-medium text-neutral-900">
+								<label class="consultation-form__field text-sm font-medium">
 									<span>{copy.phoneLabel}</span>
 									<input
 										type="tel"
@@ -495,88 +528,78 @@ const copy = content[lang];
 										maxlength="80"
 										autocomplete="tel"
 										placeholder={copy.phonePlaceholder}
-										class="consultation-input mt-1.5 w-full"
+										class="consultation-form__control w-full"
 									/>
 								</label>
 
-								<label class="block text-sm font-medium text-neutral-900">
-									<span>{copy.companyLabel}</span>
+								<label class="consultation-form__field consultation-form__field--top text-sm font-medium">
+									<span>{copy.messageLabel} *</span>
+									<textarea
+										name="message"
+										required
+										maxlength="4000"
+										rows="5"
+										placeholder={copy.messagePlaceholder}
+										class="consultation-form__control w-full"
+									></textarea>
+								</label>
+
+								<div class="space-y-2 pt-1">
+									<label
+										for="consultation-files"
+										class="flex cursor-pointer flex-col items-center justify-center rounded-[0.25rem] border border-[#777] px-6 py-4 text-center transition-colors hover:border-black hover:bg-white/40"
+									>
+										<span class="text-xs font-semibold tracking-[0.1em] uppercase text-black">
+											{copy.uploadLabel}
+										</span>
+										<span class="mt-1 text-xs text-gray-700">
+											{copy.uploadHint}
+										</span>
+										<input
+											id="consultation-files"
+											type="file"
+											name="files"
+											multiple
+											accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
+											class="sr-only"
+										/>
+									</label>
+									<p id="consultation-file-list" class="m-0 text-xs text-gray-700" aria-live="polite" hidden></p>
+								</div>
+
+								<label class="flex items-start gap-3 text-sm text-gray-700">
 									<input
-										type="text"
-										name="company"
-										maxlength="200"
-										autocomplete="organization"
-										placeholder={copy.companyPlaceholder}
-										class="consultation-input mt-1.5 w-full"
+										type="checkbox"
+										name="privacy"
+										value="accepted"
+										required
+										class="mt-1 h-4 w-4 shrink-0"
 									/>
+									<span>
+										{copy.privacyPrefix}
+										<a
+											href={`/${lang}/privacy-policy`}
+											class="underline underline-offset-4 hover:text-black"
+										>
+											{copy.privacyLinkText}
+										</a>
+									</span>
 								</label>
-							</div>
 
-							<label class="block text-sm font-medium text-neutral-900">
-								<span>{copy.messageLabel} *</span>
-								<textarea
-									name="message"
-									required
-									maxlength="4000"
-									rows="4"
-									placeholder={copy.messagePlaceholder}
-									class="consultation-input mt-1.5 w-full resize-y"
-								></textarea>
-							</label>
-						</div>
-
-						<div class="space-y-2">
-							<label
-								for="consultation-files"
-								class="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-neutral-400 px-6 py-4 text-center transition-colors hover:border-black hover:bg-neutral-50"
-							>
-								<span class="text-xs font-semibold tracking-[0.1em] uppercase text-neutral-900">
-									{copy.uploadLabel}
-								</span>
-								<span class="mt-1 text-xs text-neutral-500">
-									{copy.uploadHint}
-								</span>
-								<input
-									id="consultation-files"
-									type="file"
-									name="files"
-									multiple
-									accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
-									class="sr-only"
-								/>
-							</label>
-							<p id="consultation-file-list" class="m-0 text-xs text-neutral-600" aria-live="polite" hidden></p>
-						</div>
-
-						<label class="flex items-start gap-3 text-sm text-neutral-700">
-							<input
-								type="checkbox"
-								name="privacy"
-								value="accepted"
-								required
-								class="mt-1 h-4 w-4 accent-black"
-							/>
-							<span>
-								{copy.privacyPrefix}
-								<a
-									href={`/${lang}/privacy-policy`}
-									class="underline underline-offset-4 hover:text-black"
-								>
-									{copy.privacyLinkText}
-								</a>
-							</span>
-						</label>
-
-						<button
-							type="submit"
-							class="inline-flex items-center justify-center rounded-full bg-black px-8 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-neutral-800 cursor-pointer border-0"
-						>
-							{copy.submitLabel}
-						</button>
-					</form>
-				</section>
+								<div class="pt-2">
+									<button
+										type="submit"
+										class="bg-black px-8 py-4 text-sm tracking-wider text-white hover:bg-gray-800 transition-colors cursor-pointer"
+									>
+										{copy.submitLabel}
+									</button>
+								</div>
+							</form>
+						</section>
+					</div>
+				</div>
 			</div>
-		</div>
+		</section>
 	</main>
 
 	<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
@@ -641,32 +664,50 @@ const copy = content[lang];
 	</script>
 
 	<style is:global>
-		.consultation-page .consultation-input {
+		.consultation-form .consultation-form__field {
+			display: grid;
+			grid-template-columns: minmax(9rem, 0.7fr) minmax(0, 1.3fr);
+			align-items: center;
+			column-gap: clamp(1rem, 3vw, 2rem);
+			row-gap: 0.5rem;
+		}
+
+		.consultation-form .consultation-form__field--top {
+			align-items: start;
+		}
+
+		.consultation-form .consultation-form__control {
 			box-sizing: border-box;
-			border: 0;
-			border-bottom: 1px solid #d4d4d4;
+			width: 100%;
+			min-width: 0;
+			min-height: 3.25rem;
+			margin: 0;
+			border: 1px solid #777;
+			border-radius: 0.25rem;
+			padding: 0.75rem 1rem;
 			background: transparent;
-			padding: 0.5rem 0;
-			font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
-			font-size: 0.95rem;
-			color: #111;
-			transition: border-color 150ms ease;
+			color: inherit;
+			font: inherit;
+			font-size: 1rem;
+			line-height: 1.4;
 		}
 
-		.consultation-page .consultation-input:focus {
-			outline: none;
-			border-bottom-color: #111;
+		.consultation-form textarea.consultation-form__control {
+			min-height: 8rem;
+			resize: vertical;
 		}
 
-		.consultation-page .consultation-input:focus-visible {
-			outline: 2px solid #111;
+		.consultation-form .consultation-form__control:focus-visible {
+			border-color: currentColor;
+			outline: 2px solid currentColor;
 			outline-offset: 2px;
 		}
 
-		.consultation-page__grid {
-			display: grid;
-			grid-template-columns: minmax(0, 1fr);
-			gap: 2.5rem;
+		@media (max-width: 47.99rem) {
+			.consultation-form .consultation-form__field {
+				grid-template-columns: minmax(0, 1fr);
+				row-gap: 0.5rem;
+			}
 		}
 
 		@media (min-width: 768px) {
@@ -676,24 +717,6 @@ const copy = content[lang];
 				width: 88vw;
 				max-width: none;
 				margin-inline: auto;
-			}
-		}
-
-		@media (min-width: 1024px) {
-			.consultation-page__grid {
-				grid-template-columns: repeat(12, minmax(0, 1fr));
-				column-gap: 1.5rem;
-				align-items: start;
-			}
-
-			.consultation-page__left {
-				grid-column: 1 / 5;
-				position: sticky;
-				top: 7rem;
-			}
-
-			.consultation-page__right {
-				grid-column: 6 / 13;
 			}
 		}
 	</style>
