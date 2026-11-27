@@ -538,41 +538,149 @@ const serializedClientConfig = JSON.stringify(clientConfig).replace(/</g, "\\u00
 			return { desc, form };
 		};
 
+		let expandAnimation = null;
+
+		const prefersReducedMotion = () =>
+			typeof window.matchMedia === 'function' &&
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		const animateExpandWrap = (targetExpanded, mutateDom) => {
+			const resetInlineStyles = () => {
+				expandWrap.style.height = '';
+				expandWrap.style.opacity = '';
+				expandWrap.style.overflow = '';
+			};
+
+			if (prefersReducedMotion() || typeof expandWrap.animate !== 'function') {
+				if (expandAnimation) {
+					expandAnimation.cancel();
+					expandAnimation = null;
+				}
+				resetInlineStyles();
+				if (mutateDom) mutateDom();
+				expandWrap.dataset.expanded = targetExpanded ? 'true' : 'false';
+				return;
+			}
+
+			const startHeight = expandWrap.getBoundingClientRect().height;
+			const computedOpacity = Number.parseFloat(window.getComputedStyle(expandWrap).opacity);
+			const startOpacity = Number.isFinite(computedOpacity)
+				? computedOpacity
+				: startHeight > 0
+					? 1
+					: 0;
+			const wasExpanded = expandWrap.dataset.expanded === 'true';
+
+			if (expandAnimation) {
+				expandAnimation.cancel();
+				expandAnimation = null;
+			}
+
+			expandWrap.dataset.expanded = targetExpanded ? 'true' : 'false';
+
+			if (targetExpanded) {
+				if (mutateDom) mutateDom();
+				expandWrap.style.height = 'auto';
+				expandWrap.style.overflow = 'hidden';
+				const endHeight = expandWrap.scrollHeight;
+				expandWrap.style.height = '';
+
+				const isComboSwitch = wasExpanded && startHeight >= 1;
+				if (isComboSwitch && Math.abs(endHeight - startHeight) < 1 && startOpacity >= 0.99) {
+					resetInlineStyles();
+					return;
+				}
+
+				const anim = expandWrap.animate(
+					[
+						{ height: `${startHeight}px`, opacity: startOpacity },
+						{ height: `${endHeight}px`, opacity: 1 },
+					],
+					{
+						duration: isComboSwitch ? 420 : 480,
+						easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+					},
+				);
+				expandAnimation = anim;
+				anim.onfinish = () => {
+					if (expandAnimation !== anim) return;
+					expandAnimation = null;
+					resetInlineStyles();
+				};
+				anim.oncancel = () => {
+					if (expandAnimation === anim) {
+						expandAnimation = null;
+					}
+				};
+				return;
+			}
+
+			if (startHeight < 1) {
+				resetInlineStyles();
+				if (mutateDom) mutateDom();
+				return;
+			}
+
+			expandWrap.style.overflow = 'hidden';
+			const anim = expandWrap.animate(
+				[
+					{ height: `${startHeight}px`, opacity: startOpacity },
+					{ height: '0px', opacity: 0 },
+				],
+				{
+					duration: 420,
+					easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+				},
+			);
+			expandAnimation = anim;
+			anim.onfinish = () => {
+				if (expandAnimation !== anim) return;
+				expandAnimation = null;
+				resetInlineStyles();
+				if (mutateDom) mutateDom();
+			};
+			anim.oncancel = () => {
+				if (expandAnimation === anim) {
+					expandAnimation = null;
+				}
+			};
+		};
+
 		const renderOrUpdateGuidedForm = (situationValue, serviceValue) => {
 			const path = (config.paths || []).find((item) => item.value === situationValue);
 			if (!path) return;
 			const questions = serviceValue === 'other-challenge' ? config.alternate : path;
-			let form = document.getElementById('contact-form');
-			let desc = document.getElementById('inquiry-path-description');
 
-			if (form) {
-				const sitInput = form.querySelector('input[name="businessSituation"]');
-				const svcInput = form.querySelector('input[name="desiredService"]');
-				if (sitInput) sitInput.value = path.value;
-				if (svcInput) svcInput.value = serviceValue;
-				if (desc) desc.textContent = questions.description;
-				const oldFieldset = form.querySelector('fieldset.contact-form__questions');
-				const nextFieldset = buildQuestionsFieldset(questions, serviceValue);
-				if (oldFieldset) oldFieldset.replaceWith(nextFieldset);
-				form.hidden = false;
-			} else {
-				const built = buildGuidedForm(path, questions, serviceValue);
-				expandInner.replaceChildren(built.desc, built.form);
-				form = built.form;
-			}
+			animateExpandWrap(true, () => {
+				const form = document.getElementById('contact-form');
+				const desc = document.getElementById('inquiry-path-description');
 
-			if (ssrAlert) ssrAlert.hidden = true;
-			if (expandWrap.dataset.expanded !== 'true') {
-				void expandWrap.offsetHeight;
-				expandWrap.dataset.expanded = 'true';
-			}
+				if (form) {
+					const sitInput = form.querySelector('input[name="businessSituation"]');
+					const svcInput = form.querySelector('input[name="desiredService"]');
+					if (sitInput) sitInput.value = path.value;
+					if (svcInput) svcInput.value = serviceValue;
+					if (desc) desc.textContent = questions.description;
+					const oldFieldset = form.querySelector('fieldset.contact-form__questions');
+					const nextFieldset = buildQuestionsFieldset(questions, serviceValue);
+					if (oldFieldset) oldFieldset.replaceWith(nextFieldset);
+					form.hidden = false;
+				} else {
+					const built = buildGuidedForm(path, questions, serviceValue);
+					expandInner.replaceChildren(built.desc, built.form);
+				}
+
+				if (ssrAlert) ssrAlert.hidden = true;
+			});
+
 			notifyState('guided', true);
 		};
 
 		const collapseGuidedForm = () => {
-			expandWrap.dataset.expanded = 'false';
-			const form = document.getElementById('contact-form');
-			if (form) form.hidden = true;
+			animateExpandWrap(false, () => {
+				const form = document.getElementById('contact-form');
+				if (form) form.hidden = true;
+			});
 			notifyState('guided', false);
 		};
 
@@ -662,22 +770,18 @@ const serializedClientConfig = JSON.stringify(clientConfig).replace(/</g, "\\u00
   }
 
   .contact-form__expand {
-    display: grid;
-    grid-template-rows: 0fr;
+    overflow: hidden;
+    height: 0;
     opacity: 0;
-    transition:
-      grid-template-rows 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.4s ease;
   }
 
   .contact-form__expand[data-expanded="true"] {
-    grid-template-rows: 1fr;
+    height: auto;
     opacity: 1;
+    overflow: visible;
   }
 
   .contact-form__expand-inner {
-    overflow: hidden;
-    min-height: 0;
     padding-inline: 4px;
     margin-inline: -4px;
   }
@@ -712,12 +816,6 @@ const serializedClientConfig = JSON.stringify(clientConfig).replace(/</g, "\\u00
     border-color: currentColor;
     outline: 2px solid currentColor;
     outline-offset: 2px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .contact-form__expand {
-      transition: none;
-    }
   }
 
   @media (max-width: 47.99rem) {
