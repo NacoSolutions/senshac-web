@@ -22,18 +22,40 @@ const resolvedMediaId =
 		? "reference-intake/contact/background"
 		: mediaId;
 const whatsappNumber = (site.contact?.phoneLink || site.contact?.phone || "").replace(/\D/g, "");
+const searchParams = Astro.url.searchParams;
+const initialMode =
+	searchParams.has("situation") ||
+	searchParams.has("service") ||
+	searchParams.get("mode") === "guided" ||
+	searchParams.has("path") ||
+	searchParams.has("package")
+		? "guided"
+		: "direct";
+const initialExpanded = Boolean(
+	initialMode === "guided" &&
+		searchParams.get("situation") &&
+		searchParams.get("service") &&
+		!searchParams.has("path") &&
+		!searchParams.has("package"),
+);
 ---
 
-<section class="contact-block relative w-full min-h-[calc(100vh-5rem)] overflow-hidden py-24 md:py-32">
-  <div class="contact-block__backdrop absolute inset-0">
-    <R2Picture
-      id={resolvedMediaId}
-      alt=""
-      class="w-full h-full object-cover"
-      eager
-      mediaSlot="full"
-      data-tina-field={tinaField(tinaData, "mediaId")}
-    />
+<section
+  class="contact-block relative w-full min-h-[calc(100vh-5rem)] overflow-hidden py-24 md:py-32"
+  data-contact-mode={initialMode}
+  data-form-expanded={initialExpanded ? "true" : "false"}
+>
+  <div class="contact-block__backdrop absolute inset-0 overflow-hidden">
+    <div class="contact-block__backdrop-media absolute inset-0">
+      <R2Picture
+        id={resolvedMediaId}
+        alt=""
+        class="w-full h-full object-cover"
+        eager
+        mediaSlot="full"
+        data-tina-field={tinaField(tinaData, "mediaId")}
+      />
+    </div>
     <div class="absolute inset-0" style="background: rgba(0, 0, 0, 0.49);" aria-hidden="true"></div>
   </div>
 
@@ -101,3 +123,44 @@ const whatsappNumber = (site.contact?.phoneLink || site.contact?.phone || "").re
     </div>
   </div>
 </section>
+
+<script is:inline>
+  (() => {
+    const sections = document.querySelectorAll('.contact-block');
+    for (const section of sections) {
+      if (section.dataset.contactZoomBound === 'true') continue;
+      section.dataset.contactZoomBound = 'true';
+      section.addEventListener('senshac:contact-state', (event) => {
+        const detail = event.detail || {};
+        if (detail.mode) {
+          section.dataset.contactMode = detail.mode;
+        }
+        if (typeof detail.expanded === 'boolean') {
+          section.dataset.formExpanded = detail.expanded ? 'true' : 'false';
+        }
+      });
+    }
+  })();
+</script>
+
+<style>
+  .contact-block__backdrop-media {
+    transform: scale(1);
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .contact-block[data-contact-mode="guided"] .contact-block__backdrop-media {
+    transform: scale(1.03);
+  }
+
+  .contact-block[data-form-expanded="true"] .contact-block__backdrop-media {
+    transform: scale(1.07);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contact-block__backdrop-media {
+      transition: none;
+    }
+  }
+</style>

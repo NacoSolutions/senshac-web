@@ -8,6 +8,51 @@ interface Props {
 	translations?: TranslationsQuery["translations"];
 }
 
+const DIRECT_COPY = {
+	es: {
+		lead: "Un gran negocio empieza con un buen espacio.",
+		intro: "Cuéntanos tu idea. Te escuchamos.",
+		name: "Nombre completo:",
+		company: "Empresa:",
+		email: "Mail:",
+		phone: "Telf.:",
+		message: "Tu mensaje:",
+		messagePlaceholder:
+			"Háblanos de tu local, los metros aproximados, la ubicación o los objetivos que quieres lograr con la reforma y nos pondremos en contacto en menos de 48h.",
+		submit: "Haz clic y empezamos",
+		switchToGuided: "¿Prefieres responder al cuestionario guiado?",
+		switchToDirect: "¿Prefieres escribirnos un mensaje directo?",
+	},
+	ca: {
+		lead: "Un gran negoci comença amb un bon espai.",
+		intro: "Explica'ns la teva idea. T'escoltem.",
+		name: "Nom complet:",
+		company: "Empresa:",
+		email: "Mail:",
+		phone: "Telf.:",
+		message: "El teu missatge:",
+		messagePlaceholder:
+			"Parla'ns del teu local, els metres aproximats, la ubicació o els objectius que vols aconseguir amb la reforma i ens posarem en contacte en menys de 48h.",
+		submit: "Fes clic i comencem",
+		switchToGuided: "Prefereixes respondre al qüestionari guiat?",
+		switchToDirect: "Prefereixes escriure'ns un missatge directe?",
+	},
+	en: {
+		lead: "A great business starts with a great space.",
+		intro: "Tell us your idea. We are listening.",
+		name: "Full name:",
+		company: "Company:",
+		email: "Email:",
+		phone: "Phone:",
+		message: "Your message:",
+		messagePlaceholder:
+			"Tell us about your premises, approximate square meters, location, or the goals you want to achieve with the renovation and we will get back to you in under 48h.",
+		submit: "Click and let's start",
+		switchToGuided: "Prefer to answer the guided questionnaire?",
+		switchToDirect: "Prefer to send us a direct message?",
+	},
+} as const;
+
 const { lang, translations: propTranslations } = Astro.props;
 const localTranslations = await getEntry("translations", lang);
 const contact = propTranslations?.contactForm ?? localTranslations?.data.contactForm;
@@ -17,6 +62,9 @@ if (!contact?.inquiryPaths?.paths?.length) {
 const f: any = contact;
 const inquiry = f.inquiryPaths;
 const paths = inquiry.paths;
+const directCopy =
+	DIRECT_COPY[lang as keyof typeof DIRECT_COPY] ?? DIRECT_COPY.es;
+
 const serviceCatalog = new Map<string, any>();
 for (const path of paths) {
 	for (const [optionIndex, option] of path.serviceOptions.entries()) {
@@ -28,9 +76,9 @@ for (const path of paths) {
 			value: option.value,
 			label: option.label,
 			descriptions: {},
-		sourcePath: path,
-		sourceIndex: optionIndex,
-	};
+			sourcePath: path,
+			sourceIndex: optionIndex,
+		};
 		service.descriptions[path.value] = option.description;
 		serviceCatalog.set(option.value, service);
 	}
@@ -38,7 +86,16 @@ for (const path of paths) {
 const services = [...serviceCatalog.values()];
 const requestedSituation = Astro.url.searchParams.get("situation") ?? "";
 const requestedService = Astro.url.searchParams.get("service") ?? "";
+const requestedMode = Astro.url.searchParams.get("mode") ?? "";
 const lockedParam = Astro.url.searchParams.get("locked") ?? "";
+const hasLegacyQuery =
+	Astro.url.searchParams.has("path") || Astro.url.searchParams.has("package");
+const isGuidedMode = Boolean(
+	Astro.url.searchParams.has("situation") ||
+		Astro.url.searchParams.has("service") ||
+		requestedMode === "guided" ||
+		hasLegacyQuery,
+);
 const selectedPath = paths.find((path: any) => path.value === requestedSituation) ?? null;
 const selectedService = services.find((service) => service.value === requestedService) ?? null;
 const selectedServiceOption = selectedPath?.serviceOptions.find(
@@ -48,8 +105,7 @@ const selectedServiceOptionIndex = selectedPath?.serviceOptions.findIndex(
 	(option: any) => option.value === requestedService,
 );
 const invalidQuery =
-	Astro.url.searchParams.has("path") ||
-	Astro.url.searchParams.has("package") ||
+	hasLegacyQuery ||
 	Astro.url.searchParams.getAll("situation").length > 1 ||
 	Astro.url.searchParams.getAll("service").length > 1 ||
 	(requestedSituation && !selectedPath) ||
@@ -60,7 +116,7 @@ const serviceLocked = Boolean(
 		!invalidQuery &&
 		(lockedParam === "service" || !requestedSituation),
 );
-const validSelection = Boolean(selectedPath && selectedServiceOption);
+const validSelection = Boolean(isGuidedMode && selectedPath && selectedServiceOption);
 const questions = requestedService === "other-challenge"
 	? inquiry.alternate
 	: selectedPath;
@@ -68,27 +124,97 @@ const questionFields = validSelection ? questions.fields : [];
 const inquiryError = Astro.url.searchParams.get("contact_error");
 const feedback = inquiryError
 	? f[inquiryError] || f.error
-	: invalidQuery
+	: isGuidedMode && invalidQuery
 		? f.invalidSelection
 		: null;
 const siteKey =
 	import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"; // gitleaks:allow
+
+const clientConfig = {
+	lang,
+	siteKey,
+	labels: {
+		name: f.name,
+		company: f.company,
+		email: f.email,
+		phone: f.phone,
+		privacy: f.privacy,
+		submit: f.submit,
+	},
+	paths: paths.map((path: any) => ({
+		value: path.value,
+		title: path.title,
+		description: path.description,
+		serviceIds: path.serviceOptions.map((option: any) => option.value),
+		fields: path.fields,
+	})),
+	alternate: {
+		title: inquiry.alternate.title,
+		description: inquiry.alternate.description,
+		fields: inquiry.alternate.fields,
+	},
+};
+const serializedClientConfig = JSON.stringify(clientConfig).replace(/</g, "\\u003c");
 ---
 
 {Astro.url.searchParams.get("contact_success") === "1" ? (
 	<div class="border border-green-300 p-6 text-green-900" id="contact-form">
 		<p class="text-lg font-medium" data-tina-field={tinaField(f, "success")}>{f.success}</p>
 	</div>
+) : !isGuidedMode ? (
+	<div id="contact-form-container" class="contact-form contact-form--direct" data-contact-mode="direct">
+		{feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert" data-tina-field={tinaField(f, inquiryError ?? "error")}>{feedback}</p>}
+		<div class="mb-6 space-y-1.5">
+			<h2 class="m-0 text-2xl font-semibold leading-tight">{directCopy.lead}</h2>
+			<p class="m-0 text-base text-gray-700">{directCopy.intro}</p>
+		</div>
+		<form id="direct-contact-form" class="mt-6 space-y-5" action={`/${lang}/api/contact`} method="POST">
+			<input type="hidden" name="mode" value="direct" />
+			<div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
+			<label class="contact-form__field text-sm font-medium" data-tina-field={tinaField(f, "name")}>
+				{directCopy.name}
+				<input name="name" required maxlength="200" autocomplete="name" class="contact-form__control w-full" />
+			</label>
+			<label class="contact-form__field text-sm font-medium" data-tina-field={tinaField(f, "company")}>
+				{directCopy.company}
+				<input name="company" maxlength="200" autocomplete="organization" class="contact-form__control w-full" />
+			</label>
+			<label class="contact-form__field text-sm font-medium" data-tina-field={tinaField(f, "email")}>
+				{directCopy.email}
+				<input type="email" name="email" required maxlength="254" autocomplete="email" class="contact-form__control w-full" />
+			</label>
+			<label class="contact-form__field text-sm font-medium" data-tina-field={tinaField(f, "phone")}>
+				{directCopy.phone}
+				<input type="tel" name="phone" maxlength="80" autocomplete="tel" class="contact-form__control w-full" />
+			</label>
+			<label class="contact-form__field contact-form__field--top text-sm font-medium">
+				{directCopy.message}
+				<textarea name="message" required maxlength="4000" rows="5" placeholder={directCopy.messagePlaceholder} class="contact-form__control w-full"></textarea>
+			</label>
+			<label class="flex items-start gap-3 text-sm text-gray-700">
+				<input type="checkbox" name="privacy" value="accepted" required class="mt-1 h-4 w-4 shrink-0" />
+				<span data-tina-field={tinaField(f, "privacy")}>{f.privacy}</span>
+			</label>
+			<input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response" />
+			<div class="flex flex-wrap items-center justify-between gap-4 pt-2">
+				<button type="submit" class="bg-black px-8 py-4 text-sm tracking-wider text-white hover:bg-gray-800 transition-colors cursor-pointer" data-tina-field={tinaField(f, "submit")}>{directCopy.submit}</button>
+				<a href={`/${lang}/contact?mode=guided`} data-contact-mode-switch="guided" class="text-sm text-gray-700 underline underline-offset-4 hover:text-black transition-colors">{directCopy.switchToGuided}</a>
+			</div>
+		</form>
+	</div>
 ) : (
-	<div id="contact-form-container" class="contact-form">
-		{feedback && <p class="mb-6 border border-red-300 p-4 text-red-900" role="alert" data-tina-field={tinaField(f, invalidQuery ? "invalidSelection" : inquiryError ?? "error")}>{feedback}</p>}
-		<h2 class="mb-4 text-2xl font-semibold" data-tina-field={tinaField(inquiry, "heading")}>{inquiry.heading}</h2>
+	<div id="contact-form-container" class="contact-form contact-form--guided" data-contact-mode="guided">
+		{feedback && <p id="inquiry-alert" class="mb-6 border border-red-300 p-4 text-red-900" role="alert" data-tina-field={tinaField(f, invalidQuery ? "invalidSelection" : inquiryError ?? "error")}>{feedback}</p>}
+		<div class="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+			<h2 class="m-0 text-2xl font-semibold" data-tina-field={tinaField(inquiry, "heading")}>{inquiry.heading}</h2>
+			<a href={`/${lang}/contact`} data-contact-mode-switch="direct" class="text-sm text-gray-700 underline underline-offset-4 hover:text-black transition-colors">{directCopy.switchToDirect}</a>
+		</div>
 		<form id="inquiry-selection" class="contact-form__selection mt-6 space-y-6" action={`/${lang}/contact`} method="GET" data-service-locked={serviceLocked ? "true" : undefined}>
 			<label class="contact-form__field text-sm font-medium" for="business-situation" data-tina-field={tinaField(inquiry, "situationLabel")}>
 				{inquiry.situationLabel}
 				<select id="business-situation" name="situation" class="contact-form__control w-full">
 					<option value="" data-tina-field={tinaField(inquiry, "selectPlaceholder")}>{inquiry.selectPlaceholder}</option>
-					{paths.map((path: any, index: number) => (
+					{paths.map((path: any) => (
 						<option value={path.value} selected={path.value === requestedSituation} disabled={Boolean(serviceLocked && !path.serviceOptions.some((option: any) => option.value === requestedService))} data-service-ids={JSON.stringify(path.serviceOptions.map((option: any) => option.value))} data-tina-field={tinaField(path, "title")}>{path.title}</option>
 					))}
 				</select>
@@ -110,70 +236,364 @@ const siteKey =
 				<span id="desired-service-description" class="contact-form__description mt-2 block text-gray-600" aria-live="polite" data-tina-field={selectedServiceOption ? tinaField(selectedPath.serviceOptions, selectedServiceOptionIndex) : undefined}>{selectedServiceOption?.description}</span>
 			</label>
 			<p id="selection-change-feedback" class="text-sm text-red-800" role="status" hidden data-tina-field={tinaField(f, "invalidSelection")}>{f.invalidSelection}</p>
-			<button type="submit" class="border border-black px-6 py-3 text-sm hover:bg-black hover:text-white" data-tina-field={tinaField(inquiry, "continue")}>{inquiry.continue}</button>
+			<button id="inquiry-continue-btn" type="submit" class="border border-black px-6 py-3 text-sm hover:bg-black hover:text-white" data-tina-field={tinaField(inquiry, "continue")}>{inquiry.continue}</button>
 		</form>
 
-		{validSelection && (
-			<>
-				<p class="mt-8 text-gray-600" data-tina-field={requestedService === "other-challenge" ? tinaField(inquiry.alternate, "description") : tinaField(selectedPath, "description")}>{questions.description}</p>
-				<form id="contact-form" class="mt-6 space-y-8" action={`/${lang}/api/contact`} method="POST" enctype="multipart/form-data">
-					<input type="hidden" name="businessSituation" value={selectedPath.value} />
-					<input type="hidden" name="desiredService" value={requestedService} />
-					<div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
-					<div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-						<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "name")}>{f.name} *<input name="name" required maxlength="200" autocomplete="name" class="contact-form__control w-full" /></label>
-						<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "company")}>{f.company}<input name="company" maxlength="200" autocomplete="organization" class="contact-form__control w-full" /></label>
-						<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "email")}>{f.email} *<input type="email" name="email" required maxlength="254" autocomplete="email" class="contact-form__control w-full" /></label>
-						<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "phone")}>{f.phone}<input type="tel" name="phone" maxlength="80" autocomplete="tel" class="contact-form__control w-full" /></label>
-					</div>
+		<div id="inquiry-expand" class="contact-form__expand" data-expanded={validSelection ? "true" : "false"}>
+			<div id="inquiry-expand-inner" class="contact-form__expand-inner">
+				{validSelection && (
+					<>
+						<p id="inquiry-path-description" class="mt-8 text-gray-600" data-tina-field={requestedService === "other-challenge" ? tinaField(inquiry.alternate, "description") : tinaField(selectedPath, "description")}>{questions.description}</p>
+						<form id="contact-form" class="mt-6 space-y-8" action={`/${lang}/api/contact`} method="POST" enctype="multipart/form-data">
+							<input type="hidden" name="businessSituation" value={selectedPath.value} />
+							<input type="hidden" name="desiredService" value={requestedService} />
+							<div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
+							<div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+								<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "name")}>{f.name} *<input name="name" required maxlength="200" autocomplete="name" class="contact-form__control w-full" /></label>
+								<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "company")}>{f.company}<input name="company" maxlength="200" autocomplete="organization" class="contact-form__control w-full" /></label>
+								<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "email")}>{f.email} *<input type="email" name="email" required maxlength="254" autocomplete="email" class="contact-form__control w-full" /></label>
+								<label class="contact-form__field text-sm" data-tina-field={tinaField(f, "phone")}>{f.phone}<input type="tel" name="phone" maxlength="80" autocomplete="tel" class="contact-form__control w-full" /></label>
+							</div>
 
-					<fieldset class="contact-form__questions space-y-6">
-						<legend class="mb-2 text-xl font-semibold" data-tina-field={requestedService === "other-challenge" ? tinaField(inquiry.alternate, "title") : tinaField(selectedPath, "title")}>{requestedService === "other-challenge" ? inquiry.alternate.title : selectedPath.title}</legend>
-						{questionFields.map((field: any, fieldIndex: number) => (
-							<label class="contact-form__field text-sm font-medium" for={`inquiry-${requestedService}-${field.name}`} data-tina-field={tinaField(questionFields, fieldIndex)}>
-								{field.label}{field.required ? " *" : ""}
-								{field.kind === "select" ? (
-									<select id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} class="contact-form__control w-full">
-										<option value="">—</option>
-										{field.options.map((option: any, optionIndex: number) => <option value={option.value} data-tina-field={tinaField(field.options, optionIndex)}>{option.label}</option>)}
-									</select>
-								) : field.kind === "textarea" ? (
-									<textarea id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} maxlength="4000" rows="4" class="contact-form__control w-full"></textarea>
-								) : field.kind === "file" ? (
-									<input id={`inquiry-${requestedService}-${field.name}`} type="file" name={field.name} multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" required={field.required} class="contact-form__control block w-full" />
-								) : (
-									<input id={`inquiry-${requestedService}-${field.name}`} type="text" name={field.name} required={field.required} maxlength="4000" class="contact-form__control w-full" />
-								)}
+							<fieldset class="contact-form__questions space-y-6">
+								<legend class="mb-2 text-xl font-semibold" data-tina-field={requestedService === "other-challenge" ? tinaField(inquiry.alternate, "title") : tinaField(selectedPath, "title")}>{requestedService === "other-challenge" ? inquiry.alternate.title : selectedPath.title}</legend>
+								{questionFields.map((field: any, fieldIndex: number) => (
+									<label class="contact-form__field text-sm font-medium" for={`inquiry-${requestedService}-${field.name}`} data-tina-field={tinaField(questionFields, fieldIndex)}>
+										{field.label}{field.required ? " *" : ""}
+										{field.kind === "select" ? (
+											<select id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} class="contact-form__control w-full">
+												<option value="">—</option>
+												{field.options.map((option: any, optionIndex: number) => <option value={option.value} data-tina-field={tinaField(field.options, optionIndex)}>{option.label}</option>)}
+											</select>
+										) : field.kind === "textarea" ? (
+											<textarea id={`inquiry-${requestedService}-${field.name}`} name={field.name} required={field.required} maxlength="4000" rows="4" class="contact-form__control w-full"></textarea>
+										) : field.kind === "file" ? (
+											<input id={`inquiry-${requestedService}-${field.name}`} type="file" name={field.name} multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" required={field.required} class="contact-form__control block w-full" />
+										) : (
+											<input id={`inquiry-${requestedService}-${field.name}`} type="text" name={field.name} required={field.required} maxlength="4000" class="contact-form__control w-full" />
+										)}
+									</label>
+								))}
+							</fieldset>
+
+							<label class="flex items-start gap-3 text-sm text-gray-700">
+								<input type="checkbox" name="privacy" value="accepted" required class="mt-1 h-4 w-4" />
+								<span data-tina-field={tinaField(f, "privacy")}>{f.privacy}</span>
 							</label>
-						))}
-					</fieldset>
-
-					<label class="flex items-start gap-3 text-sm text-gray-700">
-						<input type="checkbox" name="privacy" value="accepted" required class="mt-1 h-4 w-4" />
-						<span data-tina-field={tinaField(f, "privacy")}>{f.privacy}</span>
-					</label>
-					<input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response" />
-					<button type="submit" class="bg-black px-8 py-4 text-sm tracking-wider text-white hover:bg-gray-800" data-tina-field={tinaField(f, "submit")}>{f.submit}</button>
-				</form>
-			</>
-		)}
+							<input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response" />
+							<button type="submit" class="bg-black px-8 py-4 text-sm tracking-wider text-white hover:bg-gray-800 transition-colors cursor-pointer" data-tina-field={tinaField(f, "submit")}>{f.submit}</button>
+						</form>
+					</>
+				)}
+			</div>
+		</div>
+		<script type="application/json" id="inquiry-config" set:html={serializedClientConfig}></script>
 	</div>
 )}
 
 <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <script is:inline>
 	(() => {
-		const form = document.getElementById('contact-form');
+		const container = document.getElementById('contact-form-container');
+		if (!container) return;
+
+		const notifyState = (mode, expanded) => {
+			const block = container.closest('.contact-block');
+			if (block) {
+				block.dataset.contactMode = mode;
+				block.dataset.formExpanded = expanded ? 'true' : 'false';
+			}
+			container.dispatchEvent(
+				new CustomEvent('senshac:contact-state', {
+					bubbles: true,
+					detail: { mode, expanded },
+				}),
+			);
+		};
+
+		const attachTurnstile = (targetForm) => {
+			if (!targetForm || targetForm.dataset.turnstileBound === 'true') return;
+			targetForm.dataset.turnstileBound = 'true';
+			let widgetId;
+			targetForm.addEventListener('submit', (event) => {
+				const token = targetForm.querySelector('input[name="cf-turnstile-response"]');
+				if (!token || token.value) return;
+				const widget = targetForm.querySelector('.cf-turnstile');
+				if (!window.turnstile || !widget) return;
+				event.preventDefault();
+				if (widgetId === undefined) {
+					widgetId = window.turnstile.render(widget, {
+						sitekey: widget.dataset.sitekey,
+						size: 'invisible',
+						callback: (response) => {
+							token.value = response;
+							targetForm.requestSubmit();
+						},
+						'error-callback': () => {
+							const url = new URL(window.location.href);
+							url.searchParams.set('contact_error', 'turnstileFailed');
+							window.location.assign(url);
+						},
+					});
+				}
+				window.turnstile.execute(widgetId);
+			});
+		};
+
+		const directForm = document.getElementById('direct-contact-form');
+		if (directForm) {
+			attachTurnstile(directForm);
+			notifyState('direct', false);
+			return;
+		}
+
 		const selection = document.getElementById('inquiry-selection');
-		if (!selection) return;
+		const configEl = document.getElementById('inquiry-config');
+		const expandWrap = document.getElementById('inquiry-expand');
+		const expandInner = document.getElementById('inquiry-expand-inner');
+		if (!selection || !configEl || !expandWrap || !expandInner) return;
+
+		const config = JSON.parse(configEl.textContent || '{}');
 		const situation = document.getElementById('business-situation');
 		const service = document.getElementById('desired-service');
-		const renderedSituation = form?.querySelector('[name="businessSituation"]')?.getAttribute('value');
-		const renderedService = form?.querySelector('[name="desiredService"]')?.getAttribute('value');
 		const description = document.getElementById('desired-service-description');
 		const selectionFeedback = document.getElementById('selection-change-feedback');
+		const continueBtn = document.getElementById('inquiry-continue-btn');
+		const ssrAlert = document.getElementById('inquiry-alert');
 		const serviceLocked = selection.dataset.serviceLocked === 'true';
-		const updateServiceOptions = () => {
+
+		if (continueBtn) {
+			continueBtn.hidden = true;
+		}
+
+		const buildFieldControl = (field, serviceValue) => {
+			const id = `inquiry-${serviceValue}-${field.name}`;
+			const label = document.createElement('label');
+			label.className = 'contact-form__field text-sm font-medium';
+			label.setAttribute('for', id);
+			label.appendChild(
+				document.createTextNode(`${field.label}${field.required ? ' *' : ''}`),
+			);
+
+			let control;
+			if (field.kind === 'select') {
+				control = document.createElement('select');
+				control.className = 'contact-form__control w-full';
+				const emptyOption = document.createElement('option');
+				emptyOption.value = '';
+				emptyOption.textContent = '—';
+				control.appendChild(emptyOption);
+				for (const option of field.options || []) {
+					const opt = document.createElement('option');
+					opt.value = option.value;
+					opt.textContent = option.label;
+					control.appendChild(opt);
+				}
+			} else if (field.kind === 'textarea') {
+				control = document.createElement('textarea');
+				control.className = 'contact-form__control w-full';
+				control.maxLength = 4000;
+				control.rows = 4;
+			} else if (field.kind === 'file') {
+				control = document.createElement('input');
+				control.type = 'file';
+				control.multiple = true;
+				control.accept =
+					'.pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp';
+				control.className = 'contact-form__control block w-full';
+			} else {
+				control = document.createElement('input');
+				control.type = 'text';
+				control.maxLength = 4000;
+				control.className = 'contact-form__control w-full';
+			}
+			control.id = id;
+			control.name = field.name;
+			if (field.required) control.required = true;
+			label.appendChild(control);
+			return label;
+		};
+
+		const buildQuestionsFieldset = (questions, serviceValue) => {
+			const fieldset = document.createElement('fieldset');
+			fieldset.className = 'contact-form__questions space-y-6';
+			const legend = document.createElement('legend');
+			legend.className = 'mb-2 text-xl font-semibold';
+			legend.textContent = questions.title;
+			fieldset.appendChild(legend);
+			for (const field of questions.fields || []) {
+				fieldset.appendChild(buildFieldControl(field, serviceValue));
+			}
+			return fieldset;
+		};
+
+		const buildBaseContactField = (labelText, name, attrs) => {
+			const label = document.createElement('label');
+			label.className = 'contact-form__field text-sm';
+			label.appendChild(document.createTextNode(labelText));
+			const input = document.createElement('input');
+			input.name = name;
+			input.className = 'contact-form__control w-full';
+			for (const [key, value] of Object.entries(attrs)) {
+				if (value === true) input.setAttribute(key, '');
+				else if (value !== false && value !== undefined) input.setAttribute(key, String(value));
+			}
+			label.appendChild(input);
+			return label;
+		};
+
+		const buildGuidedForm = (path, questions, serviceValue) => {
+			const desc = document.createElement('p');
+			desc.id = 'inquiry-path-description';
+			desc.className = 'mt-8 text-gray-600';
+			desc.textContent = questions.description;
+
+			const form = document.createElement('form');
+			form.id = 'contact-form';
+			form.className = 'mt-6 space-y-8';
+			form.action = `/${config.lang}/api/contact`;
+			form.method = 'POST';
+			form.enctype = 'multipart/form-data';
+
+			const sitInput = document.createElement('input');
+			sitInput.type = 'hidden';
+			sitInput.name = 'businessSituation';
+			sitInput.value = path.value;
+			form.appendChild(sitInput);
+
+			const svcInput = document.createElement('input');
+			svcInput.type = 'hidden';
+			svcInput.name = 'desiredService';
+			svcInput.value = serviceValue;
+			form.appendChild(svcInput);
+
+			const turnstile = document.createElement('div');
+			turnstile.className = 'cf-turnstile';
+			turnstile.dataset.sitekey = config.siteKey;
+			turnstile.dataset.size = 'invisible';
+			form.appendChild(turnstile);
+
+			const grid = document.createElement('div');
+			grid.className = 'grid grid-cols-1 gap-5 md:grid-cols-2';
+			grid.appendChild(
+				buildBaseContactField(`${config.labels.name} *`, 'name', {
+					required: true,
+					maxlength: 200,
+					autocomplete: 'name',
+				}),
+			);
+			grid.appendChild(
+				buildBaseContactField(config.labels.company, 'company', {
+					maxlength: 200,
+					autocomplete: 'organization',
+				}),
+			);
+			grid.appendChild(
+				buildBaseContactField(`${config.labels.email} *`, 'email', {
+					type: 'email',
+					required: true,
+					maxlength: 254,
+					autocomplete: 'email',
+				}),
+			);
+			grid.appendChild(
+				buildBaseContactField(config.labels.phone, 'phone', {
+					type: 'tel',
+					maxlength: 80,
+					autocomplete: 'tel',
+				}),
+			);
+			form.appendChild(grid);
+
+			form.appendChild(buildQuestionsFieldset(questions, serviceValue));
+
+			const privacyLabel = document.createElement('label');
+			privacyLabel.className = 'flex items-start gap-3 text-sm text-gray-700';
+			const privacyInput = document.createElement('input');
+			privacyInput.type = 'checkbox';
+			privacyInput.name = 'privacy';
+			privacyInput.value = 'accepted';
+			privacyInput.required = true;
+			privacyInput.className = 'mt-1 h-4 w-4';
+			const privacySpan = document.createElement('span');
+			privacySpan.textContent = config.labels.privacy;
+			privacyLabel.appendChild(privacyInput);
+			privacyLabel.appendChild(privacySpan);
+			form.appendChild(privacyLabel);
+
+			const tokenInput = document.createElement('input');
+			tokenInput.type = 'hidden';
+			tokenInput.name = 'cf-turnstile-response';
+			tokenInput.id = 'cf-turnstile-response';
+			form.appendChild(tokenInput);
+
+			const submit = document.createElement('button');
+			submit.type = 'submit';
+			submit.className =
+				'bg-black px-8 py-4 text-sm tracking-wider text-white hover:bg-gray-800 transition-colors cursor-pointer';
+			submit.textContent = config.labels.submit;
+			form.appendChild(submit);
+
+			attachTurnstile(form);
+			return { desc, form };
+		};
+
+		const renderOrUpdateGuidedForm = (situationValue, serviceValue) => {
+			const path = (config.paths || []).find((item) => item.value === situationValue);
+			if (!path) return;
+			const questions = serviceValue === 'other-challenge' ? config.alternate : path;
+			let form = document.getElementById('contact-form');
+			let desc = document.getElementById('inquiry-path-description');
+
+			if (form) {
+				const sitInput = form.querySelector('input[name="businessSituation"]');
+				const svcInput = form.querySelector('input[name="desiredService"]');
+				if (sitInput) sitInput.value = path.value;
+				if (svcInput) svcInput.value = serviceValue;
+				if (desc) desc.textContent = questions.description;
+				const oldFieldset = form.querySelector('fieldset.contact-form__questions');
+				const nextFieldset = buildQuestionsFieldset(questions, serviceValue);
+				if (oldFieldset) oldFieldset.replaceWith(nextFieldset);
+				form.hidden = false;
+			} else {
+				const built = buildGuidedForm(path, questions, serviceValue);
+				expandInner.replaceChildren(built.desc, built.form);
+				form = built.form;
+			}
+
+			if (ssrAlert) ssrAlert.hidden = true;
+			if (expandWrap.dataset.expanded !== 'true') {
+				void expandWrap.offsetHeight;
+				expandWrap.dataset.expanded = 'true';
+			}
+			notifyState('guided', true);
+		};
+
+		const collapseGuidedForm = () => {
+			expandWrap.dataset.expanded = 'false';
+			const form = document.getElementById('contact-form');
+			if (form) form.hidden = true;
+			notifyState('guided', false);
+		};
+
+		const syncUrl = (situationValue, serviceValue) => {
+			const url = new URL(window.location.href);
+			url.searchParams.delete('contact_error');
+			url.searchParams.delete('contact_success');
+			url.searchParams.delete('path');
+			url.searchParams.delete('package');
+			if (situationValue) url.searchParams.set('situation', situationValue);
+			else url.searchParams.delete('situation');
+			if (serviceValue) url.searchParams.set('service', serviceValue);
+			else url.searchParams.delete('service');
+			if (serviceLocked && serviceValue) url.searchParams.set('locked', 'service');
+			else url.searchParams.delete('locked');
+			if (!situationValue && !serviceValue) url.searchParams.set('mode', 'guided');
+			else url.searchParams.delete('mode');
+			window.history.replaceState(null, '', url.toString());
+		};
+
+		const updateServiceOptions = (isUserChange) => {
 			const active = Array.from(situation.options).find((option) => option.value === situation.value);
 			const allowed = active ? JSON.parse(active.dataset.serviceIds || '[]') : null;
 			const selected = service.value;
@@ -191,49 +611,40 @@ const siteKey =
 			} else {
 				selectionFeedback.hidden = true;
 			}
-			if (form) {
-				form.hidden =
-					situation.value !== renderedSituation || service.value !== renderedService;
-			}
+
 			const chosen = service.options[service.selectedIndex];
 			const descriptions = JSON.parse(chosen?.dataset.descriptions || '{}');
 			description.textContent = descriptions[situation.value] || '';
-		};
-		situation.addEventListener('change', updateServiceOptions);
-		service.addEventListener('change', updateServiceOptions);
-		updateServiceOptions();
 
-		if (!form) return;
-		let widgetId;
-		form.addEventListener('submit', (event) => {
-			const token = document.getElementById('cf-turnstile-response');
-			if (token.value) return;
-			const container = document.querySelector('.cf-turnstile');
-			if (!window.turnstile || !container) return;
-			event.preventDefault();
-			if (widgetId === undefined) {
-				widgetId = window.turnstile.render(container, {
-					sitekey: container.dataset.sitekey,
-					size: 'invisible',
-					callback: (response) => {
-						token.value = response;
-						form.requestSubmit();
-					},
-					'error-callback': () => {
-						const url = new URL(window.location.href);
-						url.searchParams.set('contact_error', 'turnstileFailed');
-						window.location.assign(url);
-					},
-				});
+			const isValidCombo = Boolean(
+				situation.value &&
+					service.value &&
+					allowed &&
+					allowed.includes(service.value),
+			);
+
+			if (isUserChange) {
+				syncUrl(situation.value, service.value);
+				if (isValidCombo) {
+					renderOrUpdateGuidedForm(situation.value, service.value);
+				} else {
+					collapseGuidedForm();
+				}
+			} else {
+				const initialForm = document.getElementById('contact-form');
+				if (initialForm) attachTurnstile(initialForm);
+				notifyState('guided', expandWrap.dataset.expanded === 'true');
 			}
-			window.turnstile.execute(widgetId);
-		});
+		};
+
+		situation.addEventListener('change', () => updateServiceOptions(true));
+		service.addEventListener('change', () => updateServiceOptions(true));
+		updateServiceOptions(false);
 	})();
 </script>
 
-
 <style>
-  .contact-form__field {
+  .contact-form :global(.contact-form__field) {
     display: grid;
     grid-template-columns: minmax(9rem, 0.7fr) minmax(0, 1.3fr);
     align-items: center;
@@ -241,9 +652,34 @@ const siteKey =
     row-gap: 0.5rem;
   }
 
+  .contact-form :global(.contact-form__field--top) {
+    align-items: start;
+  }
+
   .contact-form__description {
     grid-column: 2;
     margin: 0;
+  }
+
+  .contact-form__expand {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.4s ease;
+  }
+
+  .contact-form__expand[data-expanded="true"] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  .contact-form__expand-inner {
+    overflow: hidden;
+    min-height: 0;
+    padding-inline: 4px;
+    margin-inline: -4px;
   }
 
   .contact-form :global(.contact-form__control) {
@@ -278,8 +714,14 @@ const siteKey =
     outline-offset: 2px;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .contact-form__expand {
+      transition: none;
+    }
+  }
+
   @media (max-width: 47.99rem) {
-    .contact-form__field {
+    .contact-form :global(.contact-form__field) {
       grid-template-columns: minmax(0, 1fr);
       row-gap: 0.5rem;
     }

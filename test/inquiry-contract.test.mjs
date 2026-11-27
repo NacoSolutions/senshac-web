@@ -3,6 +3,7 @@ import test from "node:test";
 import {
 	parseBoundedFormData,
 	validateConsultationPayload,
+	validateDirectContactPayload,
 	validateInquiryPayload,
 } from "../src/utils/inquiry-contract.mjs";
 
@@ -483,4 +484,112 @@ test("validateConsultationPayload rejects invalid mode, missing fields, bad emai
 		);
 	}
 	assert.equal((await validateConsultationPayload(tooMany)).error, "invalid-file");
+});
+
+test("validateDirectContactPayload accepts valid direct contact submissions", () => {
+	const result = validateDirectContactPayload(
+		payload({
+			mode: "direct",
+			name: "Ester García",
+			company: "Senshac Studio",
+			email: "ester@example.com",
+			phone: "+34 661 661 426",
+			message: "Queremos reformar un local de 120m² en Barcelona.",
+			privacy: "accepted",
+		}),
+	);
+	assert.deepEqual(result, {
+		ok: true,
+		mode: "direct",
+		name: "Ester García",
+		company: "Senshac Studio",
+		email: "ester@example.com",
+		phone: "+34 661 661 426",
+		message: "Queremos reformar un local de 120m² en Barcelona.",
+	});
+
+	const minimal = validateDirectContactPayload(
+		payload({
+			mode: "direct",
+			name: "Ester",
+			email: "ester@example.com",
+			message: "Hola",
+			privacy: "accepted",
+		}),
+	);
+	assert.equal(minimal.ok, true);
+	assert.equal(minimal.company, "");
+	assert.equal(minimal.phone, "");
+});
+
+test("validateDirectContactPayload rejects missing, malformed, duplicate, or unknown fields", () => {
+	assert.equal(
+		validateDirectContactPayload(
+			payload({
+				mode: "direct",
+				name: "Ester",
+				email: "ester@example.com",
+				privacy: "accepted",
+			}),
+		).error,
+		"missing-field",
+	);
+	assert.equal(
+		validateDirectContactPayload(
+			payload({
+				mode: "direct",
+				name: "Ester",
+				email: "not-an-email",
+				message: "Hola",
+				privacy: "accepted",
+			}),
+		).error,
+		"invalid-email",
+	);
+	assert.equal(
+		validateDirectContactPayload(
+			payload({
+				mode: "direct",
+				name: "Ester",
+				email: "ester@example.com",
+				message: "Hola",
+				privacy: "declined",
+			}),
+		).error,
+		"missing-field",
+	);
+	assert.equal(
+		validateDirectContactPayload(
+			payload({
+				mode: "direct",
+				name: "Ester",
+				email: "ester@example.com",
+				message: "x".repeat(4001),
+				privacy: "accepted",
+			}),
+		).error,
+		"field-too-long",
+	);
+	assert.equal(
+		validateDirectContactPayload(
+			payload({
+				mode: "direct",
+				name: "Ester",
+				email: "ester@example.com",
+				message: "Hola",
+				privacy: "accepted",
+				businessSituation: "first-space",
+			}),
+		).error,
+		"unknown-field",
+	);
+	const duplicate = payload({
+		mode: "direct",
+		name: "Ester",
+		email: "ester@example.com",
+		message: "Hola",
+		privacy: "accepted",
+	});
+	duplicate.append("email", "other@example.com");
+	assert.equal(validateDirectContactPayload(duplicate).error, "duplicate-field");
 });
