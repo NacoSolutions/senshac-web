@@ -111,7 +111,7 @@ test.describe("Senshac browser smoke contract", () => {
 					getComputedStyle(element).gridTemplateColumns.split(" ").length,
 				),
 			)
-			.toBe(2);
+			.toBe(12);
 
 		await page.setViewportSize({ width: 390, height: 844 });
 		await expectVisibleNav();

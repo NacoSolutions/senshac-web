@@ -3,12 +3,34 @@
 export { getLanguagePaths as getStaticPaths } from "../../../lib/static-paths";
 export const prerender = true;
 
-import { getCollection, getEntry } from "astro:content";
-import MediaPlaceholder from "../../../components/sections/editorial/MediaPlaceholder.astro";
+import { getEntry } from "astro:content";
 import { tinaField } from "@tinacms/astro/tina-field";
+import R2Picture from "../../../components/R2Picture.astro";
 import Base from "../../../layouts/Base.astro";
 
-const { lang = "es" } = Astro.params;
+type Locale = "es" | "ca" | "en";
+type CardSpan = "full" | "left-5" | "right-7" | "left-7" | "right-5";
+
+interface EditorialCard {
+	id: string;
+	mediaId: string;
+	span: CardSpan;
+	category: string;
+	title: string;
+	description?: string;
+	href?: string;
+	badge?: {
+		primary: string;
+		secondary?: string;
+	};
+	lightSurface?: boolean;
+	eager?: boolean;
+}
+
+const rawLang = Astro.params.lang ?? "es";
+const lang: Locale =
+	rawLang === "ca" || rawLang === "en" ? rawLang : "es";
+
 const translations = await getEntry("translations", lang);
 const t = translations?.data.projects;
 
@@ -16,44 +38,325 @@ if (!t) {
 	return Astro.redirect("/404");
 }
 
-const allProjects = await getCollection("projects", ({ id, data }) => {
-	return id.startsWith(`${lang}/`) && !data.draft;
-});
+const HEADINGS: Record<Locale, { before: string; italic: string; secondLine: string }> = {
+	es: { before: "PROYECTOS, ", italic: "ENSAYOS", secondLine: "Y OBJETOS" },
+	ca: { before: "PROJECTES, ", italic: "ASSAIGS", secondLine: "I OBJECTES" },
+	en: { before: "PROJECTS, ", italic: "ESSAYS", secondLine: "AND OBJECTS" },
+};
 
-// Sort by publishDate descending
-const sortedProjects = allProjects.sort((a, b) => {
-	const dateA = a.data.publishDate?.getTime() || 0;
-	const dateB = b.data.publishDate?.getTime() || 0;
-	return dateB - dateA;
-});
+const IN_PROGRESS: Record<Locale, string> = {
+	es: "EN PROCESO",
+	ca: "EN PROCÉS",
+	en: "IN PROGRESS",
+};
 
-const layouts = [
-	"wide-right",
-	"portrait-left",
-	"wide-center",
-	"landscape-left",
-	"landscape-right",
-];
+const CARDS_BY_LOCALE: Record<Locale, EditorialCard[]> = {
+	es: [
+		{
+			id: "calma-hero",
+			mediaId: "projects/index/calma-hero",
+			span: "full",
+			category: "CONCURSO INTERCIDEC 26",
+			title: "CALMA",
+			description:
+				"Diseño para una habitación familiar de hotel concebida para disfrutar en familia o entre amigos, donde compartir es fácil, y descansar también. En colaboración con Noordstudio_",
+			badge: {
+				primary: "2º ACCÉSIT EN LOS PREMIOS INTERCIDEC 2026",
+				secondary: "Family Room Experience",
+			},
+			eager: true,
+		},
+		{
+			id: "doley-desk",
+			mediaId: "projects/index/doley-desk",
+			span: "left-5",
+			category: "recepción",
+			title: "DOLEY",
+			href: "/es/works/doley",
+		},
+		{
+			id: "doley-salon",
+			mediaId: "projects/index/doley-salon",
+			span: "right-7",
+			category: "SALÓN DE BELLEZA",
+			title: "DOLEY",
+			description:
+				"Transformación de una peluquería de traspaso al universo Doley: Estética, color y salud capilar en un mismo espacio.",
+			href: "/es/works/doley",
+		},
+		{
+			id: "cinquanta-nou-main",
+			mediaId: "projects/index/cinquanta-nou-main",
+			span: "left-7",
+			category: "salchichería",
+			title: "cinquanta-nou",
+			description:
+				"Transformación de un bar corriente a una salchichería de referencia en un área en crecimiento.",
+			badge: { primary: IN_PROGRESS.es },
+		},
+		{
+			id: "cinquanta-nou-carta",
+			mediaId: "projects/index/cinquanta-nou-carta",
+			span: "right-5",
+			category: "carta",
+			title: "cinquanta-nou",
+			badge: { primary: IN_PROGRESS.es },
+		},
+		{
+			id: "o-optica-sketch",
+			mediaId: "projects/index/o-optica-sketch",
+			span: "full",
+			category: "tienda de gafas de marca",
+			title: "o-optica",
+			description:
+				"Gafas de culto, espíritu de biblioteca. Un guiño a esos nerds que saben lo que buscan. Naming, concepto espacial e interiorismo.",
+			lightSurface: true,
+		},
+		{
+			id: "rude-identity",
+			mediaId: "projects/index/rude-identity",
+			span: "left-5",
+			category: "Identidad",
+			title: "rude",
+			href: "/es/works/rude",
+		},
+		{
+			id: "rude-store",
+			mediaId: "projects/index/rude-store",
+			span: "right-7",
+			category: "Tienda de ropa",
+			title: "rude",
+			description:
+				"Branding y retail design con actitud: marca y espacio creados para mujeres con carácter.",
+			href: "/es/works/rude",
+		},
+		{
+			id: "la-trobada-bar",
+			mediaId: "projects/index/la-trobada-bar",
+			span: "left-7",
+			category: "BAR",
+			title: "LA TROBADA",
+			description:
+				"Transformación de bar de barrio en un punto de encuentro con sabor mediterráneo.",
+			href: "/es/works/la-trobada",
+		},
+		{
+			id: "la-trobada-carta",
+			mediaId: "projects/index/la-trobada-carta",
+			span: "right-5",
+			category: "carta",
+			title: "LA TROBADA",
+			href: "/es/works/la-trobada",
+		},
+	],
+	ca: [
+		{
+			id: "calma-hero",
+			mediaId: "projects/index/calma-hero",
+			span: "full",
+			category: "CONCURS INTERCIDEC 26",
+			title: "CALMA",
+			description:
+				"Disseny per a una habitació familiar d'hotel concebuda per gaudir en família o entre amics, on compartir és fàcil, i descansar també. En col·laboració amb Noordstudio_",
+			badge: {
+				primary: "2n ACCÈSSIT ALS PREMIS INTERCIDEC 2026",
+				secondary: "Family Room Experience",
+			},
+			eager: true,
+		},
+		{
+			id: "doley-desk",
+			mediaId: "projects/index/doley-desk",
+			span: "left-5",
+			category: "recepció",
+			title: "DOLEY",
+			href: "/ca/works/doley",
+		},
+		{
+			id: "doley-salon",
+			mediaId: "projects/index/doley-salon",
+			span: "right-7",
+			category: "SALÓ DE BELLESA",
+			title: "DOLEY",
+			description:
+				"Transformació d'una perruqueria de traspàs a l'univers Doley: estètica, color i salut capil·lar en un mateix espai.",
+			href: "/ca/works/doley",
+		},
+		{
+			id: "cinquanta-nou-main",
+			mediaId: "projects/index/cinquanta-nou-main",
+			span: "left-7",
+			category: "salsitxeria",
+			title: "cinquanta-nou",
+			description:
+				"Transformació d'un bar corrent en una salsitxeria de referència en una àrea en creixement.",
+			badge: { primary: IN_PROGRESS.ca },
+		},
+		{
+			id: "cinquanta-nou-carta",
+			mediaId: "projects/index/cinquanta-nou-carta",
+			span: "right-5",
+			category: "carta",
+			title: "cinquanta-nou",
+			badge: { primary: IN_PROGRESS.ca },
+		},
+		{
+			id: "o-optica-sketch",
+			mediaId: "projects/index/o-optica-sketch",
+			span: "full",
+			category: "botiga d'ulleres de marca",
+			title: "o-optica",
+			description:
+				"Ulleres de culte, esperit de biblioteca. Un gest cap a aquells nerds que saben el que busquen. Naming, concepte espacial i interiorisme.",
+			lightSurface: true,
+		},
+		{
+			id: "rude-identity",
+			mediaId: "projects/index/rude-identity",
+			span: "left-5",
+			category: "Identitat",
+			title: "rude",
+			href: "/ca/works/rude",
+		},
+		{
+			id: "rude-store",
+			mediaId: "projects/index/rude-store",
+			span: "right-7",
+			category: "Botiga de roba",
+			title: "rude",
+			description:
+				"Branding i retail design amb actitud: marca i espai creats per a dones amb caràcter.",
+			href: "/ca/works/rude",
+		},
+		{
+			id: "la-trobada-bar",
+			mediaId: "projects/index/la-trobada-bar",
+			span: "left-7",
+			category: "BAR",
+			title: "LA TROBADA",
+			description:
+				"Transformació de bar de barri en un punt de trobada amb sabor mediterrani.",
+			href: "/ca/works/la-trobada",
+		},
+		{
+			id: "la-trobada-carta",
+			mediaId: "projects/index/la-trobada-carta",
+			span: "right-5",
+			category: "carta",
+			title: "LA TROBADA",
+			href: "/ca/works/la-trobada",
+		},
+	],
+	en: [
+		{
+			id: "calma-hero",
+			mediaId: "projects/index/calma-hero",
+			span: "full",
+			category: "INTERCIDEC 26 COMPETITION",
+			title: "CALMA",
+			description:
+				"Design for a family hotel room conceived to enjoy with family or friends, where sharing is easy and resting is too. In collaboration with Noordstudio_",
+			badge: {
+				primary: "2ND RUNNER-UP AT INTERCIDEC 2026 AWARDS",
+				secondary: "Family Room Experience",
+			},
+			eager: true,
+		},
+		{
+			id: "doley-desk",
+			mediaId: "projects/index/doley-desk",
+			span: "left-5",
+			category: "reception",
+			title: "DOLEY",
+			href: "/en/works/doley",
+		},
+		{
+			id: "doley-salon",
+			mediaId: "projects/index/doley-salon",
+			span: "right-7",
+			category: "BEAUTY SALON",
+			title: "DOLEY",
+			description:
+				"Transformation of a takeover hair salon into the Doley universe: aesthetics, color, and hair health in a single space.",
+			href: "/en/works/doley",
+		},
+		{
+			id: "cinquanta-nou-main",
+			mediaId: "projects/index/cinquanta-nou-main",
+			span: "left-7",
+			category: "sausage bar",
+			title: "cinquanta-nou",
+			description:
+				"Transformation of an everyday bar into a benchmark sausage bar in a growing neighborhood.",
+			badge: { primary: IN_PROGRESS.en },
+		},
+		{
+			id: "cinquanta-nou-carta",
+			mediaId: "projects/index/cinquanta-nou-carta",
+			span: "right-5",
+			category: "menu",
+			title: "cinquanta-nou",
+			badge: { primary: IN_PROGRESS.en },
+		},
+		{
+			id: "o-optica-sketch",
+			mediaId: "projects/index/o-optica-sketch",
+			span: "full",
+			category: "designer eyewear store",
+			title: "o-optica",
+			description:
+				"Cult eyewear, library spirit. A nod to those nerds who know what they are looking for. Naming, spatial concept, and interior design.",
+			lightSurface: true,
+		},
+		{
+			id: "rude-identity",
+			mediaId: "projects/index/rude-identity",
+			span: "left-5",
+			category: "Identity",
+			title: "rude",
+			href: "/en/works/rude",
+		},
+		{
+			id: "rude-store",
+			mediaId: "projects/index/rude-store",
+			span: "right-7",
+			category: "Clothing store",
+			title: "rude",
+			description:
+				"Branding and retail design with attitude: brand and space created for women with character.",
+			href: "/en/works/rude",
+		},
+		{
+			id: "la-trobada-bar",
+			mediaId: "projects/index/la-trobada-bar",
+			span: "left-7",
+			category: "BAR",
+			title: "LA TROBADA",
+			description:
+				"Transformation of a neighborhood bar into a meeting point with Mediterranean flavor.",
+			href: "/en/works/la-trobada",
+		},
+		{
+			id: "la-trobada-carta",
+			mediaId: "projects/index/la-trobada-carta",
+			span: "right-5",
+			category: "menu",
+			title: "LA TROBADA",
+			href: "/en/works/la-trobada",
+		},
+	],
+};
 
-const works = sortedProjects.map((project, index) => {
-	const bannerBlock = project.data.blocks?.find(
-		(b: any) => b._template === "media" && b.variant === "banner",
-	);
+const SIZES_BY_SPAN: Record<CardSpan, string> = {
+	full: "(min-width: 768px) 88vw, 100vw",
+	"left-7": "(min-width: 768px) 52vw, 100vw",
+	"right-7": "(min-width: 768px) 52vw, 100vw",
+	"left-5": "(min-width: 768px) 37vw, 100vw",
+	"right-5": "(min-width: 768px) 37vw, 100vw",
+};
 
-	return {
-		category: project.data.tags?.[0] || "Proyecto",
-		title: project.data.title,
-		summary: project.data.description,
-		href: `/${lang}/works/${project.data.slug}`,
-		mediaId:
-			typeof bannerBlock?.mediaId === "string"
-				? bannerBlock.mediaId
-				: undefined,
-		alt: bannerBlock?.alt || project.data.title,
-		placeholderLabel: `${project.data.title}: imagen pendiente`,
-		layout: layouts[index % layouts.length],
-	};
-});
+const heading = HEADINGS[lang];
+const cards = CARDS_BY_LOCALE[lang];
 const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
 ---
 
@@ -61,35 +364,66 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
   <main id="main" class="works-index">
     <div class="editorial-shell">
       <h1 class="works-index__title" data-tina-field={tinaField(t, "heading")}>
-        {t.heading.split("\n").map((line: string, index: number) => (
-          <>{index > 0 && <br />}{index === 1 ? <em>{line}</em> : line}</>
-        ))}
+        {heading.before}<em>{heading.italic}</em><br />{heading.secondLine}
       </h1>
 
       <div class="works-index__list">
-        {works.map((work) => {
-          const content = (
-            <MediaPlaceholder
-              mediaId={work.mediaId}
-              alt={`${work.category}: ${work.title}`}
-              label={work.placeholderLabel}
-              aspect={work.layout === "portrait-left" ? "portrait" : "landscape"}
-              mediaSlot="content"
-            />
-          );
-          return (
-            <article class="works-index__item">
-              <div class="works-index__meta">
-                <p class="works-index__summary">{work.summary}</p>
-                <p class="works-index__label">{work.category} / {work.title}</p>
+        {cards.map((card) => {
+          const cardLabel = `${card.category} / ${card.title}`;
+          const ariaLabel = card.description ? `${cardLabel}. ${card.description}` : cardLabel;
+          const mediaContent = (
+            <>
+              <div class="works-index__media">
+                <R2Picture
+                  id={card.mediaId}
+                  alt={cardLabel}
+                  class="w-full h-full object-cover"
+                  mediaSlot="content"
+                  sizes={SIZES_BY_SPAN[card.span]}
+                  eager={card.eager}
+                />
               </div>
-              {work.href ? (
-                <a href={work.href} class="works-index__media">
-                  {content}
+
+              {card.badge && (
+                <div class="works-index__badge">
+                  <p class="works-index__badge-primary">{card.badge.primary}</p>
+                  {card.badge.secondary && (
+                    <p class="works-index__badge-secondary">{card.badge.secondary}</p>
+                  )}
+                </div>
+              )}
+
+              <div class="works-index__overlay">
+                <div class="works-index__overlay-bar">
+                  {card.description && (
+                    <p class="works-index__overlay-description">{card.description}</p>
+                  )}
+                  <div class="works-index__overlay-meta">
+                    <span class="works-index__overlay-category">{card.category}</span>
+                    <span aria-hidden="true">/</span>
+                    <h2 class="works-index__overlay-title">{card.title}</h2>
+                  </div>
+                </div>
+              </div>
+            </>
+          );
+
+          return (
+            <article
+              class:list={[
+                "works-index__card",
+                `works-index__card--${card.span}`,
+                { "works-index__card--light": card.lightSurface },
+              ]}
+              data-works-card={card.id}
+            >
+              {card.href ? (
+                <a href={card.href} class="works-index__surface" aria-label={ariaLabel}>
+                  {mediaContent}
                 </a>
               ) : (
-                <div class="works-index__media" aria-label={`${work.category}: ${work.title}`}>
-                  {content}
+                <div class="works-index__surface" tabindex="0" role="group" aria-label={ariaLabel}>
+                  {mediaContent}
                 </div>
               )}
             </article>
@@ -97,22 +431,22 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
         })}
       </div>
     </div>
-
   </main>
 </Base>
 
 <style>
 .works-index {
-  padding-top: clamp(7rem, 12vw, 11rem);
-  padding-bottom: clamp(4rem, 8vw, 7rem);
+  padding-top: clamp(7rem, 11vw, 10rem);
+  padding-bottom: clamp(4.5rem, 8vw, 7.5rem);
 }
 
 .works-index__title {
   margin: 0;
   font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
-  font-size: clamp(2.25rem, 3.6vw, 3.25rem);
+  font-size: clamp(2.1rem, 3.4vw, 3.15rem);
   font-weight: 600;
-  line-height: 0.94;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
 }
 
@@ -123,52 +457,214 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
 
 .works-index__list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(3rem, 6vw, 5.5rem) 1.5rem;
-  padding-top: clamp(4.5rem, 8vw, 7.5rem);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(2rem, 3.2vw, 3rem) 1.5rem;
+  padding-top: clamp(2.75rem, 4.5vw, 4rem);
 }
 
-.works-index__item {
-  display: flex;
+.works-index__card {
+  position: relative;
   min-width: 0;
-  flex-direction: column;
+  overflow: hidden;
+  background: #dedede;
 }
 
-.works-index__meta {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 0.75rem;
+.works-index__card--light {
+  background: #fff;
 }
 
-.works-index__media {
+.works-index__card--full {
+  grid-column: 1 / -1;
+  aspect-ratio: 16 / 8.5;
+}
+
+.works-index__card--left-5 {
+  grid-column: 1 / span 5;
+  height: clamp(22rem, 36vw, 34rem);
+}
+
+.works-index__card--right-7 {
+  grid-column: 6 / span 7;
+  height: clamp(22rem, 36vw, 34rem);
+}
+
+.works-index__card--left-7 {
+  grid-column: 1 / span 7;
+  height: clamp(22rem, 36vw, 34rem);
+}
+
+.works-index__card--right-5 {
+  grid-column: 8 / span 5;
+  height: clamp(22rem, 36vw, 34rem);
+}
+
+.works-index__surface {
+  position: relative;
   display: block;
   width: 100%;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
 }
 
-.works-index__media .editorial-media {
+.works-index__surface:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: -2px;
+}
+
+.works-index__media,
+.works-index__media :global(picture),
+.works-index__media :global(img) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
   height: 100%;
 }
 
-.works-index__summary {
-  margin: 0;
-  max-width: 34ch;
-  font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
-  font-size: clamp(0.875rem, 1vw, 1rem);
-  font-weight: 400;
-  line-height: 1.4;
+.works-index__badge {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 1.5rem;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+  transition: opacity 240ms ease;
 }
 
-.works-index__label {
+.works-index__badge-primary {
   margin: 0;
-  flex-shrink: 0;
-  font-family: var(--site-font-display, "Jozsika", serif);
-  font-size: clamp(1rem, 1.35vw, 1.25rem);
+  font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
+  font-size: clamp(0.75rem, 1.05vw, 0.95rem);
   font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.works-index__badge-secondary {
+  margin: 0;
+  font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
+  font-size: clamp(0.75rem, 1vw, 0.9rem);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.35;
+}
+
+.works-index__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  padding: clamp(1rem, 2.5vw, 2rem);
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 10, 0.68) 0%,
+    rgba(10, 10, 10, 0.34) 48%,
+    rgba(10, 10, 10, 0.48) 100%
+  );
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+
+.works-index__overlay-bar {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.4rem 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.works-index__overlay-description {
+  grid-column: 1;
+  margin: 0;
+  max-width: 44ch;
+  font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
+  font-size: clamp(0.78rem, 0.92vw, 0.88rem);
+  font-weight: 400;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.works-index__overlay-meta {
+  grid-column: 2;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.38em;
+  font-family: var(--site-font-display, "Jozsika", serif);
+  font-size: clamp(0.95rem, 1.25vw, 1.2rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
   line-height: 1.2;
   text-align: right;
   text-transform: uppercase;
+}
+
+.works-index__overlay-title {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.works-index__surface:hover .works-index__overlay,
+.works-index__surface:focus-visible .works-index__overlay,
+.works-index__surface:focus-within .works-index__overlay {
+  opacity: 1;
+}
+
+.works-index__surface:hover .works-index__badge,
+.works-index__surface:focus-visible .works-index__badge,
+.works-index__surface:focus-within .works-index__badge {
+  opacity: 0;
+}
+
+@media (hover: none) {
+  .works-index__overlay {
+    align-items: flex-end;
+    background: linear-gradient(
+      180deg,
+      rgba(10, 10, 10, 0) 45%,
+      rgba(10, 10, 10, 0.72) 100%
+    );
+    opacity: 1;
+  }
+
+  .works-index__overlay-bar {
+    grid-template-columns: 1fr;
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .works-index__overlay-meta {
+    grid-column: 1;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .works-index__overlay-description {
+    display: none;
+  }
+
+  .works-index__surface:focus-visible .works-index__overlay-description,
+  .works-index__surface:focus-within .works-index__overlay-description {
+    display: block;
+  }
 }
 
 @media (min-width: 48rem) {
@@ -183,27 +679,38 @@ const breadcrumbs = [{ name: "Works", url: `/${lang}/works` }];
 
 @media (max-width: 47.99rem) {
   .works-index {
-    padding-top: 7rem;
+    padding-top: 6.5rem;
   }
 
   .works-index__title {
-    font-size: clamp(2.25rem, 11vw, 3.25rem);
+    font-size: clamp(2rem, 10vw, 3rem);
   }
 
   .works-index__list {
     grid-template-columns: 1fr;
-    gap: 4rem;
-    padding-top: 4rem;
+    gap: 1.5rem;
+    padding-top: 2.5rem;
   }
 
-  .works-index__meta {
-    flex-direction: column-reverse;
-    align-items: flex-start;
-    gap: 0.35rem;
+  .works-index__card--full,
+  .works-index__card--left-5,
+  .works-index__card--right-7,
+  .works-index__card--left-7,
+  .works-index__card--right-5 {
+    grid-column: 1 / -1;
+    height: auto;
+    aspect-ratio: 4 / 3;
   }
 
-  .works-index__label {
-    text-align: left;
+  .works-index__card--full {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .works-index__badge,
+  .works-index__overlay {
+    transition: none;
   }
 }
 </style>
