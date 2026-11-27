@@ -59,6 +59,16 @@ const consultationFields = new Set([
 	"privacy",
 	"cf-turnstile-response",
 ]);
+const directContactFields = new Set([
+	"mode",
+	"name",
+	"company",
+	"email",
+	"phone",
+	"message",
+	"privacy",
+	"cf-turnstile-response",
+]);
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function validateFiles(entries, existingFiles = []) {
@@ -93,6 +103,53 @@ async function validateFiles(entries, existingFiles = []) {
 		return { ok: false, error: "invalid-file" };
 	}
 	return { ok: true, fieldFiles, files: existingFiles };
+}
+
+export function validateDirectContactPayload(formData) {
+	for (const name of directContactFields) {
+		if (formData.getAll(name).length > 1) {
+			return { ok: false, error: "duplicate-field" };
+		}
+	}
+	for (const [name] of formData.entries()) {
+		if (!directContactFields.has(name)) {
+			return { ok: false, error: "unknown-field" };
+		}
+	}
+	const mode = String(formData.get("mode") ?? "").trim();
+	if (mode !== "direct") return { ok: false, error: "invalid-mode" };
+
+	const name = String(formData.get("name") ?? "").trim();
+	const company = String(formData.get("company") ?? "").trim();
+	const email = String(formData.get("email") ?? "").trim();
+	const phone = String(formData.get("phone") ?? "").trim();
+	const message = String(formData.get("message") ?? "").trim();
+	const privacyAccepted = formData.get("privacy") === "accepted";
+
+	if (!name || !email || !message || !privacyAccepted) {
+		return { ok: false, error: "missing-field" };
+	}
+	if (
+		name.length > 200 ||
+		company.length > 200 ||
+		email.length > 254 ||
+		phone.length > 80 ||
+		message.length > 4000
+	) {
+		return { ok: false, error: "field-too-long" };
+	}
+	if (!EMAIL_PATTERN.test(email)) {
+		return { ok: false, error: "invalid-email" };
+	}
+	return {
+		ok: true,
+		mode: "direct",
+		name,
+		company,
+		email,
+		phone,
+		message,
+	};
 }
 
 export async function parseBoundedFormData(request, maxBytes) {

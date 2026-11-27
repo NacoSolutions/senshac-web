@@ -92,21 +92,32 @@ test("the two inquiry selectors prefill, filter services, and adapt the question
 	);
 
 	await service.selectOption("strategic-consultation");
-	await expect(page.locator("#contact-form")).toBeHidden();
+	await expect(page.locator("#contact-form")).toBeVisible();
+	await expect(page.locator('#contact-form input[name="desiredService"]')).toHaveValue(
+		"strategic-consultation",
+	);
 	await situation.selectOption("growth");
 	await expect(service).toHaveValue("");
 	await expect(page.locator("#selection-change-feedback")).toBeVisible();
+	await expect(page.locator("#contact-form")).toBeHidden();
+	await expect(page.locator(".contact-block")).toHaveAttribute(
+		"data-form-expanded",
+		"false",
+	);
 	await expect(
 		service.locator('option[value="strategic-consultation"]'),
 	).toHaveJSProperty("disabled", true);
 
 	await service.selectOption("decorative-restyling");
-	await page.getByRole("button", { name: "Continuar" }).click();
+	await expect(page.locator("#contact-form")).toBeVisible();
+	await expect(page.locator(".contact-block")).toHaveAttribute(
+		"data-form-expanded",
+		"true",
+	);
 	await expect(page.getByLabel("¿Vas a abrir un nuevo espacio?")).toBeEnabled();
 	await expect(page.locator("#contact-form")).toContainText("Quiero escalar mi negocio");
 
 	await service.selectOption("other-challenge");
-	await page.getByRole("button", { name: "Continuar" }).click();
 	await expect(
 		page.getByLabel("¿En qué consiste tu proyecto o reto?"),
 	).toBeEnabled();
@@ -115,8 +126,9 @@ test("the two inquiry selectors prefill, filter services, and adapt the question
 	);
 
 	await situation.selectOption("first-space");
+	await expect(page.locator("#contact-form")).toBeHidden();
 	await service.selectOption("integral");
-	await page.getByRole("button", { name: "Continuar" }).click();
+	await expect(page.locator("#contact-form")).toBeVisible();
 	await expect(
 		page.getByLabel("¿Ya has elegido un local o estás buscando?"),
 	).toBeEnabled();
@@ -134,12 +146,44 @@ test("service CTAs lock the preselected service across the dynamic questionnaire
 	await expect(service).toHaveValue("decorative-restyling");
 	await expect(service).toBeDisabled();
 	await situation.selectOption("first-space");
-	await page.getByRole("button", { name: "Continuar" }).click();
 	await expect(page).toHaveURL(
 		/situation=first-space&service=decorative-restyling&locked=service/,
 	);
 	await expect(service).toBeDisabled();
 	await expect(page.locator("#contact-form")).toBeVisible();
+	await expect(page.locator(".contact-block")).toHaveAttribute(
+		"data-form-expanded",
+		"true",
+	);
+});
+
+test("direct contact page shows short form by default and switches to guided mode", async ({
+	page,
+}) => {
+	await page.goto("/es/contact");
+	await expect(page.locator(".contact-block")).toHaveAttribute(
+		"data-contact-mode",
+		"direct",
+	);
+	await expect(page.locator("#direct-contact-form")).toBeVisible();
+	await expect(page.getByLabel("Nombre completo:")).toBeVisible();
+	await expect(page.getByLabel("Empresa:")).toBeVisible();
+	await expect(page.getByLabel("Mail:")).toBeVisible();
+	await expect(page.getByLabel("Telf.:")).toBeVisible();
+	await expect(page.getByLabel("Tu mensaje:")).toBeVisible();
+	await expect(page.locator("#inquiry-selection")).toHaveCount(0);
+
+	await page.locator('[data-contact-mode-switch="guided"]').click();
+	await expect(page).toHaveURL(/\/es\/contact\?mode=guided/);
+	await expect(page.locator(".contact-block")).toHaveAttribute(
+		"data-contact-mode",
+		"guided",
+	);
+	await expect(page.locator("#inquiry-selection")).toBeVisible();
+
+	await page.locator('[data-contact-mode-switch="direct"]').click();
+	await expect(page).toHaveURL(/\/es\/contact$/);
+	await expect(page.locator("#direct-contact-form")).toBeVisible();
 });
 
 test("homepage accordion toggles with keyboard activation", async ({

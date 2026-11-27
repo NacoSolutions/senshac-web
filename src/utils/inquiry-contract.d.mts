@@ -26,6 +26,27 @@ export interface InquiryConfig {
 	alternate: { fields: InquiryField[] };
 }
 
+export type DirectContactPayloadResult =
+	| {
+			ok: true;
+			mode: "direct";
+			name: string;
+			company: string;
+			email: string;
+			phone: string;
+			message: string;
+	  }
+	| {
+			ok: false;
+			error:
+				| "duplicate-field"
+				| "unknown-field"
+				| "invalid-mode"
+				| "missing-field"
+				| "field-too-long"
+				| "invalid-email";
+	  };
+
 export type InquiryPayloadResult =
 	| {
 			ok: true;
@@ -50,6 +71,10 @@ export type ConsultationPayloadResult =
 			files: Array<{ name: string; type: string; bytes: Uint8Array }>;
 	  }
 	| { ok: false; error: string };
+
+export function validateDirectContactPayload(
+	formData: FormData,
+): DirectContactPayloadResult;
 
 export function parseBoundedFormData(
 	request: Request,
