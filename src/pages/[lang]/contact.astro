@@ -21,9 +21,20 @@ const { title, description, chrome, blocks } = page.data as {
 	chrome?: any;
 	blocks?: any[];
 };
+
+const pageChrome = {
+	...chrome,
+	header: {
+		...chrome?.header,
+		style: "transparent" as const,
+		mode: "fixed" as const,
+		scrolling: "transparent-light" as const,
+		atFinal: "opaque-light" as const,
+	},
+};
 ---
 
-<Base title={title} description={description} lang={lang ?? "es"} schema="LocalBusiness" pageChrome={chrome} pageSource={{ collection: "contact", relativePath: `${lang}/contact.json`, chromePath: "chrome" }} aot>
+<Base title={title} description={description} lang={lang ?? "es"} schema="LocalBusiness" headerStyle="transparent" pageChrome={pageChrome} pageSource={{ collection: "contact", relativePath: `${lang}/contact.json`, chromePath: "chrome" }} aot>
   <TinaIsland name="contact" wrapper={{ tag: "main" }} params={{ relativePath: `${lang}/contact.json` }} primary>
     <main id="main" class="contact-page min-h-screen">
       {blocks && blocks.map((block: any, index: number) => (
