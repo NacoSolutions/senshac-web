@@ -25,10 +25,21 @@ const { title, description, chrome, blocks } = page.data as {
 
 <Base title={title} description={description} lang={lang ?? "es"} schema="LocalBusiness" pageChrome={chrome} pageSource={{ collection: "contact", relativePath: `${lang}/contact.json`, chromePath: "chrome" }} aot>
   <TinaIsland name="contact" wrapper={{ tag: "main" }} params={{ relativePath: `${lang}/contact.json` }} primary>
-<main class="min-h-screen">
-    {blocks && blocks.map((block: any, index: number) => (
-      <BlocksRenderer block={block} index={index} parentData={page.data} />
-    ))}
-  </main>
+    <main id="main" class="contact-page min-h-screen">
+      {blocks && blocks.map((block: any, index: number) => (
+        <BlocksRenderer block={block} index={index} parentData={page.data} />
+      ))}
+    </main>
   </TinaIsland>
+  <style is:global>
+    @media (min-width: 768px) {
+      .contact-page .editorial-shell,
+      body:has(.contact-page) header .editorial-shell,
+      body:has(.contact-page) footer .editorial-shell {
+        width: 88vw;
+        max-width: none;
+        margin-inline: auto;
+      }
+    }
+  </style>
 </Base>
