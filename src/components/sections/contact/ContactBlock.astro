@@ -41,12 +41,12 @@ const initialExpanded = Boolean(
 ---
 
 <section
-  class="contact-block relative w-full min-h-[calc(100vh-5rem)] overflow-hidden py-24 md:py-32"
+  class="contact-block relative w-full min-h-[calc(100vh-5rem)] overflow-clip py-24 md:py-32"
   data-contact-mode={initialMode}
   data-form-expanded={initialExpanded ? "true" : "false"}
 >
-  <div class="contact-block__backdrop absolute inset-0 overflow-hidden">
-    <div class="contact-block__backdrop-media absolute inset-0">
+  <div class="contact-block__backdrop">
+    <div class="contact-block__backdrop-media">
       <R2Picture
         id={resolvedMediaId}
         alt=""
@@ -115,7 +115,7 @@ const initialExpanded = Boolean(
             </p>
           )}
 
-          <div class="contact-block__card rounded-[2rem] bg-white/85 backdrop-blur-md p-6 sm:p-8 lg:p-10 text-black shadow-sm">
+          <div class="contact-block__card rounded-[2rem] bg-white/90 backdrop-blur-[6px] p-6 sm:p-8 lg:p-10 text-black shadow-sm">
             <ContactForm lang={lang} />
           </div>
         </div>
@@ -144,18 +144,38 @@ const initialExpanded = Boolean(
 </script>
 
 <style>
+  .contact-block__backdrop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    overflow: clip;
+    contain: paint;
+  }
+
   .contact-block__backdrop-media {
-    transform: scale(1);
-    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100lvh;
+    transform: translate3d(0, 0, 0) scale(1);
+    transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .contact-block__backdrop-media :global(picture) {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .contact-block[data-contact-mode="guided"] .contact-block__backdrop-media {
-    transform: scale(1.03);
+    transform: translate3d(0, 0, 0) scale(1.04);
   }
 
   .contact-block[data-form-expanded="true"] .contact-block__backdrop-media {
-    transform: scale(1.07);
+    transform: translate3d(0, 0, 0) scale(1.1);
   }
 
   @media (prefers-reduced-motion: reduce) {
