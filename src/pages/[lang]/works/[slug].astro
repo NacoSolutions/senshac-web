@@ -26,13 +26,26 @@ const breadcrumbs = [
 	{ name: "Works", url: `/${lang}/works` },
 	{ name: data.title, url: `/${lang}/works/${slug}` },
 ];
+const pageChrome = {
+	...data.chrome,
+	header: {
+		mode: "fixed" as const,
+		scrolling: "transparent-dark" as const,
+		atFinal: "opaque-light" as const,
+		...data.chrome?.header,
+		...(data.chrome?.header?.scrolling === "transparent-adaptive" ||
+		data.chrome?.header?.scrolling === "transparent-light"
+			? { scrolling: "transparent-dark" as const }
+			: {}),
+	},
+};
 ---
 
 <Base
   title={data.title}
   description={data.description}
   lang={lang}
-  pageChrome={data.chrome}
+  pageChrome={pageChrome}
   pageSource={{ collection: "projects", relativePath: `${lang}/${slug}.json`, chromePath: "chrome" }}
   headerStyle="transparent"
   schema={['Article', 'BreadcrumbList']}
@@ -54,6 +67,10 @@ const breadcrumbs = [
     </main>
   </TinaIsland>
   <style is:global>
+    .project-case-study {
+      overflow-x: clip;
+    }
+
     .project-case-study__header {
       display: grid;
       grid-template-columns: 1fr;
@@ -139,6 +156,13 @@ const breadcrumbs = [
     }
 
     @media (min-width: 768px) {
+      body:has(.project-case-study) header .editorial-shell,
+      body:has(.project-case-study) footer .editorial-shell {
+        width: 88vw;
+        max-width: none;
+        margin-inline: auto;
+      }
+
       .project-case-study .editorial-shell,
       .project-case-study [data-block-template="details"] > section > div,
       .project-case-study [data-block-template="text"] > section,
