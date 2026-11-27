@@ -38,6 +38,19 @@ export type InquiryPayloadResult =
 	  }
 	| { ok: false; error: string };
 
+export type ConsultationPayloadResult =
+	| {
+			ok: true;
+			mode: "consultation";
+			name: string;
+			email: string;
+			phone: string;
+			company: string;
+			message: string;
+			files: Array<{ name: string; type: string; bytes: Uint8Array }>;
+	  }
+	| { ok: false; error: string };
+
 export function parseBoundedFormData(
 	request: Request,
 	maxBytes: number,
@@ -50,3 +63,7 @@ export function validateInquiryPayload(
 	inquiry: InquiryConfig,
 	formData: FormData,
 ): Promise<InquiryPayloadResult>;
+
+export function validateConsultationPayload(
+	formData: FormData,
+): Promise<ConsultationPayloadResult>;

@@ -316,6 +316,7 @@ const siteConfig = defineCollection({
 			email: z.string(),
 			phone: z.string(),
 			phoneLink: z.string().optional(),
+			consultationBookingUrl: z.string().optional(),
 			location: z.object({
 				city: z.string(),
 				country: z.string(),

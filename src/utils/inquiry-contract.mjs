@@ -48,6 +48,52 @@ const commonFields = new Set([
 	"businessSituation",
 	"desiredService",
 ]);
+const consultationFields = new Set([
+	"mode",
+	"name",
+	"email",
+	"phone",
+	"company",
+	"message",
+	"files",
+	"privacy",
+	"cf-turnstile-response",
+]);
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+async function validateFiles(entries, existingFiles = []) {
+	const fieldFiles = [];
+	for (const file of entries) {
+		if (!(file instanceof File) || file.size === 0) continue;
+		const extension = file.name.split(".").at(-1)?.toLowerCase();
+		const policy = allowedFiles.get(file.type);
+		if (
+			!policy?.extensions.includes(extension) ||
+			file.size > MAX_FILE_BYTES ||
+			existingFiles.length >= MAX_FILES
+		) {
+			return { ok: false, error: "invalid-file" };
+		}
+		const bytes = new Uint8Array(await file.arrayBuffer());
+		if (!policy.signature(bytes)) {
+			return { ok: false, error: "invalid-file" };
+		}
+		const attachment = {
+			name: file.name.replace(/[^a-zA-Z0-9._-]/g, "_"),
+			type: file.type,
+			bytes,
+		};
+		existingFiles.push(attachment);
+		fieldFiles.push(attachment);
+	}
+	if (
+		existingFiles.reduce((sum, file) => sum + file.bytes.byteLength, 0) >
+		MAX_TOTAL_FILE_BYTES
+	) {
+		return { ok: false, error: "invalid-file" };
+	}
+	return { ok: true, fieldFiles, files: existingFiles };
+}
 
 export async function parseBoundedFormData(request, maxBytes) {
 	const reader = request.body?.getReader();
@@ -135,30 +181,12 @@ export async function validateInquiryPayload(inquiryPaths, formData) {
 
 	for (const field of fields) {
 		if (field.kind === "file") {
-			const fieldFiles = [];
-			for (const file of formData.getAll(field.name)) {
-				if (!(file instanceof File) || file.size === 0) continue;
-				const extension = file.name.split(".").at(-1)?.toLowerCase();
-				const policy = allowedFiles.get(file.type);
-				if (
-					!policy?.extensions.includes(extension) ||
-					file.size > MAX_FILE_BYTES ||
-					files.length >= MAX_FILES
-				) {
-					return { ok: false, error: "invalid-file" };
-				}
-				const bytes = new Uint8Array(await file.arrayBuffer());
-				if (!policy.signature(bytes))
-					return { ok: false, error: "invalid-file" };
-				const attachment = {
-					name: file.name.replace(/[^a-zA-Z0-9._-]/g, "_"),
-					type: file.type,
-					bytes,
-				};
-				files.push(attachment);
-				fieldFiles.push(attachment);
-			}
-			if (field.required && !fieldFiles.length)
+			const validatedFiles = await validateFiles(
+				formData.getAll(field.name),
+				files,
+			);
+			if (!validatedFiles.ok) return validatedFiles;
+			if (field.required && !validatedFiles.fieldFiles.length)
 				return { ok: false, error: "missing-field" };
 			continue;
 		}
@@ -178,12 +206,6 @@ export async function validateInquiryPayload(inquiryPaths, formData) {
 		values[field.name] = value;
 	}
 
-	if (
-		files.reduce((sum, file) => sum + file.bytes.byteLength, 0) >
-		MAX_TOTAL_FILE_BYTES
-	) {
-		return { ok: false, error: "invalid-file" };
-	}
 	return {
 		ok: true,
 		businessSituation: path.value,
@@ -192,5 +214,66 @@ export async function validateInquiryPayload(inquiryPaths, formData) {
 		serviceDescription: service.description,
 		values,
 		files,
+	};
+}
+
+export async function validateConsultationPayload(formData) {
+	for (const [name] of formData.entries()) {
+		if (!consultationFields.has(name)) {
+			return { ok: false, error: "unknown-field" };
+		}
+	}
+	for (const name of [
+		"mode",
+		"name",
+		"email",
+		"phone",
+		"company",
+		"message",
+		"privacy",
+		"cf-turnstile-response",
+	]) {
+		if (formData.getAll(name).length > 1) {
+			return { ok: false, error: "duplicate-field" };
+		}
+	}
+
+	const mode = String(formData.get("mode") ?? "").trim();
+	if (mode !== "consultation") return { ok: false, error: "invalid-mode" };
+
+	const name = String(formData.get("name") ?? "").trim();
+	const email = String(formData.get("email") ?? "").trim();
+	const phone = String(formData.get("phone") ?? "").trim();
+	const company = String(formData.get("company") ?? "").trim();
+	const message = String(formData.get("message") ?? "").trim();
+	const privacyAccepted = formData.get("privacy") === "accepted";
+
+	if (
+		!name ||
+		!email ||
+		!message ||
+		!privacyAccepted ||
+		name.length > 200 ||
+		email.length > 254 ||
+		phone.length > 80 ||
+		company.length > 200
+	) {
+		return { ok: false, error: "missing-field" };
+	}
+	if (message.length > 4000) return { ok: false, error: "field-too-long" };
+	if (!EMAIL_PATTERN.test(email)) return { ok: false, error: "invalid-email" };
+
+	const validatedFiles = await validateFiles(formData.getAll("files"));
+	if (!validatedFiles.ok) return validatedFiles;
+
+	return {
+		ok: true,
+		mode: "consultation",
+		name,
+		email,
+		phone,
+		company,
+		message,
+		files: validatedFiles.files,
 	};
 }

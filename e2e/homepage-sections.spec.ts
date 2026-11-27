@@ -94,7 +94,7 @@ test("Home preserves current live block order and opening carousel", async ({
 	expect(
 		(await projectCarousel.locator("[data-project-slide] h3").allTextContents()).slice(0, 2),
 	).toEqual(["La Trobada", "Doley"]);
-	await expect(projectCarousel.locator("[data-project-slide]").nth(1).locator(".showcase-project-carousel__description")).toHaveText("Estética, color y salud capilar convertidos en una experiencia envolvente.");
+	await expect(projectCarousel.locator("[data-project-slide]").nth(1).locator(".showcase-project-carousel__description")).toHaveText("Estética, color y salud capilar en un mismo espacio.");
 	const openingSlideStyle = await projectCarousel.locator("[data-project-slide]").first().evaluate((slide) => {
 		const overlay = slide.querySelector(".showcase-project-carousel__overlay");
 		if (!overlay) return null;
