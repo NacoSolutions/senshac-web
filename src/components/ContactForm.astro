@@ -582,14 +582,14 @@ const serializedClientConfig = JSON.stringify(clientConfig).replace(/</g, "\\u00
 			url.searchParams.delete('contact_success');
 			url.searchParams.delete('path');
 			url.searchParams.delete('package');
+			url.searchParams.delete('situation');
+			url.searchParams.delete('service');
+			url.searchParams.delete('locked');
+			url.searchParams.delete('mode');
 			if (situationValue) url.searchParams.set('situation', situationValue);
-			else url.searchParams.delete('situation');
 			if (serviceValue) url.searchParams.set('service', serviceValue);
-			else url.searchParams.delete('service');
 			if (serviceLocked && serviceValue) url.searchParams.set('locked', 'service');
-			else url.searchParams.delete('locked');
 			if (!situationValue && !serviceValue) url.searchParams.set('mode', 'guided');
-			else url.searchParams.delete('mode');
 			window.history.replaceState(null, '', url.toString());
 		};
 

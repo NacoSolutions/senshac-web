@@ -15,8 +15,8 @@ const MAX_REQUEST_BYTES = 12 * 1024 * 1024;
 async function verifyTurnstile(
 	token: string,
 	ip: string | null,
+	secretKey?: string,
 ): Promise<boolean> {
-	const secretKey = import.meta.env.TURNSTILE_SECRET_KEY;
 	if (!secretKey) return !import.meta.env.PROD;
 
 	try {
@@ -70,7 +70,15 @@ function safeReturnUrl(
 	}
 }
 
-export const POST: APIRoute = async ({ request, params }) => {
+export const POST: APIRoute = async ({ request, params, locals }) => {
+	const runtimeEnv = (
+		locals as { runtime?: { env?: Record<string, string | undefined> } }
+	)?.runtime?.env;
+	const getEnv = (key: string): string | undefined =>
+		runtimeEnv?.[key] ??
+		(import.meta.env as Record<string, string | undefined>)[key];
+	const sender =
+		getEnv("CONTACT_FROM")?.trim() || "Senshac Web <noreply@senshac.com>";
 	const lang = params.lang || "es";
 	const translations = await getEntry("translations", lang);
 	if (!translations)
@@ -134,13 +142,17 @@ export const POST: APIRoute = async ({ request, params }) => {
 
 			const token = String(formData.get("cf-turnstile-response") ?? "");
 			if (
-				!(await verifyTurnstile(token, request.headers.get("CF-Connecting-IP")))
+				!(await verifyTurnstile(
+					token,
+					request.headers.get("CF-Connecting-IP"),
+					getEnv("TURNSTILE_SECRET_KEY"),
+				))
 			) {
 				return redirectConsultation("turnstileFailed");
 			}
 
-			const apiKey = import.meta.env.RESEND_API_KEY;
-			const recipient = resolveContactRecipient(import.meta.env.CONTACT_EMAIL);
+			const apiKey = getEnv("RESEND_API_KEY");
+			const recipient = resolveContactRecipient(getEnv("CONTACT_EMAIL"));
 			if (!apiKey || !recipient) {
 				console.error(
 					"Contact delivery configuration is incomplete; consultation brief rejected.",
@@ -170,7 +182,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					from: "Senshac Web <noreply@senshac.com>",
+					from: sender,
 					to: recipient,
 					reply_to: validatedConsultation.email,
 					subject: `Consultoría Estratégica: ${validatedConsultation.name}`,
@@ -198,7 +210,11 @@ export const POST: APIRoute = async ({ request, params }) => {
 			}
 			const token = String(formData.get("cf-turnstile-response") ?? "");
 			if (
-				!(await verifyTurnstile(token, request.headers.get("CF-Connecting-IP")))
+				!(await verifyTurnstile(
+					token,
+					request.headers.get("CF-Connecting-IP"),
+					getEnv("TURNSTILE_SECRET_KEY"),
+				))
 			) {
 				return redirect("turnstileFailed");
 			}
@@ -212,8 +228,8 @@ export const POST: APIRoute = async ({ request, params }) => {
 				`Message: ${validated.message}`,
 				`Language: ${lang}`,
 			].join("\n");
-			const apiKey = import.meta.env.RESEND_API_KEY;
-			const recipient = resolveContactRecipient(import.meta.env.CONTACT_EMAIL);
+			const apiKey = getEnv("RESEND_API_KEY");
+			const recipient = resolveContactRecipient(getEnv("CONTACT_EMAIL"));
 			if (!apiKey || !recipient) {
 				console.error(
 					"Contact delivery configuration is incomplete; direct message rejected.",
@@ -228,7 +244,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					from: "Senshac Web <noreply@senshac.com>",
+					from: sender,
 					to: recipient,
 					reply_to: validated.email,
 					subject: `New contact message: ${validated.name}`,
@@ -289,7 +305,11 @@ export const POST: APIRoute = async ({ request, params }) => {
 		}
 		const token = String(formData.get("cf-turnstile-response") ?? "");
 		if (
-			!(await verifyTurnstile(token, request.headers.get("CF-Connecting-IP")))
+			!(await verifyTurnstile(
+				token,
+				request.headers.get("CF-Connecting-IP"),
+				getEnv("TURNSTILE_SECRET_KEY"),
+			))
 		) {
 			return redirect(
 				"turnstileFailed",
@@ -334,8 +354,8 @@ export const POST: APIRoute = async ({ request, params }) => {
 			...answerLines,
 			`Language: ${lang}`,
 		].join("\n");
-		const apiKey = import.meta.env.RESEND_API_KEY;
-		const recipient = resolveContactRecipient(import.meta.env.CONTACT_EMAIL);
+		const apiKey = getEnv("RESEND_API_KEY");
+		const recipient = resolveContactRecipient(getEnv("CONTACT_EMAIL"));
 		if (!apiKey || !recipient) {
 			console.error("Contact delivery configuration is incomplete; inquiry rejected.");
 			return new Response("Contact delivery unavailable", { status: 503 });
@@ -352,7 +372,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				from: "Senshac Web <noreply@senshac.com>",
+				from: sender,
 				to: recipient,
 				reply_to: email,
 				subject: `New inquiry: ${selected.title}`,
