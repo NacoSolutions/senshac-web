@@ -17,75 +17,86 @@ const { heading, subheading, mediaId } = Astro.props;
 const tinaData = (Astro.props.tinaData ?? Astro.props) as Record<string, unknown>;
 const lang = Astro.params.lang || "es";
 const site = await getSiteConfig();
+const resolvedMediaId =
+	!mediaId || mediaId.includes("senshac-contact-banner")
+		? "reference-intake/contact/background"
+		: mediaId;
+const whatsappNumber = (site.contact?.phoneLink || site.contact?.phone || "").replace(/\D/g, "");
 ---
 
-<section class="relative w-full">
-  <div class="max-w-6xl mx-auto px-4">
-    <div class="relative aspect-[16/7] overflow-hidden">
-      {mediaId && (
-        <div class="w-full h-full">
-          <R2Picture
-            id={mediaId}
-            alt=""
-			class="w-full h-full object-cover"
-			eager
-			mediaSlot="content"
-			data-tina-field={tinaField(tinaData, "mediaId")}
-          />
-        </div>
-      )}
-      <!-- White symbol overlay -->
-      <div class="absolute inset-0 flex items-center justify-center">
-        {site.branding?.symbolWhite && (
-          <R2Picture
-            id={site.branding.symbolWhite}
-            alt=""
-			class="w-24 md:w-32 h-auto"
-			mediaSlot="logo"
-			data-tina-field={tinaField(site.branding, "symbolWhite")}
-          />
-        )}
-      </div>
-    </div>
+<section class="contact-block relative w-full min-h-[calc(100vh-5rem)] overflow-hidden py-24 md:py-32">
+  <div class="contact-block__backdrop absolute inset-0">
+    <R2Picture
+      id={resolvedMediaId}
+      alt=""
+      class="w-full h-full object-cover"
+      eager
+      mediaSlot="full"
+      data-tina-field={tinaField(tinaData, "mediaId")}
+    />
+    <div class="absolute inset-0" style="background: rgba(0, 0, 0, 0.49);" aria-hidden="true"></div>
   </div>
-</section>
 
-<!-- Contact Section -->
-<section class="py-16 md:py-24">
-  <div class="max-w-6xl mx-auto px-4">
-    <div class="contact-block__content grid gap-12 max-w-5xl mx-auto">
-      <!-- Contact Info -->
-      <div>
-        {heading && (
-          <h1 class="text-sm uppercase tracking-wider text-gray-500 mb-6" data-tina-field={tinaField(tinaData, "heading")}>{heading}</h1>
-        )}
-        {subheading && (
-          <p class="text-4xl md:text-5xl font-bold mb-8" data-tina-field={tinaField(tinaData, "subheading")}>{subheading}</p>
-        )}
+  <div class="relative z-10 editorial-shell-wide">
+    <div class="contact-block__content grid grid-cols-1">
+      <div class="contact-block__grid editorial-grid-12 items-start">
+        <!-- Left Rail (cols 1-4): Heading + Contact Details -->
+        <div class="editorial-rail-left text-white">
+          {heading && (
+            <h1
+              class="m-0 font-sans font-semibold uppercase text-white text-[clamp(2.25rem,3.6vw,3.75rem)] leading-[1.05] tracking-[0.01em]"
+              data-tina-field={tinaField(tinaData, "heading")}
+            >
+              {heading}
+            </h1>
+          )}
 
-        <div class="flex flex-wrap gap-x-8 gap-y-2">
-          {site.contact?.email && (
-            <a
-              href={`mailto:${site.contact.email}`}
-              class="block text-lg hover:text-gray-600 transition-colors"
-            >
-              <span data-tina-field={tinaField(site.contact, "email")}>{site.contact.email}</span>
-            </a>
-          )}
-          {site.contact?.phone && (
-            <a
-              href={`tel:${site.contact.phoneLink || site.contact.phone.replace(/\s/g, '')}`}
-              class="block text-lg hover:text-gray-600 transition-colors"
-            >
-              <span data-tina-field={tinaField(site.contact, "phone")}>{site.contact.phone}</span>
-            </a>
-          )}
+          <div class="mt-10 md:mt-16 flex flex-col gap-1.5 font-sans font-semibold text-white text-[clamp(1.125rem,1.6vw,1.625rem)] leading-[1.35]">
+            {site.contact?.email && (
+              <a
+                href={`mailto:${site.contact.email}`}
+                class="w-max text-white no-underline hover:opacity-75 transition-opacity"
+              >
+                <span data-tina-field={tinaField(site.contact, "email")}>{site.contact.email}</span>
+              </a>
+            )}
+            {site.contact?.phone && (
+              <a
+                href={`tel:${site.contact.phoneLink || site.contact.phone.replace(/\s/g, "")}`}
+                class="w-max text-white no-underline hover:opacity-75 transition-opacity"
+              >
+                <span data-tina-field={tinaField(site.contact, "phone")}>{site.contact.phone}</span>
+              </a>
+            )}
+            {whatsappNumber && (
+              <a
+                href={`https://wa.me/${whatsappNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="WhatsApp Sens*hac"
+                class="w-max text-white no-underline hover:opacity-75 transition-opacity"
+              >
+                Sens*hac
+              </a>
+            )}
+          </div>
         </div>
-      </div>
 
-      <!-- Contact Form -->
-      <div>
-        <ContactForm lang={lang} />
+        <!-- Right Rail (cols 6-12): Headline + Contact Form Card -->
+        <div class="editorial-rail-main">
+          {subheading && (
+            <p
+              class="m-0 mb-8 font-sans font-semibold text-white text-[clamp(1.75rem,3vw,3rem)] leading-[1.1]"
+              data-tina-field={tinaField(tinaData, "subheading")}
+            >
+              {subheading}
+            </p>
+          )}
+
+          <div class="contact-block__card rounded-[2rem] bg-white/85 backdrop-blur-md p-6 sm:p-8 lg:p-10 text-black shadow-sm">
+            <ContactForm lang={lang} />
+          </div>
+        </div>
       </div>
     </div>
   </div>
