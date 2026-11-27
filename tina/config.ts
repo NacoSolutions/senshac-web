@@ -149,6 +149,13 @@ const siteConfigFields: TinaField[] = [
 			{ name: "phone", label: "Phone", type: "string" },
 			{ name: "phoneLink", label: "Phone Link (no spaces)", type: "string" },
 			{
+				name: "consultationBookingUrl",
+				label: "Consultation Booking URL (Cal.com / Google Calendar)",
+				type: "string",
+				description:
+					"Optional HTTPS booking URL embedded on the Consultoría Estratégica page (Cal.com or Google Calendar Appointment Schedules).",
+			},
+			{
 				type: "object" as const,
 				name: "location",
 				label: "Location",

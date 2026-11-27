@@ -19,6 +19,7 @@ export const GET: APIRoute = async () => {
 		"",
 		"/studio",
 		"/methods",
+		"/methods/consultation",
 		"/contact",
 		"/works",
 		"/legal-notice",

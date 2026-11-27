@@ -4,6 +4,7 @@ import { getEntry } from "astro:content";
 import type { APIRoute } from "astro";
 import {
 	parseBoundedFormData,
+	validateConsultationPayload,
 	validateInquiryPayload,
 } from "../../../utils/inquiry-contract.mjs";
 import { resolveContactRecipient } from "../../../utils/contact-recipient.mjs";
@@ -45,14 +46,22 @@ function encodeBase64(bytes: Uint8Array): string {
 	return btoa(binary);
 }
 
-function safeReturnUrl(request: Request, lang: string): URL {
-	const fallback = new URL(`/${lang}/contact`, request.url);
+function safeReturnUrl(
+	request: Request,
+	lang: string,
+	fallbackPath = `/${lang}/contact`,
+): URL {
+	const fallback = new URL(fallbackPath, request.url);
+	const allowedPaths = new Set([
+		`/${lang}/contact`,
+		`/${lang}/methods/consultation`,
+	]);
 	const referer = request.headers.get("Referer");
 	if (!referer) return fallback;
 	try {
 		const candidate = new URL(referer);
 		return candidate.origin === new URL(request.url).origin &&
-			candidate.pathname === `/${lang}/contact`
+			allowedPaths.has(candidate.pathname)
 			? candidate
 			: fallback;
 	} catch {
@@ -96,6 +105,86 @@ export const POST: APIRoute = async ({ request, params }) => {
 			);
 		}
 		const formData = parsedBody.formData;
+		if (String(formData.get("mode") ?? "").trim() === "consultation") {
+			const consultationUrl = safeReturnUrl(
+				request,
+				lang,
+				`/${lang}/methods/consultation`,
+			);
+			const redirectConsultation = (error?: string, success = false) => {
+				consultationUrl.searchParams.delete("contact_error");
+				consultationUrl.searchParams.delete("contact_success");
+				if (error) consultationUrl.searchParams.set("contact_error", error);
+				if (success) consultationUrl.searchParams.set("contact_success", "1");
+				return Response.redirect(consultationUrl.toString(), 303);
+			};
+
+			const validatedConsultation = await validateConsultationPayload(formData);
+			if (!validatedConsultation.ok) {
+				const error =
+					validatedConsultation.error === "invalid-file"
+						? "invalidFile"
+						: validatedConsultation.error === "invalid-email"
+							? "invalidEmail"
+							: "missingFields";
+				return redirectConsultation(error);
+			}
+
+			const token = String(formData.get("cf-turnstile-response") ?? "");
+			if (
+				!(await verifyTurnstile(token, request.headers.get("CF-Connecting-IP")))
+			) {
+				return redirectConsultation("turnstileFailed");
+			}
+
+			const apiKey = import.meta.env.RESEND_API_KEY;
+			const recipient = resolveContactRecipient(import.meta.env.CONTACT_EMAIL);
+			if (!apiKey || !recipient) {
+				console.error(
+					"Contact delivery configuration is incomplete; consultation brief rejected.",
+				);
+				return new Response("Contact delivery unavailable", { status: 503 });
+			}
+
+			const text = [
+				"New Strategic Consultation brief from senshac.com",
+				`Name: ${validatedConsultation.name}`,
+				`Company: ${validatedConsultation.company || "Not provided"}`,
+				`Email: ${validatedConsultation.email}`,
+				`Phone: ${validatedConsultation.phone || "Not provided"}`,
+				`Business & main concerns: ${validatedConsultation.message}`,
+				`Language: ${lang}`,
+			].join("\n");
+
+			const attachments = validatedConsultation.files.map((file) => ({
+				filename: file.name,
+				content: encodeBase64(file.bytes),
+			}));
+
+			const response = await fetch("https://api.resend.com/emails", {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${apiKey}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					from: "Senshac Web <noreply@senshac.com>",
+					to: recipient,
+					reply_to: validatedConsultation.email,
+					subject: `Consultoría Estratégica: ${validatedConsultation.name}`,
+					text,
+					...(attachments.length ? { attachments } : {}),
+				}),
+			});
+			if (!response.ok) {
+				console.error("Contact email provider rejected consultation brief", {
+					status: response.status,
+				});
+				return redirectConsultation("error");
+			}
+			return redirectConsultation(undefined, true);
+		}
+
 		const name = String(formData.get("name") ?? "").trim();
 		const company = String(formData.get("company") ?? "").trim();
 		const email = String(formData.get("email") ?? "").trim();

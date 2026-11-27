@@ -1,0 +1,700 @@
+---
+export { getLanguagePaths as getStaticPaths } from "../../../lib/static-paths";
+export const prerender = true;
+
+import Base from "../../../layouts/Base.astro";
+import { getSiteConfig } from "../../../utils/site-config";
+
+type Lang = "es" | "ca" | "en";
+
+const rawLang = Astro.params.lang ?? "es";
+const lang: Lang = rawLang === "ca" || rawLang === "en" ? rawLang : "es";
+
+const site = await getSiteConfig();
+const rawBookingUrl = site.contact?.consultationBookingUrl?.trim() ?? "";
+let bookingUrl = "";
+if (rawBookingUrl) {
+	try {
+		const parsed = new URL(rawBookingUrl);
+		if (parsed.protocol === "https:") {
+			bookingUrl = parsed.toString();
+		}
+	} catch {
+		bookingUrl = "";
+	}
+}
+
+const siteKey =
+	import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"; // gitleaks:allow
+
+const pageChrome = {
+	header: {
+		scrolling: "transparent-dark" as const,
+		atFinal: "opaque-light" as const,
+	},
+};
+
+const content: Record<
+	Lang,
+	{
+		metaTitle: string;
+		metaDescription: string;
+		backLabel: string;
+		title: string;
+		subtitle: string;
+		price: string;
+		intro: string;
+		guaranteeHeading: string;
+		guaranteeBody: string;
+		includesHeading: string;
+		includes: Array<{ label: string; text: string }>;
+		needsHeading: string;
+		needs: Array<{ label: string; text: string }>;
+		calendarHeading: string;
+		calendarTitle: string;
+		calendarFallback: string;
+		formHeading: string;
+		nameLabel: string;
+		namePlaceholder: string;
+		emailLabel: string;
+		emailPlaceholder: string;
+		phoneLabel: string;
+		phonePlaceholder: string;
+		companyLabel: string;
+		companyPlaceholder: string;
+		messageLabel: string;
+		messagePlaceholder: string;
+		uploadLabel: string;
+		uploadHint: string;
+		privacyPrefix: string;
+		privacyLinkText: string;
+		submitLabel: string;
+		successMessage: string;
+		errorMessages: Record<string, string>;
+	}
+> = {
+	es: {
+		metaTitle: "Consultoría Estratégica - Sens*Hac",
+		metaDescription:
+			"Sesión estratégica de 2 h con hoja de ruta en 72 h. Auditoría intensiva para evaluar tu espacio y tomar decisiones estratégicas.",
+		backLabel: "← Volver a servicios",
+		title: "CONSULTORÍA ESTRATÉGICA",
+		subtitle: "Sesión estratégica de 2 h · Hoja de ruta en 72 h",
+		price: "360 € + IVA",
+		intro:
+			"Una auditoría intensiva para evaluar tu espacio y tomar decisiones estratégicas que mejoren el funcionamiento y la imagen de tu negocio.",
+		guaranteeHeading: "GARANTÍA DE CONTINUIDAD",
+		guaranteeBody:
+			"Si tras la consultoría decides contratar el Proyecto Integral o el Estilismo / Rebranding, abonamos el 100% del importe de esta sesión (360 € + IVA) en los honorarios del proyecto.",
+		includesHeading: "QUÉ INCLUYE",
+		includes: [
+			{
+				label: "Análisis previo:",
+				text: "Revisión de la documentación facilitada (planos, fotografías y retos clave) antes de la sesión.",
+			},
+			{
+				label: "Sesión estratégica (2 h):",
+				text: "Diagnóstico en directo sobre distribución, flujo operativo e imagen de marca.",
+			},
+			{
+				label: "Criterio técnico y de diseño:",
+				text: "Directrices claras para optimizar el espacio y definir las prioridades de intervención.",
+			},
+			{
+				label: "Hoja de ruta personalizada:",
+				text: "Dossier con las conclusiones, recomendaciones de actuación y enlaces con piezas de mobiliario, materiales y distribuidores.",
+			},
+			{
+				label: "Entrega rápida:",
+				text: "Documentación enviada en un plazo máximo de 72 h.",
+			},
+		],
+		needsHeading: "QUÉ NECESITAMOS ANTES DE LA SESIÓN",
+		needs: [
+			{
+				label: "Información del local:",
+				text: "Planos (o croquis acotado) y fotografías del espacio actual.",
+			},
+			{
+				label: "Identidad de marca:",
+				text: "Manual corporativo, logos o material gráfico disponible.",
+			},
+			{
+				label: "Contexto del proyecto:",
+				text: "Puntos críticos a resolver, cuellos de botella detectados o dudas específicas que quieras priorizar.",
+			},
+		],
+		calendarHeading: "RESERVA TU SESIÓN",
+		calendarTitle: "Calendario de reserva de Consultoría Estratégica",
+		calendarFallback:
+			"Selecciona o confirma tu disponibilidad enviando tu brief a continuación; te responderemos en menos de 24/48 h para cerrar fecha y hora.",
+		formHeading: "ENVÍA TU BRIEF PREVIO",
+		nameLabel: "Persona de contacto",
+		namePlaceholder: "Juan Rodríguez",
+		emailLabel: "Correo",
+		emailPlaceholder: "juan@empresa.com",
+		phoneLabel: "Telf.",
+		phonePlaceholder: "600 000 000",
+		companyLabel: "Empresa",
+		companyPlaceholder: "Nombre SL",
+		messageLabel: "Tipo de negocio y tus preocupaciones principales",
+		messagePlaceholder:
+			"Ej.: Bar, tienda de ropa... No tengo espacio de almacenaje...",
+		uploadLabel: "ADJUNTAR DOCUMENTOS",
+		uploadHint:
+			"Opcional · Planos, fotos o dosier (PDF, JPG, PNG o WebP · máx. 3 archivos, 5 MB c/u)",
+		privacyPrefix: "Acepto la ",
+		privacyLinkText: "política de privacidad",
+		submitLabel: "Enviar brief y solicitar sesión",
+		successMessage:
+			"Hemos recibido tu brief de Consultoría Estratégica. Te responderemos en menos de 24/48 h.",
+		errorMessages: {
+			missingFields: "Por favor, completa todos los campos obligatorios y acepta la política de privacidad.",
+			invalidEmail: "Por favor, introduce una dirección de correo válida.",
+			invalidFile: "Revisa los documentos adjuntos (máx. 3 archivos PDF, JPG, PNG o WebP de hasta 5 MB cada uno).",
+			turnstileFailed: "No se pudo verificar el envío. Inténtalo de nuevo.",
+			error: "Ha ocurrido un error al enviar tu solicitud. Inténtalo de nuevo más tarde.",
+		},
+	},
+	ca: {
+		metaTitle: "Consultoria Estratègica - Sens*Hac",
+		metaDescription:
+			"Sessió estratègica de 2 h amb full de ruta en 72 h. Auditoria intensiva per avaluar el teu espai i prendre decisions estratègiques.",
+		backLabel: "← Tornar a serveis",
+		title: "CONSULTORIA ESTRATÈGICA",
+		subtitle: "Sessió estratègica de 2 h · Full de ruta en 72 h",
+		price: "360 € + IVA",
+		intro:
+			"Una auditoria intensiva per avaluar el teu espai i prendre decisions estratègiques que millorin el funcionament i la imatge del teu negoci.",
+		guaranteeHeading: "GARANTIA DE CONTINUÏTAT",
+		guaranteeBody:
+			"Si després de la consultoria decideixes contractar el Projecte Integral o l'Estilisme / Rebranding, abonem el 100% de l'import d'aquesta sessió (360 € + IVA) en els honoraris del projecte.",
+		includesHeading: "QUÈ INCLOU",
+		includes: [
+			{
+				label: "Anàlisi prèvia:",
+				text: "Revisió de la documentació facilitada (plànols, fotografies i reptes clau) abans de la sessió.",
+			},
+			{
+				label: "Sessió estratègica (2 h):",
+				text: "Diagnòstic en directe sobre distribució, flux operatiu i imatge de marca.",
+			},
+			{
+				label: "Criteri tècnic i de disseny:",
+				text: "Directrius clares per optimitzar l'espai i definir les prioritats d'intervenció.",
+			},
+			{
+				label: "Full de ruta personalitzat:",
+				text: "Dossier amb les conclusions, recomanacions d'actuació i enllaços amb peces de mobiliari, materials i distribuïdors.",
+			},
+			{
+				label: "Lliurament ràpid:",
+				text: "Documentació enviada en un termini màxim de 72 h.",
+			},
+		],
+		needsHeading: "QUÈ NECESSITEM ABANS DE LA SESSIÓ",
+		needs: [
+			{
+				label: "Informació del local:",
+				text: "Plànols (o croquis acotat) i fotografies de l'espai actual.",
+			},
+			{
+				label: "Identitat de marca:",
+				text: "Manual corporatiu, logotips o material gràfic disponible.",
+			},
+			{
+				label: "Context del projecte:",
+				text: "Punts crítics a resoldre, colls d'ampolla detectats o dubtes específics que vulguis prioritzar.",
+			},
+		],
+		calendarHeading: "RESERVA LA TEVA SESSIÓ",
+		calendarTitle: "Calendari de reserva de Consultoria Estratègica",
+		calendarFallback:
+			"Selecciona o confirma la teva disponibilitat enviant el teu brief a continuació; et respondrem en menys de 24/48 h per tancar data i hora.",
+		formHeading: "ENVIA EL TEU BRIEF PREVI",
+		nameLabel: "Persona de contacte",
+		namePlaceholder: "Joan Rodríguez",
+		emailLabel: "Correu",
+		emailPlaceholder: "joan@empresa.com",
+		phoneLabel: "Tel.",
+		phonePlaceholder: "600 000 000",
+		companyLabel: "Empresa",
+		companyPlaceholder: "Nom SL",
+		messageLabel: "Tipus de negoci i les teves preocupacions principals",
+		messagePlaceholder:
+			"Ex.: Bar, botiga de roba... No tinc espai d'emmagatzematge...",
+		uploadLabel: "ADJUNTAR DOCUMENTS",
+		uploadHint:
+			"Opcional · Plànols, fotos o dossier (PDF, JPG, PNG o WebP · màx. 3 fitxers, 5 MB c/u)",
+		privacyPrefix: "Accepto la ",
+		privacyLinkText: "política de privacitat",
+		submitLabel: "Enviar brief i sol·licitar sessió",
+		successMessage:
+			"Hem rebut el teu brief de Consultoria Estratègica. Et respondrem en menys de 24/48 h.",
+		errorMessages: {
+			missingFields: "Si us plau, completa tots els camps obligatoris i accepta la política de privacitat.",
+			invalidEmail: "Si us plau, introdueix una adreça de correu vàlida.",
+			invalidFile: "Revisa els documents adjunts (màx. 3 fitxers PDF, JPG, PNG o WebP de fins a 5 MB cadascun).",
+			turnstileFailed: "No s'ha pogut verificar l'enviament. Torna-ho a provar.",
+			error: "S'ha produït un error en enviar la sol·licitud. Torna-ho a provar més tard.",
+		},
+	},
+	en: {
+		metaTitle: "Strategic Consultation - Sens*Hac",
+		metaDescription:
+			"2 h strategic session with a 72 h roadmap. Intensive audit to evaluate your space and make strategic decisions.",
+		backLabel: "← Back to services",
+		title: "STRATEGIC CONSULTATION",
+		subtitle: "2 h strategic session · Roadmap in 72 h",
+		price: "€360 + VAT",
+		intro:
+			"An intensive audit to evaluate your space and make strategic decisions that improve your business operations and brand image.",
+		guaranteeHeading: "CONTINUITY GUARANTEE",
+		guaranteeBody:
+			"If you decide to hire a Full-Scope Project or Styling / Rebranding after the consultation, we credit 100% of this session fee (€360 + VAT) towards the project fees.",
+		includesHeading: "WHAT'S INCLUDED",
+		includes: [
+			{
+				label: "Pre-session analysis:",
+				text: "Review of the documentation provided (floor plans, photographs, and key challenges) ahead of the session.",
+			},
+			{
+				label: "Strategic session (2 h):",
+				text: "Live diagnosis covering layout, operational flow, and brand expression.",
+			},
+			{
+				label: "Technical & design criteria:",
+				text: "Clear guidelines to optimize the space and define intervention priorities.",
+			},
+			{
+				label: "Tailored roadmap:",
+				text: "Dossier with findings, action recommendations, and links to furniture pieces, materials, and suppliers.",
+			},
+			{
+				label: "Fast delivery:",
+				text: "Documentation delivered within 72 hours.",
+			},
+		],
+		needsHeading: "WHAT WE NEED BEFORE THE SESSION",
+		needs: [
+			{
+				label: "Space information:",
+				text: "Floor plans (or dimensioned sketch) and photographs of the current space.",
+			},
+			{
+				label: "Brand identity:",
+				text: "Brand guidelines, logos, or any available graphic material.",
+			},
+			{
+				label: "Project context:",
+				text: "Critical pain points, operational bottlenecks, or specific questions you want to prioritize.",
+			},
+		],
+		calendarHeading: "BOOK YOUR SESSION",
+		calendarTitle: "Strategic Consultation booking calendar",
+		calendarFallback:
+			"Share your availability by sending your brief below; we will reply within 24–48 h to confirm the date and time.",
+		formHeading: "SEND YOUR PRE-SESSION BRIEF",
+		nameLabel: "Contact person",
+		namePlaceholder: "Alex Smith",
+		emailLabel: "Email",
+		emailPlaceholder: "alex@company.com",
+		phoneLabel: "Phone",
+		phonePlaceholder: "+34 600 000 000",
+		companyLabel: "Company",
+		companyPlaceholder: "Company Ltd",
+		messageLabel: "Type of business and main concerns",
+		messagePlaceholder:
+			"E.g. Café, clothing boutique... We are short on storage space...",
+		uploadLabel: "ATTACH DOCUMENTS",
+		uploadHint:
+			"Optional · Floor plans, photos, or brief (PDF, JPG, PNG, or WebP · max 3 files, 5 MB each)",
+		privacyPrefix: "I accept the ",
+		privacyLinkText: "privacy policy",
+		submitLabel: "Send brief and request session",
+		successMessage:
+			"We have received your Strategic Consultation brief. We will reply within 24–48 h.",
+		errorMessages: {
+			missingFields: "Please complete all required fields and accept the privacy policy.",
+			invalidEmail: "Please enter a valid email address.",
+			invalidFile: "Please check the attached files (max 3 PDF, JPG, PNG, or WebP files up to 5 MB each).",
+			turnstileFailed: "Verification failed. Please try again.",
+			error: "Something went wrong while sending your brief. Please try again later.",
+		},
+	},
+};
+
+const copy = content[lang];
+---
+
+<Base
+	title={copy.metaTitle}
+	description={copy.metaDescription}
+	lang={lang}
+	pageChrome={pageChrome}
+	aot
+>
+	<main id="main" class="consultation-page min-h-screen pt-28 pb-20">
+		<div class="editorial-shell consultation-page__grid">
+			<aside class="consultation-page__left space-y-8">
+				<a
+					href={`/${lang}/methods`}
+					class="inline-flex items-center text-sm tracking-wide text-neutral-600 underline-offset-4 hover:text-black hover:underline"
+				>
+					{copy.backLabel}
+				</a>
+
+				<div class="space-y-4">
+					<h1 class="m-0 text-[clamp(1.75rem,2.6vw,2.4rem)] font-semibold leading-[1.15] tracking-wide uppercase">
+						{copy.title}
+					</h1>
+					<p class="m-0 text-base font-medium text-neutral-800">
+						{copy.subtitle}
+					</p>
+					<p class="m-0 text-[clamp(1.5rem,2vw,1.85rem)] font-semibold text-black">
+						{copy.price}
+					</p>
+					<p class="m-0 text-base leading-relaxed text-neutral-700">
+						{copy.intro}
+					</p>
+				</div>
+
+				<section class="border-t border-neutral-300 pt-6 space-y-2">
+					<h2 class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600">
+						{copy.guaranteeHeading}
+					</h2>
+					<p class="m-0 text-sm leading-relaxed text-neutral-700">
+						{copy.guaranteeBody}
+					</p>
+				</section>
+			</aside>
+
+			<div class="consultation-page__right space-y-10">
+				<section class="rounded-xl border border-neutral-300 p-6 md:p-8 space-y-8">
+					<div class="space-y-4">
+						<h2 class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600">
+							{copy.includesHeading}
+						</h2>
+						<ul class="m-0 list-none p-0 space-y-4">
+							{copy.includes.map((item) => (
+								<li class="text-sm md:text-base leading-relaxed text-neutral-800">
+									<strong class="block font-semibold text-black">{item.label}</strong>
+									<span>{item.text}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+
+					<div class="border-t border-neutral-200 pt-6 space-y-4">
+						<h2 class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600">
+							{copy.needsHeading}
+						</h2>
+						<ul class="m-0 list-none p-0 space-y-4">
+							{copy.needs.map((item) => (
+								<li class="text-sm md:text-base leading-relaxed text-neutral-800">
+									<strong class="block font-semibold text-black">{item.label}</strong>
+									<span>{item.text}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+				</section>
+
+				<section class="space-y-4" aria-labelledby="consultation-calendar-heading">
+					<h2
+						id="consultation-calendar-heading"
+						class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600"
+					>
+						{copy.calendarHeading}
+					</h2>
+					{bookingUrl ? (
+						<div class="overflow-hidden rounded-xl border border-neutral-300 bg-white">
+							<iframe
+								src={bookingUrl}
+								title={copy.calendarTitle}
+								loading="lazy"
+								class="min-h-[680px] w-full border-0"
+							/>
+						</div>
+					) : (
+						<div class="rounded-xl border border-neutral-300 bg-neutral-50 p-6 text-sm md:text-base leading-relaxed text-neutral-700">
+							{copy.calendarFallback}
+						</div>
+					)}
+				</section>
+
+				<section class="space-y-4" aria-labelledby="consultation-form-heading">
+					<h2
+						id="consultation-form-heading"
+						class="m-0 text-xs font-semibold tracking-[0.08em] uppercase text-neutral-600"
+					>
+						{copy.formHeading}
+					</h2>
+
+					<div
+						id="consultation-success"
+						class="rounded-xl border border-green-300 bg-green-50 p-6 text-green-900"
+						role="status"
+						hidden
+					>
+						<p class="m-0 text-base font-medium">{copy.successMessage}</p>
+					</div>
+
+					<p
+						id="consultation-error"
+						class="m-0 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900"
+						role="alert"
+						hidden
+					></p>
+
+					<form
+						id="consultation-form"
+						class="space-y-6"
+						action={`/${lang}/api/contact`}
+						method="POST"
+						enctype="multipart/form-data"
+						data-error-messages={JSON.stringify(copy.errorMessages)}
+					>
+						<input type="hidden" name="mode" value="consultation" />
+						<div class="cf-turnstile" data-sitekey={siteKey} data-size="invisible"></div>
+						<input type="hidden" name="cf-turnstile-response" id="consultation-turnstile-response" />
+
+						<div class="rounded-xl border border-neutral-900 p-6 md:p-8 space-y-5 bg-white">
+							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+								<label class="block text-sm font-medium text-neutral-900">
+									<span>{copy.nameLabel} *</span>
+									<input
+										type="text"
+										name="name"
+										required
+										maxlength="200"
+										autocomplete="name"
+										placeholder={copy.namePlaceholder}
+										class="consultation-input mt-1.5 w-full"
+									/>
+								</label>
+
+								<label class="block text-sm font-medium text-neutral-900">
+									<span>{copy.emailLabel} *</span>
+									<input
+										type="email"
+										name="email"
+										required
+										maxlength="254"
+										autocomplete="email"
+										placeholder={copy.emailPlaceholder}
+										class="consultation-input mt-1.5 w-full"
+									/>
+								</label>
+
+								<label class="block text-sm font-medium text-neutral-900">
+									<span>{copy.phoneLabel}</span>
+									<input
+										type="tel"
+										name="phone"
+										maxlength="80"
+										autocomplete="tel"
+										placeholder={copy.phonePlaceholder}
+										class="consultation-input mt-1.5 w-full"
+									/>
+								</label>
+
+								<label class="block text-sm font-medium text-neutral-900">
+									<span>{copy.companyLabel}</span>
+									<input
+										type="text"
+										name="company"
+										maxlength="200"
+										autocomplete="organization"
+										placeholder={copy.companyPlaceholder}
+										class="consultation-input mt-1.5 w-full"
+									/>
+								</label>
+							</div>
+
+							<label class="block text-sm font-medium text-neutral-900">
+								<span>{copy.messageLabel} *</span>
+								<textarea
+									name="message"
+									required
+									maxlength="4000"
+									rows="4"
+									placeholder={copy.messagePlaceholder}
+									class="consultation-input mt-1.5 w-full resize-y"
+								></textarea>
+							</label>
+						</div>
+
+						<div class="space-y-2">
+							<label
+								for="consultation-files"
+								class="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-neutral-400 px-6 py-4 text-center transition-colors hover:border-black hover:bg-neutral-50"
+							>
+								<span class="text-xs font-semibold tracking-[0.1em] uppercase text-neutral-900">
+									{copy.uploadLabel}
+								</span>
+								<span class="mt-1 text-xs text-neutral-500">
+									{copy.uploadHint}
+								</span>
+								<input
+									id="consultation-files"
+									type="file"
+									name="files"
+									multiple
+									accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
+									class="sr-only"
+								/>
+							</label>
+							<p id="consultation-file-list" class="m-0 text-xs text-neutral-600" aria-live="polite" hidden></p>
+						</div>
+
+						<label class="flex items-start gap-3 text-sm text-neutral-700">
+							<input
+								type="checkbox"
+								name="privacy"
+								value="accepted"
+								required
+								class="mt-1 h-4 w-4 accent-black"
+							/>
+							<span>
+								{copy.privacyPrefix}
+								<a
+									href={`/${lang}/privacy-policy`}
+									class="underline underline-offset-4 hover:text-black"
+								>
+									{copy.privacyLinkText}
+								</a>
+							</span>
+						</label>
+
+						<button
+							type="submit"
+							class="inline-flex items-center justify-center rounded-full bg-black px-8 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-neutral-800 cursor-pointer border-0"
+						>
+							{copy.submitLabel}
+						</button>
+					</form>
+				</section>
+			</div>
+		</div>
+	</main>
+
+	<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+	<script is:inline>
+		(() => {
+			const form = document.getElementById("consultation-form");
+			const successBanner = document.getElementById("consultation-success");
+			const errorBanner = document.getElementById("consultation-error");
+			const fileInput = document.getElementById("consultation-files");
+			const fileList = document.getElementById("consultation-file-list");
+
+			const params = new URLSearchParams(window.location.search);
+			if (params.get("contact_success") === "1" && successBanner) {
+				successBanner.hidden = false;
+				if (form) form.hidden = true;
+			}
+			const errorKey = params.get("contact_error");
+			if (errorKey && errorBanner && form) {
+				try {
+					const messages = JSON.parse(form.dataset.errorMessages || "{}");
+					errorBanner.textContent = messages[errorKey] || messages.error || "";
+					errorBanner.hidden = !errorBanner.textContent;
+				} catch {
+					errorBanner.hidden = true;
+				}
+			}
+
+			if (fileInput && fileList) {
+				fileInput.addEventListener("change", () => {
+					const names = Array.from(fileInput.files || []).map((file) => file.name);
+					fileList.textContent = names.join(" · ");
+					fileList.hidden = names.length === 0;
+				});
+			}
+
+			if (!form) return;
+			let widgetId;
+			form.addEventListener("submit", (event) => {
+				const token = document.getElementById("consultation-turnstile-response");
+				if (!token || token.value) return;
+				const container = form.querySelector(".cf-turnstile");
+				if (!window.turnstile || !container) return;
+				event.preventDefault();
+				if (widgetId === undefined) {
+					widgetId = window.turnstile.render(container, {
+						sitekey: container.dataset.sitekey,
+						size: "invisible",
+						callback: (response) => {
+							token.value = response;
+							form.requestSubmit();
+						},
+						"error-callback": () => {
+							const url = new URL(window.location.href);
+							url.searchParams.set("contact_error", "turnstileFailed");
+							window.location.assign(url);
+						},
+					});
+				}
+				window.turnstile.execute(widgetId);
+			});
+		})();
+	</script>
+
+	<style is:global>
+		.consultation-page .consultation-input {
+			box-sizing: border-box;
+			border: 0;
+			border-bottom: 1px solid #d4d4d4;
+			background: transparent;
+			padding: 0.5rem 0;
+			font-family: var(--site-font-body, "Sinteca", system-ui, sans-serif);
+			font-size: 0.95rem;
+			color: #111;
+			transition: border-color 150ms ease;
+		}
+
+		.consultation-page .consultation-input:focus {
+			outline: none;
+			border-bottom-color: #111;
+		}
+
+		.consultation-page .consultation-input:focus-visible {
+			outline: 2px solid #111;
+			outline-offset: 2px;
+		}
+
+		.consultation-page__grid {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			gap: 2.5rem;
+		}
+
+		@media (min-width: 768px) {
+			.consultation-page .editorial-shell,
+			body:has(.consultation-page) header .editorial-shell,
+			body:has(.consultation-page) footer .editorial-shell {
+				width: 88vw;
+				max-width: none;
+				margin-inline: auto;
+			}
+		}
+
+		@media (min-width: 1024px) {
+			.consultation-page__grid {
+				grid-template-columns: repeat(12, minmax(0, 1fr));
+				column-gap: 1.5rem;
+				align-items: start;
+			}
+
+			.consultation-page__left {
+				grid-column: 1 / 5;
+				position: sticky;
+				top: 7rem;
+			}
+
+			.consultation-page__right {
+				grid-column: 6 / 13;
+			}
+		}
+	</style>
+</Base>

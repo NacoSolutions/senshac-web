@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
 	parseBoundedFormData,
+	validateConsultationPayload,
 	validateInquiryPayload,
 } from "../src/utils/inquiry-contract.mjs";
 
@@ -374,4 +375,112 @@ test("ContactForm locks the preselected service when entering from a service CTA
 	assert.match(source, /name="locked" value="service"/);
 	assert.match(source, /disabled=\{serviceLocked\}/);
 	assert.match(source, /data-service-locked=\{serviceLocked \? "true" : undefined\}/);
+});
+
+function validConsultationEntries(overrides = {}) {
+	return {
+		mode: "consultation",
+		name: "Juan Rodríguez",
+		email: "juan@empresa.com",
+		phone: "600 000 000",
+		company: "Nombre SL",
+		message: "Bar en Barcelona. Necesitamos reorganizar la barra y el almacén.",
+		privacy: "accepted",
+		...overrides,
+	};
+}
+
+test("validateConsultationPayload accepts valid brief with and without attachments", async () => {
+	const withoutFiles = await validateConsultationPayload(
+		payload(validConsultationEntries({ phone: "", company: "" })),
+	);
+	assert.deepEqual(withoutFiles, {
+		ok: true,
+		mode: "consultation",
+		name: "Juan Rodríguez",
+		email: "juan@empresa.com",
+		phone: "",
+		company: "",
+		message: "Bar en Barcelona. Necesitamos reorganizar la barra y el almacén.",
+		files: [],
+	});
+
+	const withFile = await validateConsultationPayload(
+		payload({
+			...validConsultationEntries(),
+			files: new File(["%PDF-1.4"], "local plan.pdf", {
+				type: "application/pdf",
+			}),
+		}),
+	);
+	assert.equal(withFile.ok, true);
+	assert.equal(withFile.files.length, 1);
+	assert.equal(withFile.files[0].name, "local_plan.pdf");
+});
+
+test("validateConsultationPayload rejects invalid mode, missing fields, bad email, unknown fields, and bad files", async () => {
+	assert.equal(
+		(
+			await validateConsultationPayload(
+				payload(validConsultationEntries({ mode: "direct" })),
+			)
+		).error,
+		"invalid-mode",
+	);
+	assert.equal(
+		(
+			await validateConsultationPayload(
+				payload(validConsultationEntries({ message: "   " })),
+			)
+		).error,
+		"missing-field",
+	);
+	assert.equal(
+		(
+			await validateConsultationPayload(
+				payload(validConsultationEntries({ privacy: "" })),
+			)
+		).error,
+		"missing-field",
+	);
+	assert.equal(
+		(
+			await validateConsultationPayload(
+				payload(validConsultationEntries({ email: "not-an-email" })),
+			)
+		).error,
+		"invalid-email",
+	);
+	assert.equal(
+		(
+			await validateConsultationPayload(
+				payload({ ...validConsultationEntries(), extra: "nope" }),
+			)
+		).error,
+		"unknown-field",
+	);
+	assert.equal(
+		(
+			await validateConsultationPayload(
+				payload({
+					...validConsultationEntries(),
+					files: new File(["not a pdf"], "fake.pdf", {
+						type: "application/pdf",
+					}),
+				}),
+			)
+		).error,
+		"invalid-file",
+	);
+
+	const tooMany = payload(validConsultationEntries());
+	for (let index = 0; index < 4; index++) {
+		tooMany.append(
+			"files",
+			new File(["%PDF-1.4"], `plan-${index}.pdf`, {
+				type: "application/pdf",
+			}),
+		);
+	}
+	assert.equal((await validateConsultationPayload(tooMany)).error, "invalid-file");
 });
